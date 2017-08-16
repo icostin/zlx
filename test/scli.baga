@@ -1,0 +1,6 @@
+name := zlx_test
+prod := exe
+src := *.c
+CFLAGS +=
+LDFLAGS += -static 
+LDLIBS += -lzlx

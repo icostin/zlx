@@ -1,0 +1,6 @@
+name := zlx_dyn_test
+prod := exe
+src := *.c
+CFLAGS +=
+LDFLAGS += -pie
+LDLIBS += -lzlx

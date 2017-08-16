@@ -1,0 +1,9 @@
+# baga project file
+name := zlx
+prod := dlib
+src := *.c
+pub_hdr_dir := ../include
+pub_hdr := zlx.h zlx/*.h zlx/*/*.h
+CPPFLAGS += -DZLX_DYNAMIC
+CFLAGS += -ffreestanding 
+LDFLAGS += -nostdlib

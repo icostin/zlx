@@ -1,0 +1,1 @@
+include $(BAGA)/main.gmk
