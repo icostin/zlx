@@ -1,6 +1,8 @@
 #ifndef _ZLX_ARCH_H
 #define _ZLX_ARCH_H
 
+#include "preprocessor.h"
+
 #if !defined(ZLX_IA32) && (defined(_M_IX86) || defined(_M_I86) || defined(__X86__) || defined(_X86_) || defined(__i386__) || defined(__i386))
 # define ZLX_IA32 1
 #endif
