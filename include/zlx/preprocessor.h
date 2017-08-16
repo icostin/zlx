@@ -31,6 +31,15 @@
 # define ZLX_FORCE_INLINE static inline __attribute__((always_inline))
 #endif
 
+/* define restrict keyword */
+#if defined(__STDC_VERSION__) && __STDC_VERSION >= 199901L
+# define ZLX_RESTRICT restrict
+#elif defined(__GNUC__) && __GNUC__ >= 3
+# define ZLX_RESTRICT __restrict__
+#elif defined(_MSC_VER) && _MSC_VER >= 1600
+# define ZLX_RESTRICT __restrict
+#endif
+
 #if defined(_WIN32)
 # define ZLX_LIB_EXPORT __declspec(dllexport)
 # define ZLX_LIB_IMPORT __declspec(dllimport)
