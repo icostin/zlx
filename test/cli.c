@@ -16,6 +16,7 @@ int main (int argc, char const * const * argv)
     T(inline_test);
     T(restrict_test);
     T(line_str_test);
+    T(use_int_test);
     return rc;
 }
 
