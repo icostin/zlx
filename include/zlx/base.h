@@ -3,6 +3,7 @@
 
 #include "preprocessor.h"
 #include "arch.h"
+#include "platform.h"
 
 /* define ZLX_API */
 #if defined(ZLX_STATIC)
