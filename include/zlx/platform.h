@@ -6,6 +6,12 @@
 
 #if defined(ZLX_FREESTANDING) && ZLX_FREESTANDING
 
+# if defined(_WIN32)
+#  define ZLX_ABI_MS 1
+# else
+#  define ZLX_ABI_SYSV 1
+# endif
+
 #else
 
 # undef ZLX_FREESTANDING
@@ -46,9 +52,18 @@
 
 #endif /* ZLX_FREESTANDING */
 
+/* assume System V ABI if we're not under a Microsoft environment */
+#if !defined(ZLX_ABI_SYSV) && !defined(ZLX_ABI_MS)
+# define ZLX_ABI_SYSV 1
+#endif
 
-
-
+#if ZLX_IA32 && ZLX_ABI_MS
+# define ZLX_FAST_CALL __fastcall
+#elif ZLX_IA32 && ZLX_ABI_SYSV && (ZLX_GCC || ZLX_CLANG)
+# define ZLX_FAST_CALL __attribute__((regparm((3))))
+#else
+# define ZLX_FAST_CALL
+#endif
 
 #endif /* _ZLX_PLATFORM_H */
 
