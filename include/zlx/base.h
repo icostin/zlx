@@ -14,5 +14,9 @@
 # define ZLX_API ZLX_LIB_IMPORT
 #endif
 
+/* define ZLX_CALL to whatever "fast" calling convention the target 
+ * platform has */
+#define ZLX_CALL ZLX_FAST_CALL
+
 
 #endif
