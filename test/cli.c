@@ -4,6 +4,7 @@
 int inline_test (void);
 int restrict_test (void);
 int line_str_test (void);
+int nop_obstream_test (void);
 
 int main (int argc, char const * const * argv)
 {
@@ -17,6 +18,7 @@ int main (int argc, char const * const * argv)
     T(restrict_test);
     T(line_str_test);
     T(use_int_test);
+    T(nop_obstream_test);
     return rc;
 }
 
