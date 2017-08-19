@@ -23,8 +23,5 @@ struct zlx_obstream
     zlx_obstream_type_t * type;
 };
 
-ZLX_API extern zlx_obstream_t zlx_nop_obstream;
-
-
 #endif
 
