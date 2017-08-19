@@ -23,5 +23,16 @@ struct zlx_obstream
     zlx_obstream_type_t * type;
 };
 
+ZLX_INLINE size_t zlx_obstream_write
+(
+    zlx_obstream_t * ZLX_RESTRICT obstream,
+    uint8_t const * ZLX_RESTRICT data,
+    size_t size
+)
+{
+    return obstream->type->write(obstream, data, size);
+}
+
+
 #endif
 
