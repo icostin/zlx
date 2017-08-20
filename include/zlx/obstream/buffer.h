@@ -1,7 +1,7 @@
 #ifndef _ZLX_BUFFER_OBSTREAM_H
 #define _ZLX_BUFFER_OBSTREAM_H
 
-#include "../obstream.h"
+#include "base.h"
 
 typedef struct zlx_buffer_obstream zlx_buffer_obstream_t;
 struct zlx_buffer_obstream
