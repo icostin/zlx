@@ -2,7 +2,7 @@
 name := zlx
 prod := dlib
 src := *.c
-pub_hdr_dir := ../include
+pub_hdr_dir := public
 pub_hdr := zlx.h zlx/*.h zlx/*/*.h
 CPPFLAGS += -DZLX_FREESTANDING -DZLX_DYNAMIC
 CFLAGS += -std=c99 -pedantic -Wall -Wextra -Werror -ffreestanding 
