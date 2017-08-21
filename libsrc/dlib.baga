@@ -1,7 +1,7 @@
 # baga project file
 name := zlx
 prod := dlib
-src := *.c
+src := *.c */*.c
 pub_hdr_dir := public
 pub_hdr := zlx.h zlx/*.h zlx/*/*.h
 CPPFLAGS += -DZLX_FREESTANDING -DZLX_DYNAMIC

@@ -1,4 +1,4 @@
-#include "public/zlx/obstream/buffer.h"
+#include "../public/zlx/obstream/buffer.h"
 
 static size_t ZLX_CALL buffer_obstream_write
 (

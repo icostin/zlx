@@ -1,4 +1,4 @@
-#include "public/zlx/obstream.h"
+#include "../public/zlx/obstream/nop.h"
 
 size_t ZLX_CALL nop_obstream_write
 (
