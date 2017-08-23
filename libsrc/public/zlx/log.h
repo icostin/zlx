@@ -47,7 +47,7 @@ ZLX_INLINE int zlx_log_data
 )
 {
     if (level > log->level) return 0;
-    return zlx_obstream_write(log->stream, data, size);
+    return zlx_obstream_write(log->stream, data, size) != size;
 }
 
 

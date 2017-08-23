@@ -6,6 +6,7 @@ int restrict_test (void);
 int line_str_test (void);
 int nop_obstream_test (void);
 int buffer_obstream_test (void);
+int log_test (void);
 
 int main (int argc, char const * const * argv)
 {
@@ -21,6 +22,7 @@ int main (int argc, char const * const * argv)
     T(use_int_test);
     T(nop_obstream_test);
     T(buffer_obstream_test);
+    T(log_test);
     return rc;
 }
 
