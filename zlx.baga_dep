@@ -1,0 +1,2 @@
+dep += test/scli:libsrc/slib
+dep += test/dcli:libsrc/dlib
