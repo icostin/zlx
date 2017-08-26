@@ -7,7 +7,8 @@ int line_str_test (void);
 int nop_obstream_test (void);
 int buffer_obstream_test (void);
 int log_test (void);
-int assert_test (void);
+int assert_pass_test (void);
+int assert_fail_test (void);
 
 int main (int argc, char const * const * argv)
 {
@@ -24,7 +25,8 @@ int main (int argc, char const * const * argv)
     T(nop_obstream_test);
     T(buffer_obstream_test);
     T(log_test);
-    T(assert_test);
+    T(assert_pass_test);
+    T(assert_fail_test);
     return rc;
 }
 
