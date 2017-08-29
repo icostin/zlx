@@ -2,9 +2,9 @@
 
 int use_int_test (void)
 {
-    size_t z;
-    ptrdiff_t d;
+    size_t z = 1;
+    ptrdiff_t d = 1;
 
-    return 0;
+    return (ptrdiff_t) z == d;
 }
 
