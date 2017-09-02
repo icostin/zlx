@@ -1,15 +1,9 @@
 #include <stdio.h>
 #include <zlx.h>
 
-int use_int_test (void);
-int inline_test (void);
-int restrict_test (void);
-int line_str_test (void);
-int nop_obstream_test (void);
-int buffer_obstream_test (void);
-int log_test (void);
-int assert_pass_test (void);
-int assert_fail_test (void);
+#define T(fn) int fn (void);
+#include "test_list.inc"
+#undef T
 
 int main (int argc, char const * const * argv)
 {
@@ -20,16 +14,10 @@ int main (int argc, char const * const * argv)
     puts("zlx_test");
     printf("  zlx_lib: %s\n", zlx_lib_name);
 
-#define T(t) rc |= trc = t(); printf("  %s: %s\n", #t, trc ? "FAILED" : "passed");
-    T(inline_test);
-    T(restrict_test);
-    T(line_str_test);
-    T(use_int_test);
-    T(nop_obstream_test);
-    T(buffer_obstream_test);
-    T(log_test);
-    T(assert_pass_test);
-    T(assert_fail_test);
+#define T(t) rc |= trc = t(); if (printf("  %s: %s\n", #t, trc ? "FAILED" : "passed") >= 0) ; else { fprintf(stderr, "output error\n"); return 64 | rc; }
+#include "test_list.inc"
+#undef T
+
     return rc;
 }
 

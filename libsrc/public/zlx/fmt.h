@@ -30,15 +30,13 @@ ZLX_INLINE unsigned int zlx_char_to_digit (unsigned int digit)
 ZLX_INLINE int zlx_digit_from_char (uint32_t ch, uint_fast8_t radix)
 {
     unsigned int digit;
-    if (ch >= '0' && ch <= '9') digit = ch - '0';
-    else
+    digit = ch - '0';
+    if (digit > 9)
     {
-        ch |= 0x20;
-        if (ch >= 'a' && ch <= 'z') digit = ch - 'a' + 10;
-        else return -1;
+        digit = (ch | 0x20) - 'a';
+        if (digit <= 25) digit += 10;
     }
-    if (digit >= radix) return -1;
-    return digit;
+    return (digit >= radix) ? -1 : (int) digit;
 }
 
 /* zlx_u64_to_str ***********************************************************/

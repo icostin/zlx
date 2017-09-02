@@ -2,6 +2,7 @@
 #define _ZLX_WRITER_H
 
 #include "base.h"
+#include "int.h"
 
 typedef size_t (ZLX_CALL * zlx_writer_func_t)
     (
