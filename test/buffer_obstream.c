@@ -1,3 +1,4 @@
+#include <string.h>
 #include <zlx/obstream/buffer.h>
 
 int buffer_obstream_test (void)
@@ -20,6 +21,6 @@ int buffer_obstream_test (void)
         != 0) 
         return 4;
 
-    return 0;
+    return memcmp(buffer, "hello wo", 8) && bobs.offset == 8;
 }
 

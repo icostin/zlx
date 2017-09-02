@@ -12,8 +12,8 @@ extern ZLX_API void (* zlx_abort) (void);
 #if NDEBUG && !defined ZLXOPT_ENABLE_ASSERT
 # define ZLX_ASSERT(cond) ((void) 0)
 #else
-# define _ZLX_ASSERT_MSG(cond) ((uint8_t const *) __FILE__ ":" ZLX_LINE_STR ": *** ASSERTION FAILED: " #cond)
-# define ZLX_ASSERT(cond) ((cond) ? (void) 0 : ((void) zlx_obstream_write(zlx_assert_log, _ZLX_ASSERT_MSG(cond), sizeof(_ZLX_ASSERT_MSG(cond)) - 1), zlx_abort()))
+# define _ZLX_ASSERT_MSG(cond) (__FILE__ ":" ZLX_LINE_STR ": *** ASSERTION FAILED: " #cond)
+# define ZLX_ASSERT(cond) ((cond) ? (void) 0 : ((void) zlx_obstream_write(zlx_assert_log, (uint8_t const *) _ZLX_ASSERT_MSG(cond), sizeof(_ZLX_ASSERT_MSG(cond)) - 1), zlx_abort()))
 #endif
 
 ZLX_CPP_ONLY(})
