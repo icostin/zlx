@@ -1,4 +1,4 @@
-#include <zlx/base.h>
+#include "../include/zlx/base.h"
 
 ZLX_INLINE int afunc (int x)
 {

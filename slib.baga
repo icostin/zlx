@@ -1,8 +1,8 @@
 # baga project file
 name := zlx
 prod := slib
-src := *.c */*.c
-pub_hdr_dir := public
+src := libsrc/*.c libsrc/*/*.c
+pub_hdr_dir := include
 pub_hdr := zlx.h zlx/*.h zlx/*/*.h
 CPPFLAGS += -DZLX_FREESTANDING -DZLX_STATIC
 CFLAGS += -std=c99 -pedantic -Wall -Wextra -Werror -ffreestanding

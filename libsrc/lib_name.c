@@ -1,4 +1,4 @@
-#include "public/zlx/base.h"
+#include "../include/zlx/base.h"
 
 char const * const zlx_lib_name = "zlx"
 #if defined(ZLX_STATIC)

@@ -1,4 +1,4 @@
-#include <zlx/int.h>
+#include "../include/zlx/int.h"
 
 int use_int_test (void)
 {

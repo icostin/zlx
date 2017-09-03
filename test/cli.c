@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <zlx.h>
+#include "../include/zlx.h"
 
 #define T(fn) int fn (void);
 #include "test_list.inc"
@@ -14,7 +14,7 @@ int main (int argc, char const * const * argv)
     puts("zlx_test");
     printf("  zlx_lib: %s\n", zlx_lib_name);
 
-#define T(t) rc |= trc = t(); if (printf("  %s: %s\n", #t, trc ? "FAILED" : "passed") >= 0) ; else { fprintf(stderr, "output error\n"); return 64 | rc; }
+#define T(t) trc = t(); if (printf("  %s: %s (ret code %u)\n", #t, trc ? "FAILED" : "passed", trc) >= 0) ; else { fprintf(stderr, "output error\n"); return 64 | rc; } rc |= !!trc;
 #include "test_list.inc"
 #undef T
 

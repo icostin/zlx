@@ -1,6 +1,6 @@
-name := zlx_dyn_test
+name := zlx_test
 prod := exe
-src := *.c
+src := test/*.c
 CFLAGS += -std=c99 -pedantic -Wall -Wextra -Werror
-LDFLAGS += -pie
+LDFLAGS += -static 
 LDLIBS += -lzlx

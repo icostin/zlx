@@ -1,5 +1,5 @@
 #include <string.h>
-#include <zlx/obstream/buffer.h>
+#include "../include/zlx/obstream/buffer.h"
 
 int buffer_obstream_test (void)
 {

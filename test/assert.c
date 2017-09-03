@@ -1,9 +1,9 @@
 #define ZLXOPT_ENABLE_ASSERT
 #include <stdio.h>
 #include <string.h>
-#include <zlx/assert.h>
-#include <zlx/obstream/buffer.h>
-#include <zlx/obstream/nop.h>
+#include "../include/zlx/assert.h"
+#include "../include/zlx/obstream/buffer.h"
+#include "../include/zlx/obstream/nop.h"
 
 int x = 40;
 int y = 2;
@@ -36,7 +36,7 @@ int assert_fail_test (void)
     ZLX_ASSERT(x + y != 42);
 
     buf[bobs.offset] = 0;
-    r = assert_count == ac + 1 && !strcmp((char *) buf, "assert.c:36: *** ASSERTION FAILED: x + y != 42");
+    r = assert_count == ac + 1 && !strcmp((char *) buf, "test/assert.c:36: *** ASSERTION FAILED: x + y != 42");
     //puts((char *) buf);
 
     zlx_assert_log = &zlx_nop_obstream;

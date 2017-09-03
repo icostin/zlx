@@ -1,6 +1,6 @@
 #include <string.h>
-#include <zlx/log.h>
-#include <zlx/obstream/buffer.h>
+#include "../include/zlx/log.h"
+#include "../include/zlx/obstream/buffer.h"
 
 int log_test (void)
 {

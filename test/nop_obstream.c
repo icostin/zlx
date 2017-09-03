@@ -1,4 +1,4 @@
-#include <zlx/obstream/nop.h>
+#include "../include/zlx/obstream/nop.h"
 
 int nop_obstream_test (void)
 {

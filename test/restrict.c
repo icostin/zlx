@@ -1,4 +1,4 @@
-#include <zlx/base.h>
+#include "../include/zlx/base.h"
 /* this tests that we can compile declarations using ZLX_RESTRICT */
 
 void int_copy (int * ZLX_RESTRICT dest, int const * ZLX_RESTRICT src)
