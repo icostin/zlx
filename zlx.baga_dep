@@ -1,2 +1,2 @@
-dep += test/scli:libsrc/slib
-dep += test/dcli:libsrc/dlib
+dep += stest:slib
+dep += dtest:dlib
