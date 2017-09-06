@@ -1,6 +1,6 @@
 #include "../include/zlx/base.h"
 
-char const * const zlx_lib_name = "zlx"
+ZLX_API char const * const zlx_lib_name = "zlx"
 #if defined(ZLX_STATIC)
     "-static"
 #elif defined(ZLX_DYNAMIC)
