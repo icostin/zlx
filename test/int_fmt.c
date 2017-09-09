@@ -1,4 +1,4 @@
-#include "../include/zlx/fmt.h"
+#include "../include/zlx/int_fmt.h"
 
 #define T(cond) if ((cond)) ; else return __LINE__
 int digit_from_char_test (void)
@@ -16,7 +16,10 @@ int digit_from_char_test (void)
     T(zlx_digit_from_char('Z', 36) == 35);
     T(zlx_digit_from_char(-1, 36) == -1);
     T(zlx_digit_from_char('@', 36) == -1);
-    T(zlx_digit_from_char(0x39, 36) == -1);
+    T(zlx_digit_from_char(0x3A, 36) == -1);
+    T(zlx_digit_to_char(9) == '9');
+    T(zlx_digit_to_char(10) == 'A');
+    T(zlx_digit_to_char(35) == 'Z');
     return 0;
 }
 

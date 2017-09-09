@@ -6,12 +6,6 @@
 
 #if defined(ZLX_FREESTANDING) && ZLX_FREESTANDING
 
-# if defined(_WIN32)
-#  define ZLX_ABI_MS 1
-# else
-#  define ZLX_ABI_SYSV 1
-# endif
-
 #else
 
 # undef ZLX_FREESTANDING
@@ -54,7 +48,13 @@
 
 /* assume System V ABI if we're not under a Microsoft environment */
 #if !defined(ZLX_ABI_SYSV) && !defined(ZLX_ABI_MS)
-# define ZLX_ABI_SYSV 1
+
+# if defined(_WIN32)
+#  define ZLX_ABI_MS 1
+# else
+#  define ZLX_ABI_SYSV 1
+# endif
+
 #endif
 
 #if ZLX_IA32 && ZLX_ABI_MS
