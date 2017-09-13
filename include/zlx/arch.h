@@ -1,6 +1,42 @@
 #ifndef _ZLX_ARCH_H
 #define _ZLX_ARCH_H
 
+/** @defgroup arch Architecture support
+ *
+ *  This component defines macros that describe the target architecture.
+ *
+ *  As the library is tested on different platforms, macros will be added
+ *  here to describe the underlying architectures
+ *
+ *  @{
+ *
+ *  @def ZLX_LITTLE_ENDIAN
+ *  Macro defined to 1 when targetting a little endian platform, 0 otherwise.
+ *  @warn
+ *      Do not probe endianness using ifdef as the macro is always defined,
+ *      just use if.
+ *
+ *  @def ZLX_BIG_ENDIAN
+ *  Macro defined to 1 when targetting a big endian platform, 0 otherwise.
+ *  @warn
+ *      Do not probe endianness using ifdef as the macro is always defined,
+ *      just use if.
+ *
+ *  @def ZLX_UNALIGNED_ACCESS
+ *  Macro defined to 1 when targetting a platform that can access unaligned
+ *  data, 0 otherwise.
+ *  @warn
+ *      Do not check using ifdef as the macro is always defined, just use if.
+ *
+ *  @def ZLX_IA32
+ *  Macro defined to 1 when targetting IA32, 0 otherwise.
+ *
+ *  @def ZLX_AMD64
+ *  Macro defined to 1 when targetting AMD64 (or Intel 64, EM64T), 0 otherwise.
+ *
+ **/
+
+
 #include "preprocessor.h"
 
 #if !defined(ZLX_IA32) && (defined(_M_IX86) || defined(_M_I86) || defined(__X86__) || defined(_X86_) || defined(__i386__) || defined(__i386))
@@ -43,6 +79,8 @@
 #  define ZLX_UNALIGNED_ACCESS 0
 # endif
 #endif
+
+/** @} */
 
 #endif /* _ZLX_ARCH_H */
 
