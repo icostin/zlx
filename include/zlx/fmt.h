@@ -3,13 +3,20 @@
 
 #include <stdarg.h>
 #include "base.h"
+#include "int.h"
 #include "writer.h"
 
 /** @defgroup fmt Formatted printing
  *  @{
  */
 
-typedef int (ZLX_CALL * zlx_width_compute_func_t)
+/* zlx_width_func_t *********************************************************/
+/**
+ *  Function type for computing some logical width of given UTF-8 code.
+ *  The function should return a negative number if it encounters unsupported
+ *  Unicode characters.
+ */
+typedef int32_t (ZLX_CALL * zlx_width_func_t)
     (
         uint8_t const * ZLX_RESTRICT text,
         size_t size,
@@ -69,9 +76,9 @@ ZLX_API unsigned int ZLX_CALL zlx_vfmt
 (
     zlx_writer_func_t writer_func,
     void * writer_context,
-    zlx_width_compute_func_t width_func,
+    zlx_width_func_t width_func,
     void * width_context,
-    char const * fmt,
+    char const * ZLX_RESTRICT fmt,
     va_list va
 );
 
@@ -84,9 +91,9 @@ ZLX_API unsigned int ZLX_CALL zlx_fmt
 (
     zlx_writer_func_t writer_func,
     void * writer_context,
-    zlx_width_compute_func_t width_func,
+    zlx_width_func_t width_func,
     void * width_context,
-    char const * fmt,
+    char const * ZLX_RESTRICT fmt,
     ...
 );
 

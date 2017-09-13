@@ -1,4 +1,6 @@
 #include "../include/zlx/base.h"
+#include "../include/zlx/int.h"
+
 
 ZLX_API char const * const zlx_lib_name = "zlx"
 #if defined(ZLX_STATIC)
@@ -24,3 +26,21 @@ ZLX_API char const * const zlx_lib_name = "zlx"
     "-some_arch"
 #endif
     ;
+
+#if defined(ZLX_ABI_MS)
+
+uint32_t __stdcall DllMainCRTStartup
+(
+    void * instance,
+    uint32_t reason,
+    void * reserved
+)
+{
+    (void) instance;
+    (void) reason;
+    (void) reserved;
+    return 1;
+}
+
+#endif
+

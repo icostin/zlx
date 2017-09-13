@@ -6,4 +6,6 @@ pub_hdr_dir := include
 pub_hdr := zlx.h zlx/*.h zlx/*/*.h
 CPPFLAGS += -DZLX_FREESTANDING -DZLX_DYNAMIC
 CFLAGS += -std=c99 -pedantic -Wall -Wextra -Werror -ffreestanding 
-LDFLAGS += -nostdlib
+LDFLAGS += -nostartfiles
+#-nostdlib
+#ldflags[windows] := -e DllMain
