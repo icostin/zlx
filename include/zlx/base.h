@@ -16,6 +16,11 @@
 
 /* define ZLX_CALL to whatever "fast" calling convention the target 
  * platform has */
+/*  ZLX_CALL  */
+/**
+ *  macro representing the calling conventiom of all APIs offered
+ *  by this library.
+ */
 #define ZLX_CALL ZLX_FAST_CALL
 
 
