@@ -1,6 +1,8 @@
 #include "../include/zlx/int_fmt.h"
 
 #define T(cond) if ((cond)) ; else return __LINE__
+
+/* digit_from_char_test *****************************************************/
 int digit_from_char_test (void)
 {
     T(zlx_digit_from_char('0', 1) == 0);
@@ -20,6 +22,19 @@ int digit_from_char_test (void)
     T(zlx_digit_to_char(9) == '9');
     T(zlx_digit_to_char(10) == 'A');
     T(zlx_digit_to_char(35) == 'Z');
+    return 0;
+}
+
+/* u64_from_str_test ********************************************************/
+int u64_from_str_test (void)
+{
+    uint64_t v;
+    size_t l;
+
+    T(zlx_u64_from_str((uint8_t const *) "FdFdDF", 6, 16, &v, &l) == 0);
+    T(v == 0xFDFDDF);
+    T(l == 6);
+
     return 0;
 }
 
