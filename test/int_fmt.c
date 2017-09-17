@@ -31,9 +31,75 @@ int u64_from_str_test (void)
     uint64_t v;
     size_t l;
 
-    T(zlx_u64_from_str((uint8_t const *) "FdFdDF", 6, 16, &v, &l) == 0);
-    T(v == 0xFDFDDF);
+    v = 1; l = 1;
+    T(zlx_u64_from_str(NULL, 0, 12, &v, &l) == ZLX_U64_STOP);
+    T(v == 0);
+    T(l == 0);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "Fd2dDF", 6, 16, &v, &l) == 0);
+    T(v == 0xFD2DDF);
     T(l == 6);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "0b0101", 6, 0, &v, &l) == 0);
+    T(v == 5);
+    T(l == 6);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "0o0101", 6, 0, &v, &l) == 0);
+    T(v == 65);
+    T(l == 6);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "0d0101", 6, 0, &v, &l) == 0);
+    T(v == 101);
+    T(l == 6);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "0x0101", 6, 0, &v, &l) == 0);
+    T(v == 257);
+    T(l == 6);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "101", 3, 0, &v, &l) == 0);
+    T(v == 101);
+    T(l == 3);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "0101", 4, 0, &v, &l) == 0);
+    T(v == 101);
+    T(l == 4);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "Zza", 2, 36, &v, &l) == 0);
+    T(v == 1295);
+    T(l == 2);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "99a", 3, 0, &v, &l) == ZLX_U64_STOP);
+    T(v == 99);
+    T(l == 2);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "8-a", 2, 0, &v, &l) == ZLX_U64_STOP);
+    T(v == 8);
+    T(l == 1);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "18446744073709551615", 20, 0, &v, &l) == 0);
+    T(v == UINT64_C(0xFFFFFFFFFFFFFFFF));
+    T(l == 20);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "18446744073709551616", 20, 0, &v, &l) == ZLX_U64_OVERFLOW);
+    T(v == UINT64_C(1844674407370955161));
+    T(l == 19);
+
+    v = 0; l = 0;
+    T(zlx_u64_from_str((uint8_t const *) "184467440737095516150", 21, 0, &v, &l) == ZLX_U64_OVERFLOW);
+    T(v == UINT64_C(18446744073709551615));
+    T(l == 20);
 
     return 0;
 }

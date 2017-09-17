@@ -128,12 +128,11 @@ ZLX_API size_t ZLX_CALL zlx_i64_to_str
  */
 ZLX_API uint_fast8_t ZLX_CALL zlx_u64_from_str
 (
-    uint8_t const * str,
+    uint8_t const * ZLX_RESTRICT str,
     size_t len,
     uint_fast8_t radix,
-    uint64_t * value,
-    size_t * used_len
+    uint64_t * ZLX_RESTRICT value,
+    size_t * ZLX_RESTRICT used_len
 );
-
 
 #endif

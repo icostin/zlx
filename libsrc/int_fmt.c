@@ -103,18 +103,23 @@ ZLX_API size_t ZLX_CALL zlx_i64_to_str
 /* zlx_u64_from_str *********************************************************/
 ZLX_API uint_fast8_t ZLX_CALL zlx_u64_from_str
 (
-    uint8_t const * str,
+    uint8_t const * ZLX_RESTRICT str,
     size_t len,
     uint_fast8_t radix,
-    uint64_t * value,
-    size_t * used_len
+    uint64_t * ZLX_RESTRICT value,
+    size_t * ZLX_RESTRICT used_len
 )
 {
     size_t i;
     uint64_t v;
     uint_fast8_t r = 0;
 
-    if (len == 0) return ZLX_U64_STOP;
+    if (len == 0)
+    {
+        *value = 0;
+        *used_len = 0;
+        return ZLX_U64_STOP;
+    }
     i = 0;
     if (radix == 0)
     {
@@ -136,7 +141,7 @@ ZLX_API uint_fast8_t ZLX_CALL zlx_u64_from_str
     for (v = 0; i < len; ++i)
     {
         uint8_t digit;
-        uint64_t w;
+        uint64_t u, w;
         if (str[i] >= '0' && str[i] <= '9') digit = str[i] - '0';
         else
         {
@@ -144,11 +149,24 @@ ZLX_API uint_fast8_t ZLX_CALL zlx_u64_from_str
             if (digit >= 'a' && digit <= 'z') digit -= ('a' - 10);
             else digit = radix;
         }
-        if (digit >= radix) { r = ZLX_U64_STOP; break; }
+        if (digit >= radix)
+        {
+            r = ZLX_U64_STOP;
+            break;
+        }
         w = v * radix;
-        if (w / radix != v) { r = ZLX_U64_OVERFLOW; break; }
-        v = w + digit;
-        if (v < w) { r = ZLX_U64_OVERFLOW; break; }
+        if (w / radix != v)
+        {
+            r = ZLX_U64_OVERFLOW;
+            break;
+        }
+        u = w + digit;
+        if (u < w)
+        {
+            r = ZLX_U64_OVERFLOW;
+            break;
+        }
+        v = u;
     }
     *value = v;
     if (used_len) *used_len = i;
