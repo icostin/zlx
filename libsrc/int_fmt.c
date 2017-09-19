@@ -27,18 +27,36 @@ ZLX_API size_t ZLX_CALL zlx_u64_to_str
 
 #endif
     //printf("[u64_to_str:%"PRIx64",w=%u]\n", value, width);
-    for (i = g = 0; i < width || value; i++)
+    i = 0;
+    g = 0;
+    for (;;)
     {
-        uint8_t digit = value % radix;
+        uint8_t digit;
+
+        digit = value % radix;
         value /= radix;
-        str[i] = zlx_digit_char_table[digit];
+        str[i++] = zlx_digit_char_table[digit];
+        if (value == 0 && i >= width) break;
         if (++g == group)
         {
-            str[++i] = sep;
+            str[i++] = sep;
             g = 0;
+            if (value == 0 && i >= width) break;
         }
     }
-    if (!i) str[i++] = '0';
+
+    //for (i = g = 0; i < width || value; i++)
+    //{
+    //    uint8_t digit = value % radix;
+    //    value /= radix;
+    //    str[i] = zlx_digit_char_table[digit];
+    //    if (++g == group)
+    //    {
+    //        str[++i] = sep;
+    //        g = 0;
+    //    }
+    //}
+    //if (!i) str[i++] = '0';
     str[i] = 0;
     for (a = 0, b = i - 1; a < b; a++, b--)
     {

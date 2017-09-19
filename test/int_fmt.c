@@ -1,6 +1,9 @@
+#include <string.h>
+#include <stdio.h>
 #include "../include/zlx/int_fmt.h"
 
 #define T(cond) if ((cond)) ; else return __LINE__
+#define TE(cond, on_error) if ((cond)) ; else do { on_error; return __LINE__; } while (0)
 
 /* digit_from_char_test *****************************************************/
 int digit_from_char_test (void)
@@ -100,6 +103,31 @@ int u64_from_str_test (void)
     T(zlx_u64_from_str((uint8_t const *) "184467440737095516150", 21, 0, &v, &l) == ZLX_U64_OVERFLOW);
     T(v == UINT64_C(18446744073709551615));
     T(l == 20);
+
+    return 0;
+}
+
+/* u64_to_str_test **********************************************************/
+int u64_to_str_test (void)
+{
+    uint8_t s[0x100];
+    size_t l;
+
+    l = zlx_u64_to_str(s, 123, 10, 0, 0, 0);
+    T(zlx_u64_to_str(s, 123, 10, 0, 0, 0) == 3);
+    T(!strcmp((char const *) s, "123"));
+
+    l = zlx_u64_to_str(s, 0, 2, 0, 0, 0);
+    T(l == 1);
+    T(!strcmp((char const *) s, "0"));
+
+    l = zlx_u64_to_str(s, 12345, 10, 7, 3, ',');
+    T(l == 7);
+    T(!strcmp((char const *) s, "012,345"));
+
+    l = zlx_u64_to_str(s, 12345, 10, 8, 3, ',');
+    TE(l == 8, printf("str: '%s' len: %zu", s, l));
+    T(!strcmp((char const *) s, ",012,345"));
 
     return 0;
 }

@@ -6,4 +6,4 @@ pub_hdr_dir := include
 pub_hdr := zlx.h zlx/*.h zlx/*/*.h
 CPPFLAGS += -DZLX_FREESTANDING -DZLX_STATIC
 CFLAGS += -std=c99 -pedantic -Wall -Wextra -Werror -ffreestanding
-cflags[clang-cov] += -O0 -fprofile-instr-generate -fcoverage-mapping
+cflags[clang-cov] += -DNDEBUG -O0 -fprofile-instr-generate -fcoverage-mapping
