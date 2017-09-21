@@ -1,6 +1,7 @@
 #include "../include/zlx/base.h"
 #include "../include/zlx/int_fmt.h"
 #include "../include/zlx/stdarray.h"
+#include "../include/zlx/assert.h"
 
 ZLX_API char const zlx_digit_char_table[37] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -17,19 +18,9 @@ ZLX_API size_t ZLX_CALL zlx_u64_to_str
 {
     unsigned int g, a, b, i;
 
-#if _DEBUG
-    if (radix < 2 || radix > 36)
-    {
-        static char bad_radix[] = "BAD_RADIX";
-        zlx_u8a_copy(str, (uint8_t const *) bad_radix, sizeof bad_radix);
-        return sizeof bad_radix - 1;
-    }
-
-#endif
-    //printf("[u64_to_str:%"PRIx64",w=%u]\n", value, width);
-    i = 0;
-    g = 0;
-    for (;;)
+    ZLX_ASSERT(radix >= 2);
+    ZLX_ASSERT(radix <= 36);
+    for (i = 0, g = 0;;)
     {
         uint8_t digit;
 
@@ -45,18 +36,6 @@ ZLX_API size_t ZLX_CALL zlx_u64_to_str
         }
     }
 
-    //for (i = g = 0; i < width || value; i++)
-    //{
-    //    uint8_t digit = value % radix;
-    //    value /= radix;
-    //    str[i] = zlx_digit_char_table[digit];
-    //    if (++g == group)
-    //    {
-    //        str[++i] = sep;
-    //        g = 0;
-    //    }
-    //}
-    //if (!i) str[i++] = '0';
     str[i] = 0;
     for (a = 0, b = i - 1; a < b; a++, b--)
     {

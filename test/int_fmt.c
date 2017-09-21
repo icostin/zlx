@@ -126,7 +126,7 @@ int u64_to_str_test (void)
     T(!strcmp((char const *) s, "012,345"));
 
     l = zlx_u64_to_str(s, 12345, 10, 8, 3, ',');
-    TE(l == 8, printf("str: '%s' len: %zu", s, l));
+    TE(l == 8, printf("str: '%s' len: %u", s, (int) l));
     T(!strcmp((char const *) s, ",012,345"));
 
     return 0;

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "soft_abort.h"
 #include "../include/zlx.h"
 
 #define T(fn) int fn (void);
@@ -10,6 +11,8 @@ int main (int argc, char const * const * argv)
     int rc = 0, trc;
 
     (void) argc; (void) argv;
+
+    init_soft_abort();
 
     puts("zlx_test");
     printf("  zlx_lib: %s\n", zlx_lib_name);

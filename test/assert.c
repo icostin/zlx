@@ -1,18 +1,16 @@
 #define ZLXOPT_ENABLE_ASSERT
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
 #include "../include/zlx/assert.h"
 #include "../include/zlx/obstream/buffer.h"
 #include "../include/zlx/obstream/nop.h"
+#include "soft_abort.h"
 
 int x = 40;
 int y = 2;
-static int assert_count = 0;
 
-void assert_test_abort (void)
-{
-    ++assert_count;
-}
 
 int assert_pass_test (void)
 {
@@ -20,27 +18,28 @@ int assert_pass_test (void)
     return 0;
 }
 
-int assert_fail_test (void)
+int fail_assert (void * ctx)
 {
-    int r;
-    int ac = assert_count;
-    uint8_t buf[0x80];
-    zlx_buffer_obstream_t bobs;
-    void (* ab) (void);
-
-    ab = zlx_abort;
-
-    zlx_assert_log = zlx_buffer_obstream_init(&bobs, buf, sizeof(buf) - 1);
-    zlx_abort = assert_test_abort;
-
+    (void) ctx;
     ZLX_ASSERT(x + y != 42);
 
-    buf[bobs.offset] = 0;
-    r = assert_count == ac + 1 && !strcmp((char *) buf, "test/assert.c:36: *** ASSERTION FAILED: x + y != 42");
-    //puts((char *) buf);
+    return 0;
+}
 
-    zlx_assert_log = &zlx_nop_obstream;
-    zlx_abort = ab;
+int assert_fail_test (void)
+{
+    int r, fa;
+    unsigned int ac = soft_abort_count;
+
+    fa = run_catching_aborts(fail_assert, NULL, 1);
+
+    r = fa && soft_abort_count == ac + 1 && !strcmp(assert_msg, "test/assert.c:24: *** ASSERTION FAILED: x + y != 42");
+    if (!r)
+    {
+        printf("assert_fail_test: fa=%d sac-ac=%d assert_msg=\"%s\"\n", 
+               fa, soft_abort_count - ac, assert_msg);
+    }
+
     return !r;
 }
 
