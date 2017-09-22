@@ -112,9 +112,8 @@ int u64_from_str_test (void)
 int u64_to_str_bad_radix (void * radix)
 {
     uint8_t s[0x100];
-    size_t l;
 
-    l = zlx_u64_to_str(s, 123, (uintptr_t) radix, 0, 0, 0);
+    zlx_u64_to_str(s, 123, (uintptr_t) radix, 0, 0, 0);
     return 0;
 }
 
