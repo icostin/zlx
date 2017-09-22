@@ -145,3 +145,9 @@ int u64_to_str_test (void)
     return 0;
 }
 
+/* i64_to_str_test **********************************************************/
+int i64_to_str_test (void)
+{
+    return 0;
+}
+
