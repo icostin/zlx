@@ -148,6 +148,13 @@ int u64_to_str_test (void)
 /* i64_to_str_test **********************************************************/
 int i64_to_str_test (void)
 {
+    uint8_t s[0x100];
+    size_t n;
+    
+    n = zlx_i64_to_str(s, 123, ZLX_NO_SIGN, 10, NULL, 1, 64, 0);
+    T(n == 3);
+    T(!strcmp((char const *) s, "123"));
+
     return 0;
 }
 
