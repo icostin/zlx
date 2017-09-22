@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "../include/zlx/int_fmt.h"
+#include "soft_abort.h"
 
 #define T(cond) if ((cond)) ; else return __LINE__
 #define TE(cond, on_error) if ((cond)) ; else do { on_error; return __LINE__; } while (0)
@@ -107,6 +108,16 @@ int u64_from_str_test (void)
     return 0;
 }
 
+/* u64_to_str_bad_radix *****************************************************/
+int u64_to_str_bad_radix (void * radix)
+{
+    uint8_t s[0x100];
+    size_t l;
+
+    l = zlx_u64_to_str(s, 123, (uintptr_t) radix, 0, 0, 0);
+    return 0;
+}
+
 /* u64_to_str_test **********************************************************/
 int u64_to_str_test (void)
 {
@@ -128,6 +139,9 @@ int u64_to_str_test (void)
     l = zlx_u64_to_str(s, 12345, 10, 8, 3, ',');
     TE(l == 8, printf("str: '%s' len: %u", s, (int) l));
     T(!strcmp((char const *) s, ",012,345"));
+
+    T(run_catching_aborts(u64_to_str_bad_radix, (void *) (uintptr_t) 1, 1));
+    T(run_catching_aborts(u64_to_str_bad_radix, (void *) (uintptr_t) 37, 1));
 
     return 0;
 }
