@@ -11,7 +11,7 @@ ZLX_API void zlx_u8a_copy
     size_t n
 );
 
-/* zlx_u8a_copy *************************************************************/
+/* zlx_u8a_zcopy ************************************************************/
 /**
  *  returns the location in dest where the zero terminator is.
  */
