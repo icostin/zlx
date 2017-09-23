@@ -4,8 +4,6 @@
 #include "soft_abort.h"
 #include "test.h"
 
-#define T(cond) if ((cond)) ; else { fprintf(stderr, "%s:%u: test failed: %s\n", __FILE__, __LINE__, #cond); return __LINE__; }
-
 /* digit_from_char_test *****************************************************/
 int digit_from_char_test (void)
 {
