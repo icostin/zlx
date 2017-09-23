@@ -5,7 +5,7 @@ src := libsrc/*.c libsrc/*/*.c
 pub_hdr_dir := include
 pub_hdr := zlx.h zlx/*.h zlx/*/*.h
 CPPFLAGS += -DZLX_FREESTANDING -DZLX_DYNAMIC
-CFLAGS += -std=c99 -Wpedantic -Wall -Wextra -Werror -ffreestanding 
+CFLAGS += -std=c99 -Wpedantic -Wall -Wextra -Wconversion -Werror -ffreestanding 
 LDFLAGS += -nostartfiles
 #-nostdlib
 #ldflags[windows] := -e DllMain

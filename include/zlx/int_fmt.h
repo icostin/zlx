@@ -13,7 +13,7 @@ ZLX_API extern char const zlx_digit_char_table[37];
  */
 ZLX_INLINE unsigned int zlx_digit_to_char (unsigned int digit)
 {
-    return zlx_digit_char_table[digit];
+    return (unsigned int) zlx_digit_char_table[digit];
 }
 
 /* zlx_digit_from_char ******************************************************/

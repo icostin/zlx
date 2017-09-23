@@ -5,5 +5,5 @@ src := libsrc/*.c libsrc/*/*.c
 pub_hdr_dir := include
 pub_hdr := zlx.h zlx/*.h zlx/*/*.h
 CPPFLAGS += -DZLX_FREESTANDING -DZLX_STATIC
-CFLAGS += -std=c99 -Wpedantic -Wall -Wextra -Werror -ffreestanding 
+CFLAGS += -std=c99 -Wpedantic -Wall -Wextra -Wconversion -Werror -ffreestanding 
 cflags[clang-cov] += -DNDEBUG -DZLXOPT_ENABLE_ASSERT -O0 -fprofile-instr-generate -fcoverage-mapping

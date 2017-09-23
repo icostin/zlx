@@ -132,7 +132,7 @@ FDP T * F(scan) (T const * arr, T value) FDS
 
 FDP size_t F(zlen) (T const * ZLX_RESTRICT a) FDS
 {
-    return F(scan)(a, ZERO) - a;
+    return (size_t) (F(scan)(a, ZERO) - a);
 }
 
 FDP T * F(search) (T const * a, T const * end, T value) FDS

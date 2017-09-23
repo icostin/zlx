@@ -53,9 +53,9 @@ ZLX_INLINE uint8_t zlx_u8_log2_ceil (uint8_t x)
  */
 ZLX_INLINE uint8_t zlx_u16_log2_ceil (uint16_t x)
 {
-    return x == (uint8_t) x 
-        ? zlx_u8_log2_ceil((uint8_t) x)
-        : 8 + zlx_u8_log2_ceil((uint8_t) (x >> 8));
+    return (uint8_t) (x == (uint8_t) x 
+                      ? zlx_u8_log2_ceil((uint8_t) x)
+                      : 8 + zlx_u8_log2_ceil((uint8_t) (x >> 8)));
 }
 
 /* zlx_u32_log2_ceil ********************************************************/
@@ -65,9 +65,9 @@ ZLX_INLINE uint8_t zlx_u16_log2_ceil (uint16_t x)
  */
 ZLX_INLINE uint8_t zlx_u32_log2_ceil (uint32_t x)
 {
-    return x == (uint16_t) x 
-        ? zlx_u16_log2_ceil((uint16_t) x)
-        : 16 + zlx_u16_log2_ceil((uint16_t) (x >> 16));
+    return (uint8_t) (x == (uint16_t) x 
+                      ? zlx_u16_log2_ceil((uint16_t) x)
+                      : 16 + zlx_u16_log2_ceil((uint16_t) (x >> 16)));
 }
 
 /* zlx_u64_log2_ceil ********************************************************/
@@ -77,29 +77,38 @@ ZLX_INLINE uint8_t zlx_u32_log2_ceil (uint32_t x)
  */
 ZLX_INLINE uint8_t zlx_u64_log2_ceil (uint64_t x)
 {
-    return x == (uint32_t) x 
-        ? zlx_u32_log2_ceil((uint32_t) x) 
-        : 32 + zlx_u32_log2_ceil((uint32_t) (x >> 32));
+    return (uint8_t) (x == (uint32_t) x 
+                      ? zlx_u32_log2_ceil((uint32_t) x) 
+                      : 32 + zlx_u32_log2_ceil((uint32_t) (x >> 32)));
 }
 
-#if ZLX_BITS == 64
-#define zlx_size_log2_ceil zlx_u64_log2_ceil
-#define zlx_uptr_log2_ceil zlx_u64_log2_ceil
-#else
-/*  zlx_size_log2_ceil  */
+/* zlx_size_log2_ceil *******************************************************/
 /**
  *  Computes the smallest power of 2 that is greater or equal to the given 
  *  size_t unsigned int.
  */
-#define zlx_size_log2_ceil zlx_u32_log2_ceil
+ZLX_INLINE uint8_t zlx_size_log2_ceil (size_t x)
+{
+#if ZLX_BITS == 64
+    return zlx_u64_log2_ceil((uint64_t) x);
+#else
+    return zlx_u64_log2_ceil((uint32_t) x);
+#endif
+}
 
 /* zlx_uptr_log2_ceil */
 /**
  *  Computes the smallest power of 2 that is greater or equal to the given 
  *  pointer-sized unsigned int.
  */
-#define zlx_uptr_log2_ceil zlx_u32_log2_ceil
+ZLX_INLINE uint8_t zlx_uptr_log2_ceil (uintptr_t x)
+{
+#if ZLX_BITS == 64
+    return zlx_u64_log2_ceil((uint64_t) x);
+#else
+    return zlx_u64_log2_ceil((uint32_t) x);
 #endif
+}
 
 /* zlx_seqbswap16 ***********************************************************/
 /**
@@ -109,7 +118,7 @@ ZLX_INLINE uint8_t zlx_u64_log2_ceil (uint64_t x)
  */
 ZLX_INLINE uint16_t zlx_seqbswap16 (uint16_t v)
 {
-    return ((uint16_t) ((uint8_t) v) << 8) | (v >> 8);
+    return (uint16_t) (((uint16_t) ((uint8_t) v) << 8) | (v >> 8));
 }
 
 /* zlx_seqbswap32 ***********************************************************/
@@ -205,13 +214,13 @@ ZLX_INLINE uint64_t zlx_seqbswap64 (uint64_t v)
 ZLX_INLINE uint16_t zlx_seqread_u16le (void const * p)
 {
     uint8_t const * b = p;
-    return b[0] | ((uint16_t) b[1] << 8);
+    return (uint16_t) (b[0] | (b[1] << 8));
 }
 
 ZLX_INLINE uint16_t zlx_seqread_u16be (void const * p)
 {
     uint8_t const * b = p;
-    return b[1] | ((uint16_t) b[0] << 8);
+    return (uint16_t) (b[1] | (b[0] << 8));
 }
 
 #if ZLX_UNALIGNED_ACCESS

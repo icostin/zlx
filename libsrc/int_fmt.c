@@ -24,9 +24,9 @@ ZLX_API size_t ZLX_CALL zlx_u64_to_str
     {
         uint8_t digit;
 
-        digit = value % radix;
+        digit = (uint8_t) (value % radix);
         value /= radix;
-        str[i++] = zlx_digit_char_table[digit];
+        str[i++] = (uint8_t) zlx_digit_char_table[digit];
         if (value == 0 && i >= width) break;
         if (++g == group)
         {
@@ -91,9 +91,9 @@ ZLX_API size_t ZLX_CALL zlx_i64_to_str
         break;
     }
     if (prefix) str = zlx_u8a_zcopy(str, prefix);
-    w = str - start;
+    w = (size_t) (str - start);
     if (w > width) width = 0;
-    else width -= w;
+    else width -= (uint32_t) w;
     return w + zlx_u64_to_str(str, (uint64_t) value, radix, width, group, sep);
 }
 
@@ -139,11 +139,12 @@ ZLX_API uint_fast8_t ZLX_CALL zlx_u64_from_str
     {
         uint8_t digit;
         uint64_t u, w;
-        if (str[i] >= '0' && str[i] <= '9') digit = str[i] - '0';
+        if (str[i] >= '0' && str[i] <= '9') digit = (uint8_t) (str[i] - '0');
         else
         {
             digit = str[i] | 0x20;
-            if (digit >= 'a' && digit <= 'z') digit -= ('a' - 10);
+            if (digit >= 'a' && digit <= 'z') 
+                digit = (uint8_t) (digit - 'a' + 10);
             else digit = radix;
         }
         if (digit >= radix)
