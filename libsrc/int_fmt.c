@@ -75,7 +75,7 @@ ZLX_API size_t ZLX_CALL zlx_i64_to_str
         if (value < 0)
         {
             *str++ = '-';
-            value -= value;
+            value = -value;
             break;
         }
         *str++ = value ? '+' : ' ';
@@ -84,7 +84,7 @@ ZLX_API size_t ZLX_CALL zlx_i64_to_str
         if (value < 0)
         {
             *str++ = '-';
-            value -= value;
+            value = -value;
             break;
         }
         *str++ = ' ';

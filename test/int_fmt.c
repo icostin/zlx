@@ -3,7 +3,7 @@
 #include "../include/zlx/int_fmt.h"
 #include "soft_abort.h"
 
-#define T(cond) if ((cond)) ; else return __LINE__
+#define T(cond) if ((cond)) ; else { fprintf(stderr, "%s:%u: test failed: %s\n", __FILE__, __LINE__, #cond); return __LINE__; }
 #define TE(cond, on_error) if ((cond)) ; else do { on_error; return __LINE__; } while (0)
 
 /* digit_from_char_test *****************************************************/
@@ -152,8 +152,34 @@ int i64_to_str_test (void)
     size_t n;
     
     n = zlx_i64_to_str(s, 123, ZLX_NO_SIGN, 10, NULL, 1, 64, 0);
-    T(n == 3);
-    T(!strcmp((char const *) s, "123"));
+    T(n == 3); T(!strcmp((char const *) s, "123"));
+
+    n = zlx_i64_to_str(s, 123, ZLX_NO_SIGN, 10, (uint8_t const *) "abc", 1, 64, 0);
+    T(n == 6); T(!strcmp((char const *) s, "abc123"));
+
+    n = zlx_i64_to_str(s, 123, ZLX_NO_SIGN, 10, (uint8_t const *) "abc", 7, 64, 0);
+    T(n == 7); T(!strcmp((char const *) s, "abc0123"));
+
+    n = zlx_i64_to_str(s, -123, ZLX_SIGN_NEG, 10, NULL, 1, 64, 0);
+    T(n == 4); T(!strcmp((char const *) s, "-123"));
+
+    n = zlx_i64_to_str(s, 123, ZLX_SIGN_NEG, 10, NULL, 1, 64, 0);
+    T(n == 3); T(!strcmp((char const *) s, "123"));
+
+    n = zlx_i64_to_str(s, 123, ZLX_SIGN_ALWAYS, 10, NULL, 1, 64, 0);
+    T(n == 4); T(!strcmp((char const *) s, "+123"));
+
+    n = zlx_i64_to_str(s, -123, ZLX_SIGN_ALWAYS, 10, NULL, 1, 64, 0);
+    T(n == 4); T(!strcmp((char const *) s, "-123"));
+
+    n = zlx_i64_to_str(s, 0, ZLX_SIGN_ALWAYS, 10, NULL, 1, 64, 0);
+    T(n == 2); T(!strcmp((char const *) s, " 0"));
+
+    n = zlx_i64_to_str(s, 123, ZLX_SIGN_ALIGN, 10, NULL, 1, 64, 0);
+    T(n == 4); T(!strcmp((char const *) s, " 123"));
+
+    n = zlx_i64_to_str(s, -123, ZLX_SIGN_ALIGN, 10, NULL, 1, 64, 0);
+    T(n == 4); T(!strcmp((char const *) s, "-123"));
 
     return 0;
 }
