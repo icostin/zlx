@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include "../include/zlx/int_fmt.h"
 #include "soft_abort.h"
+#include "test.h"
 
 #define T(cond) if ((cond)) ; else { fprintf(stderr, "%s:%u: test failed: %s\n", __FILE__, __LINE__, #cond); return __LINE__; }
-#define TE(cond, on_error) if ((cond)) ; else do { on_error; return __LINE__; } while (0)
 
 /* digit_from_char_test *****************************************************/
 int digit_from_char_test (void)
@@ -136,7 +136,7 @@ int u64_to_str_test (void)
     T(!strcmp((char const *) s, "012,345"));
 
     l = zlx_u64_to_str(s, 12345, 10, 8, 3, ',');
-    TE(l == 8, printf("str: '%s' len: %u", s, (int) l));
+    TE(l == 8, "str: '%s' len: %u", s, (int) l);
     T(!strcmp((char const *) s, ",012,345"));
 
     T(run_catching_aborts(u64_to_str_bad_radix, (void *) (uintptr_t) 1, 1));
