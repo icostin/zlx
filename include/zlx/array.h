@@ -186,9 +186,23 @@ FDP T * F(scan) (T const * arr, T value) FDS;
 FDP T * F(search) (T const * a, T const * end, T value) FDS;
 
 /**
- *  Inserts a value in a given array.
+ *  Makes space inside an array to insert items.
  *  This function attempts to shift values after the insertion point, 
  *  reallocating the buffer if necessary.
+ *  The locations made available for insertion are to be considered 
+ *  uninitialized (they may contain old data from elements that were moved
+ *  or are left to their uninitialized state).
+ *  @param ap [in, out]
+ *      array pointer
+ *  @param np [in, out]
+ *      pointer to number of array items
+ *  @param mp [in, out]
+ *      pointer to array capacity (number of available allocated items)
+ *  @param p [in]
+ *      index where to insert items
+ *  @param q [in]
+ *      number of items to insert
+ *  @returns a pointer to the start of inserted locations
  */
 FDP T * F(insert)
 (
@@ -205,7 +219,7 @@ FDP T * F(insert)
  */
 FDP size_t F(zlen) (T const * ZLX_RESTRICT a) FDS;
 /**
- *  Compares to zero-terminated arrays.
+ *  Compares two zero-terminated arrays.
  */
 FDP int F(zcmp) (T const * a, T const * b) FDS;
 
