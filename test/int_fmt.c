@@ -4,26 +4,26 @@
 #include "soft_abort.h"
 #include "test.h"
 
-/* digit_from_char_test *****************************************************/
-int digit_from_char_test (void)
+/* digit_char_test **********************************************************/
+int digit_char_test (void)
 {
-    T(zlx_digit_from_char('0', 1) == 0);
-    T(zlx_digit_from_char('1', 1) == -1);
-    T(zlx_digit_from_char('0', 10) == 0);
-    T(zlx_digit_from_char('7', 8) == 7);
-    T(zlx_digit_from_char('8', 8) == -1);
-    T(zlx_digit_from_char('a', 10) == -1);
-    T(zlx_digit_from_char('a', 11) == 10);
-    T(zlx_digit_from_char('A', 11) == 10);
-    T(zlx_digit_from_char('z', 35) == -1);
-    T(zlx_digit_from_char('z', 36) == 35);
-    T(zlx_digit_from_char('Z', 36) == 35);
-    T(zlx_digit_from_char(-1, 36) == -1);
-    T(zlx_digit_from_char('@', 36) == -1);
-    T(zlx_digit_from_char(0x3A, 36) == -1);
-    T(zlx_digit_to_char(9) == '9');
-    T(zlx_digit_to_char(10) == 'A');
-    T(zlx_digit_to_char(35) == 'Z');
+    T(zlxni_digit_from_char('0', 1) == 0);
+    T(zlxni_digit_from_char('1', 1) == -1);
+    T(zlxni_digit_from_char('0', 10) == 0);
+    T(zlxni_digit_from_char('7', 8) == 7);
+    T(zlxni_digit_from_char('8', 8) == -1);
+    T(zlxni_digit_from_char('a', 10) == -1);
+    T(zlxni_digit_from_char('a', 11) == 10);
+    T(zlxni_digit_from_char('A', 11) == 10);
+    T(zlxni_digit_from_char('z', 35) == -1);
+    T(zlxni_digit_from_char('z', 36) == 35);
+    T(zlxni_digit_from_char('Z', 36) == 35);
+    T(zlxni_digit_from_char(-1, 36) == -1);
+    T(zlxni_digit_from_char('@', 36) == -1);
+    T(zlxni_digit_from_char(0x3A, 36) == -1);
+    T(zlxni_digit_to_char(9) == '9');
+    T(zlxni_digit_to_char(10) == 'A');
+    T(zlxni_digit_to_char(35) == 'Z');
     return 0;
 }
 

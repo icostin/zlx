@@ -16,6 +16,8 @@ ZLX_INLINE unsigned int zlx_digit_to_char (unsigned int digit)
     return (unsigned int) zlx_digit_char_table[digit];
 }
 
+ZLX_API unsigned int zlxni_digit_to_char (unsigned int digit);
+
 /* zlx_digit_from_char ******************************************************/
 /**
  *  Decodes the digit from a single ASCII/Unicode character
@@ -33,6 +35,8 @@ ZLX_INLINE int zlx_digit_from_char (uint32_t ch, uint_fast8_t radix)
     }
     return (digit >= radix) ? -1 : (int) digit;
 }
+
+ZLX_API int zlxni_digit_from_char (uint32_t ch, uint_fast8_t radix);
 
 /* zlx_u64_to_str ***********************************************************/
 /**

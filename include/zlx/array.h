@@ -33,6 +33,29 @@
  *  Copies elements of an array to another. The two arrays must be disjunct.
  **/
 
+#ifdef ZLX_DOXYGEN
+
+/** @def T
+ *  Array item type name.
+ *  This macro must be defined before including array.h to determine the type
+ *  of array items for which we generate code.
+ */
+#define T foo_t
+
+/** @def F(fname)
+ *  Function name generator.
+ *  Before including array.h defining this macro will tell <zlx/array.h> to 
+ *  declare function names according to the expansion of this macro.
+ *  For instance, including <zlx/array.h> will cause F(set), F(cmp), etc to be 
+ *  defined.
+ *  @note
+ *      If the macro is not defined it will use <b>T</b>_array_<b>fname</b> for
+ *      generated function names.
+ */
+#define F(fname) foo_##fname
+
+#endif
+
 #ifndef T
 #error T must be defined to represent the item type
 #endif
@@ -42,36 +65,131 @@
 #endif
 
 #ifndef CMP
-#define CMP(_1, _2) ((_1) == (_2) ? 0 : ((_1) < (_2) ? -1 : +1))
+/** @def CMP(a, b)
+ *  Item comparator.
+ *  Define this macro before including <zlx/array.h> to control how items
+ *  are compared.
+ *  This must expand to an expression that evaluates to an @b int where
+ *  0 means equal, negative means @a a less than @a b, and positive means
+ *  @a greater than @a b.
+ *  @note
+ *      The code that calls this macro is guaranteed to not use expressions
+ *      with side-effects as macro arguments so the user can safely
+ *      define the macro to expand the arguments multiple times.
+ *  @note
+ *      If this macro is not defined it will become 
+ *      <tt>a == b ? 0 : (a < b ? -1 : +1)</tt>
+ */
+#define CMP(a, b) a == b ? 0 : (a < b ? -1 : +1)
 #endif
 
 #ifndef EQU
-#define EQU(_1, _2) ((_1) == (_2))
+/** @def EQU(a, b)
+ *  Tests for equality.
+ *  Define this macro before including <zlx/array.h> to control how items
+ *  are tested for equality.
+ *  @note
+ *      The code that calls this macro is guaranteed to not use expressions
+ *      with side-effects as macro arguments so the user can safely
+ *      define the macro to expand the arguments multiple times.
+ *  @note
+ *      If this macro is not defined it will become 
+ *      <tt>a == b</tt>
+ */
+#define EQU(a, b) a == b
 #endif
 
 #ifndef COPY
-#define COPY(_d, _s) (_d) = (_s)
+/** @def COPY(dest, src)
+ *  Copies one item.
+ *  Define this macro before including <zlx/array.h> to control how items
+ *  are copied.
+ *  @note
+ *      If this macro is not defined it will become 
+ *      <tt>(dest) = (src)</tt>
+ */
+#define COPY(dest, src) dest = src
 #endif
 
 #ifndef FDP
+/** @def FDP
+ *  Function declaration prefix.
+ *  Define this macro before including <zlx/array.h> to control the prefix
+ *  of generated functions.
+ *  This can be used for instance to declare all functions static or to export
+ *  them from a DLL.
+ */
 #define FDP
 #endif
 
 #ifndef FDS
+/** @def FDS
+ *  Function declaration suffix.
+ *  Define this macro before including <zlx/array.h> to control the suffix
+ *  of generated functions.
+ *  This can be useful for specifying compiler-specific attributes to generated
+ *  functions.
+ */
 #define FDS
 #endif
 
 #ifndef ZERO
+/** @def ZERO
+ *  Zero item.
+ *  Define this macro before including <zlx/array.h> to specify the item 
+ *  representing value zero.
+ *  This value affects functions like foo_zcmp(), foo_zcopy().
+ */
 #define ZERO ((T) 0)
 #endif
 
+/**
+ *  Sets all array items to a specific value
+ *  @note The function does not return a value.
+ */
 FDP void F(set) (T * ZLX_RESTRICT arr, size_t n, T val) FDS;
+
+/**
+ *  Copies array items to a non-overlapping location.
+ *  @note The function does not return a value.
+ */
 FDP void F(copy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b, size_t n) FDS;
+
+/**
+ *  Copies a zero-terminated array of items.
+ *  @returns the location of the zero terminator in the destination array.
+ */
 FDP T * F(zcopy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b) FDS;
 
+/**
+ *  Compares items of two arrays.
+ *  @returns 0 for equal, negative for @a a less than @a b, positive for @a a
+ *  greater than @a b
+ */
 FDP int F(cmp) (T const * a, T const * b, size_t n) FDS;
+
+/**
+ *  Scans an array until it finds the given value.
+ *  @returns a pointer to where the value was found.
+ *  @warning
+ *      This function will keep on scanning until it finds the given value or
+ *      it will generate a page fault when reaches unmapped memory.
+ */
 FDP T * F(scan) (T const * arr, T value) FDS;
+
+/**
+ *  Searches for a value in an array.
+ *  @returns 
+ *      the address where the search has stopped because it found the value
+ *      or it reached the end
+ */
 FDP T * F(search) (T const * a, T const * end, T value) FDS;
+
+/**
+ *  Inserts a value in a given array.
+ *  This function attempts to shift values after the insertion point, 
+ *  reallocating the buffer if necessary.
+ */
 FDP T * F(insert)
 (
     T * ZLX_RESTRICT * ZLX_RESTRICT ap,
@@ -82,11 +200,18 @@ FDP T * F(insert)
     zlx_ma_t * ma
 ) FDS;
 
+/**
+ *  Computes the length of the zero-terminated array.
+ */
 FDP size_t F(zlen) (T const * ZLX_RESTRICT a) FDS;
+/**
+ *  Compares to zero-terminated arrays.
+ */
 FDP int F(zcmp) (T const * a, T const * b) FDS;
 
 
 #ifdef ZLX_BODY
+
 FDP void F(copy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b, size_t n) FDS
 {
     size_t i;
@@ -155,7 +280,7 @@ FDP T * F(insert)
     size_t n, m, i;
     n = *np + q;
     if (n < q) return NULL;
-    if (n > SIZE_MAX / sizeof(T)) return NULL;
+    if (n > (SIZE_MAX / 2 + 1) / sizeof(T)) return NULL;
     if (n > *mp)
     {
         m = ((size_t) 1 << zlx_size_log2_ceil(n * sizeof(T))) / sizeof(T);

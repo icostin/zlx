@@ -4,6 +4,10 @@
 #include "base.h"
 #include "memalloc.h"
 
+/* zlx_u8a_copy *************************************************************/
+/**
+ *  Copies an 8-bit int array into a non-overlapping location.
+ */
 ZLX_API void zlx_u8a_copy
 (
     uint8_t * ZLX_RESTRICT dest,
@@ -13,7 +17,8 @@ ZLX_API void zlx_u8a_copy
 
 /* zlx_u8a_zcopy ************************************************************/
 /**
- *  returns the location in dest where the zero terminator is.
+ *  Copies a zero terminated 8-bit int array into a non-overlapping location.
+ *  @returns location in destination where the zero terminator is placed.
  */
 ZLX_API uint8_t * zlx_u8a_zcopy
 (
@@ -21,7 +26,12 @@ ZLX_API uint8_t * zlx_u8a_zcopy
     uint8_t const * ZLX_RESTRICT src
 );
 
+/* zlx_u8a_set **************************************************************/
+/**
+ *  Fills an 8-bit array with the given value.
+ */
 ZLX_API void zlx_u8a_set (uint8_t * arr, size_t n, uint8_t val);
+
 ZLX_API int zlx_u8a_cmp (uint8_t const * a, uint8_t const * b, size_t n);
 ZLX_API int zlx_u8a_zcmp (uint8_t const * a, uint8_t const * b);
 ZLX_API uint8_t * zlx_u8a_scan (uint8_t const * a, uint8_t value);

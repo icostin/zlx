@@ -5,6 +5,18 @@
 
 ZLX_API char const zlx_digit_char_table[37] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+/* zlxni_digit_to_char ******************************************************/
+ZLX_API unsigned int zlxni_digit_to_char (unsigned int digit)
+{
+    return zlx_digit_to_char(digit);
+}
+
+/* zlxni_digit_from_char ****************************************************/
+ZLX_API int zlxni_digit_from_char (uint32_t ch, uint_fast8_t radix)
+{
+    return zlx_digit_from_char(ch, radix);
+}
+
 /* zlx_u64_to_str ***********************************************************/
 ZLX_API size_t ZLX_CALL zlx_u64_to_str
 (
