@@ -82,6 +82,12 @@ ZLX_INLINE uint8_t zlx_u64_log2_ceil (uint64_t x)
                       : 32 + zlx_u32_log2_ceil((uint32_t) (x >> 32)));
 }
 
+ZLX_API uint8_t zlxni_u8_log2_ceil (uint8_t x);
+ZLX_API uint16_t zlxni_u16_log2_ceil (uint16_t x);
+ZLX_API uint32_t zlxni_u32_log2_ceil (uint32_t x);
+ZLX_API uint64_t zlxni_u64_log2_ceil (uint64_t x);
+
+
 /* zlx_size_log2_ceil *******************************************************/
 /**
  *  Computes the smallest power of 2 that is greater or equal to the given 
