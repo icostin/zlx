@@ -34,13 +34,13 @@
 
 /* zlx_u8_log2_ceil *********************************************************/
 /**
- *  Computes the smallest power of 2 that is greater or equal to the given 
+ *  Computes the smallest power of 2 that is greater or equal to the given
  *  8-bit unsigned int.
  */
 ZLX_INLINE uint8_t zlx_u8_log2_ceil (uint8_t x)
 {
     return x <= 0x10
-        ? (x <= 4 
+        ? (x <= 4
            ? (((2 << 8) | (2 << 6) | (1 << 4)) >> (x + x)) & 3
            : 3 + (x > 8))
         : (x <= 0x40 ? 5 + (x > 0x20) : 7 + (x > 0x80));
@@ -48,49 +48,43 @@ ZLX_INLINE uint8_t zlx_u8_log2_ceil (uint8_t x)
 
 /* zlx_u16_log2_ceil ********************************************************/
 /**
- *  Computes the smallest power of 2 that is greater or equal to the given 
+ *  Computes the smallest power of 2 that is greater or equal to the given
  *  16-bit unsigned int.
  */
 ZLX_INLINE uint8_t zlx_u16_log2_ceil (uint16_t x)
 {
-    return (uint8_t) (x == (uint8_t) x 
-                      ? zlx_u8_log2_ceil((uint8_t) x)
-                      : 8 + zlx_u8_log2_ceil((uint8_t) (x >> 8)));
+    return (uint8_t) (x == (uint8_t) x
+        ? zlx_u8_log2_ceil((uint8_t) x)
+        : 8 + zlx_u8_log2_ceil((uint8_t) ((x >> 8) | !!(uint8_t) x)));
 }
 
 /* zlx_u32_log2_ceil ********************************************************/
 /**
- *  Computes the smallest power of 2 that is greater or equal to the given 
+ *  Computes the smallest power of 2 that is greater or equal to the given
  *  32-bit unsigned int.
  */
 ZLX_INLINE uint8_t zlx_u32_log2_ceil (uint32_t x)
 {
-    return (uint8_t) (x == (uint16_t) x 
-                      ? zlx_u16_log2_ceil((uint16_t) x)
-                      : 16 + zlx_u16_log2_ceil((uint16_t) (x >> 16)));
+    return (uint8_t) (x == (uint16_t) x
+        ? zlx_u16_log2_ceil((uint16_t) x)
+        : 16 + zlx_u16_log2_ceil((uint16_t) ((x >> 16) | !!(uint16_t) x)));
 }
 
 /* zlx_u64_log2_ceil ********************************************************/
 /**
- *  Computes the smallest power of 2 that is greater or equal to the given 
+ *  Computes the smallest power of 2 that is greater or equal to the given
  *  64-bit unsigned int.
  */
 ZLX_INLINE uint8_t zlx_u64_log2_ceil (uint64_t x)
 {
-    return (uint8_t) (x == (uint32_t) x 
-                      ? zlx_u32_log2_ceil((uint32_t) x) 
-                      : 32 + zlx_u32_log2_ceil((uint32_t) (x >> 32)));
+    return (uint8_t) (x == (uint32_t) x
+        ? zlx_u32_log2_ceil((uint32_t) x)
+        : 32 + zlx_u32_log2_ceil((uint32_t) ((x >> 32) | !!(uint32_t) x)));
 }
-
-ZLX_API uint8_t zlxni_u8_log2_ceil (uint8_t x);
-ZLX_API uint16_t zlxni_u16_log2_ceil (uint16_t x);
-ZLX_API uint32_t zlxni_u32_log2_ceil (uint32_t x);
-ZLX_API uint64_t zlxni_u64_log2_ceil (uint64_t x);
-
 
 /* zlx_size_log2_ceil *******************************************************/
 /**
- *  Computes the smallest power of 2 that is greater or equal to the given 
+ *  Computes the smallest power of 2 that is greater or equal to the given
  *  size_t unsigned int.
  */
 ZLX_INLINE uint8_t zlx_size_log2_ceil (size_t x)
@@ -98,13 +92,13 @@ ZLX_INLINE uint8_t zlx_size_log2_ceil (size_t x)
 #if ZLX_BITS == 64
     return zlx_u64_log2_ceil((uint64_t) x);
 #else
-    return zlx_u64_log2_ceil((uint32_t) x);
+    return zlx_u32_log2_ceil((uint32_t) x);
 #endif
 }
 
 /* zlx_uptr_log2_ceil */
 /**
- *  Computes the smallest power of 2 that is greater or equal to the given 
+ *  Computes the smallest power of 2 that is greater or equal to the given
  *  pointer-sized unsigned int.
  */
 ZLX_INLINE uint8_t zlx_uptr_log2_ceil (uintptr_t x)
@@ -112,9 +106,16 @@ ZLX_INLINE uint8_t zlx_uptr_log2_ceil (uintptr_t x)
 #if ZLX_BITS == 64
     return zlx_u64_log2_ceil((uint64_t) x);
 #else
-    return zlx_u64_log2_ceil((uint32_t) x);
+    return zlx_u32_log2_ceil((uint32_t) x);
 #endif
 }
+
+ZLX_API uint8_t zlxni_u8_log2_ceil (uint8_t x);
+ZLX_API uint8_t zlxni_u16_log2_ceil (uint16_t x);
+ZLX_API uint8_t zlxni_u32_log2_ceil (uint32_t x);
+ZLX_API uint8_t zlxni_u64_log2_ceil (uint64_t x);
+ZLX_API uint8_t zlxni_size_log2_ceil (size_t x);
+ZLX_API uint8_t zlxni_uptr_log2_ceil (uintptr_t x);
 
 /* zlx_seqbswap16 ***********************************************************/
 /**
