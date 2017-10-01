@@ -32,6 +32,8 @@ int log2_ceil_test (void)
     T(zlxni_u64_log2_ceil((UINT64_C(1) << 63) - 1) == 63);
     T(zlxni_u64_log2_ceil(UINT64_C(1) << 63) == 63);
     T(zlxni_u64_log2_ceil((UINT64_C(1) << 63) + 1) == 64);
+    T(zlxni_size_log2_ceil(0xFF00) == 16);
+    T(zlxni_uptr_log2_ceil(0xFF01) == 16);
     return 0;
 }
 

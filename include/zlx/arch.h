@@ -80,6 +80,19 @@
 # endif
 #endif
 
+
+/** @def ZLX_BITS
+ *  Number of bits for the natural data unit on the target architecture.
+ */
+#if ZLX_IA32
+# define ZLX_BITS 32
+#elif ZLX_AMD64
+# define ZLX_BITS 64
+#else
+# error ZLX_BITS unknown for target architecture
+#endif
+
+
 /** @} */
 
 #endif /* _ZLX_ARCH_H */

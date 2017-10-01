@@ -23,5 +23,11 @@
  */
 #define ZLX_CALL ZLX_FAST_CALL
 
+#ifdef ZLXOPT_USE_NON_INLINED_API
+# define _ZLXI_NAME(n) zlxni##n
+#else
+# define _ZLXI_NAME(n) zlxi##n
+#endif
+
 
 #endif
