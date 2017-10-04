@@ -52,11 +52,11 @@
 /* define ZLX_INLINE and ZLX_FORCE_INLINE */
 /**
  *  @def ZLX_INLINE
- *  Macro defined to compiler-specific function declarator keywords for 
+ *  Macro defined to compiler-specific function declarator keywords for
  *  inlining functions.
- *  
+ *
  *  @def ZLX_FORCE_INLINE
- *  Macro defined to compiler-specific function declarator keywords for 
+ *  Macro defined to compiler-specific function declarator keywords for
  *  forcing the inlining of functions.
  *  Even if this macro is specified the compiler may choose to not inline the
  *  function.
@@ -64,6 +64,9 @@
 #if ZLX_MSVC
 # define ZLX_INLINE __inline
 # define ZLX_FORCE_INLINE __forceinline
+#elif defined(ZLX_DOXYGEN)
+# define ZLX_INLINE
+# define ZLX_FORCE_INLINE
 #else
 # define ZLX_INLINE static inline
 # define ZLX_FORCE_INLINE static inline __attribute__((always_inline))
@@ -83,6 +86,8 @@
 # define ZLX_RESTRICT __restrict__
 #elif defined(_MSC_VER) && _MSC_VER >= 1600
 # define ZLX_RESTRICT __restrict
+#else
+# define ZLX_RESTRICT
 #endif
 
 /* ZLX_LIB_EXPORT and ZLX_LIB_IMPORT */
@@ -159,7 +164,7 @@
 # define ZLX_VA_EXPAND(...) ZLX_TP1(__VA_ARGS__,)
 #else
 # define ZLX_VA_EXPAND(...) __VA_ARGS__
-#endif 
+#endif
 
 /** @def ZLX_CPP_ONLY(...)
  *  Macro that only expands when compiling a C++ file.

@@ -7,6 +7,8 @@
 #include "writer.h"
 
 /** @defgroup fmt Formatted printing
+ *
+ *  Prints formatted text.
  *  @{
  */
 
@@ -15,6 +17,12 @@
  *  Function type for computing some logical width of given UTF-8 code.
  *  The function should return a negative number if it encounters unsupported
  *  Unicode characters.
+ *  @param text [in]
+ *      UTF8 text
+ *  @param size [in]
+ *      number of bytes at @a text
+ *  @param context [in]
+ *      arbitrary context needed by this function
  */
 typedef int32_t (ZLX_CALL * zlx_width_func_t)
     (
@@ -32,10 +40,26 @@ typedef int32_t (ZLX_CALL * zlx_width_func_t)
 /* zlx_vfmt *****************************************************************/
 /**
  *  Writes formatted UTF-8 text (similar to printf formatting).
+ *
+ *  @param writer_func [in]
+ *      function that receives formatted chunks
+ *  @param writer_context [in, out]
+ *      context used by the writer
+ *  @param width_func [in]
+ *      function that computes the width of the text; this is invoked when
+ *      formatting specifiers request a specific width
+ *  @param width_context [in]
+ *      context for the width function
+ *  @param fmt [in]
+ *      format string
+ *  @param va [in]
+ *      arguments
+ *
  *  @retval 0 success
  *  @retval ZLX_FMT_MALFORMED bad format string
  *  @retval ZLX_FMT_WIDTH_ERROR
  *  @retval ZLX_FMT_WRITE_ERROR
+ *
  *  Formatting: "$" [[ALIGN] WIDTH] ["." PREC] ["/" GROUP_LEN] [MOD] TYPE
  *  TYPE:
  *  * 'b': unsigned 8-bit int (byte)
@@ -85,7 +109,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vfmt
 /* zlx_fmt ******************************************************************/
 /**
  *  Writes formatted UTF-8 text.
- *  See zlx_vfmt.
+ *  See zlx_vfmt()
  */
 ZLX_API unsigned int ZLX_CALL zlx_fmt
 (

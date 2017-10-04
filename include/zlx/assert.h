@@ -2,6 +2,9 @@
 #define _ZLX_ASSERT_H
 
 /** @defgroup Assert
+ *
+ *  Basic assert support.
+ *
  *  @{
  */
 
