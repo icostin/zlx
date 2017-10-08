@@ -1,0 +1,9 @@
+name := zlx_test
+prod := exe
+src := test/*.c
+cppflags += -DZLX_STATIC
+cflags += -std=c11 -Wpedantic -Wall -Wextra -Wconversion -Werror
+ldflags += -static 
+ldlibs += -lzlx
+cflags[clang-cov] += -O0
+ldflags[clang-cov] += -fprofile-instr-generate -fcoverage-mapping

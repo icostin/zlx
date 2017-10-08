@@ -1,0 +1,6 @@
+name := zlx_dyn_test
+prod := exe
+src := test/*.c
+cflags += -std=c11 -Wpedantic -Wall -Wextra -Wconversion -Werror
+ldflags += -pie
+ldlibs += -lzlx

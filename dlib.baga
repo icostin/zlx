@@ -1,0 +1,12 @@
+# baga project file
+name := zlx
+prod := dlib
+src := src/*.c src/*/*.c
+pub_hdr_dir := include
+pub_hdr := zlx.h zlx/*.h zlx/*/*.h
+cppflags += -DZLX_FREESTANDING -DZLX_DYNAMIC
+cflags += -std=c11 -Wpedantic -Wall -Wextra -Wconversion -Werror -ffreestanding -fpic
+exclude-cflags[mingw] := -fpic
+ldflags += -nostdlib
+#-nostdlib
+#ldflags[windows] := -e DllMain
