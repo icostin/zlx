@@ -1,7 +1,7 @@
 name := zlx_test
 prod := exe
 src := test/*.c
-cppflags += -DZLX_STATIC
+cppflags += -DZLXOPT_STATIC
 cflags += -std=c11 -Wpedantic -Wall -Wextra -Wconversion -Werror
 ldflags += -static 
 ldlibs += -lzlx

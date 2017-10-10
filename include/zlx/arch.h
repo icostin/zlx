@@ -12,20 +12,20 @@
  *
  *  @def ZLX_LITTLE_ENDIAN
  *  Macro defined to 1 when targetting a little endian platform, 0 otherwise.
- *  @warn
+ *  @warning
  *      Do not probe endianness using ifdef as the macro is always defined,
  *      just use if.
  *
  *  @def ZLX_BIG_ENDIAN
  *  Macro defined to 1 when targetting a big endian platform, 0 otherwise.
- *  @warn
+ *  @warning
  *      Do not probe endianness using ifdef as the macro is always defined,
  *      just use if.
  *
  *  @def ZLX_UNALIGNED_ACCESS
  *  Macro defined to 1 when targetting a platform that can access unaligned
  *  data, 0 otherwise.
- *  @warn
+ *  @warning
  *      Do not check using ifdef as the macro is always defined, just use if.
  *
  *  @def ZLX_IA32
@@ -38,10 +38,12 @@
 
 #if !defined(ZLX_IA32) && (defined(_M_IX86) || defined(_M_I86) || defined(__X86__) || defined(_X86_) || defined(__i386__) || defined(__i386))
 # define ZLX_IA32 1
+# define ZLX_LITTLE_ENDIAN 1
 #endif
 
 #if !defined(ZLX_AMD64) && (defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64))
 # define ZLX_AMD64 1
+# define ZLX_LITTLE_ENDIAN 1
 #endif
 
 
@@ -54,10 +56,6 @@
 #endif
 
 
-#if !defined(ZLX_LITTLE_ENDIAN) && (ZLX_IA32 || ZLX_AMD64)
-# define ZLX_LITTLE_ENDIAN 1
-#endif
-
 #ifndef ZLX_LITTLE_ENDIAN
 # define ZLX_LITTLE_ENDIAN 0
 #endif
@@ -66,6 +64,9 @@
 # define ZLX_BIG_ENDIAN 0
 #endif
 
+#if !ZLX_LITTLE_ENDIAN + !ZLX_BIG_ENDIAN != 1
+# error unknown endianness
+#endif
 
 
 #ifndef ZLX_UNALIGNED_ACCESS
@@ -77,7 +78,6 @@
 # endif
 #endif
 
-
 /** @def ZLX_BITS
  *  Number of bits for the natural data unit on the target architecture.
  */
@@ -86,9 +86,9 @@
 #elif ZLX_AMD64
 # define ZLX_BITS 64
 #else
+# define ZLX_BITS 0
 # error ZLX_BITS unknown for target architecture
 #endif
-
 
 /** @} */
 

@@ -37,11 +37,15 @@
  *  Defined as 1 only when OpenBSD is targetted.
  **/
 
-#if defined(ZLXOPT_FREESTANDING)
+#include "options.h"
+
+#if ZLXOPT_FREESTANDING
 
 #define ZLX_FREESTANDING 1
 
 #else
+
+#define ZLX_FREESTANDING 0
 
 # if defined(_WIN32)
 #  define ZLX_MSWIN 1
@@ -72,6 +76,42 @@
 # endif
 
 #endif /* ZLXOPT_FREESTANDING */
+
+#ifndef ZLX_MSWIN
+# define ZLX_MSWIN 0
+#endif
+
+#ifndef ZLX_AIX
+# define ZLX_AIX 0
+#endif
+
+#ifndef ZLX_UNIX
+# define ZLX_UNIX 0
+#endif
+
+#ifndef ZLX_LINUX
+# define ZLX_LINUX 0
+#endif
+
+#ifndef ZLX_BSD
+# define ZLX_BSD 0
+#endif
+
+#ifndef ZLX_DRAGONFLY_BSD
+# define ZLX_DRAGONFLY_BSD 0
+#endif
+
+#ifndef ZLX_FREEBSD
+# define ZLX_FREEBSD 0
+#endif
+
+#ifndef ZLX_NETBSD
+# define ZLX_NETBSD 0
+#endif
+
+#ifndef ZLX_OPENBSD
+# define ZLX_OPENBSD 0
+#endif
 
 /** @} */
 

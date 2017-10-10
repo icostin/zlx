@@ -5,7 +5,7 @@ prod := slib
 src := src/*.c src/*/*.c
 pub_hdr_dir := include
 pub_hdr := zlx.h zlx/*.h zlx/*/*.h
-cppflags += -DZLX_FREESTANDING -DZLX_STATIC
+cppflags += -DZLXOPT_FREESTANDING -DZLXOPT_STATIC
 cflags += -std=c11 -Wpedantic -Wall -Wextra -Wconversion -Werror -ffreestanding -fpic
 exclude-cflags[mingw] := -fpic
-cflags[clang-cov] += -DNDEBUG -DZLXOPT_ENABLE_ASSERT -O0 -fprofile-instr-generate -fcoverage-mapping
+cflags[clang-cov] += -DNDEBUG -DZLXOPT_ASSERT -O0 -fprofile-instr-generate -fcoverage-mapping
