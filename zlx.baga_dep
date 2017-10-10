@@ -1,0 +1,2 @@
+dep += stest:slib
+dep += dtest:dlib

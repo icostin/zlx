@@ -61,11 +61,11 @@
  *  building the client program.
  *  @code
  *      #if defined(MYLIB_STATIC)
- *      # define MYLIB_API
+ *      # define MYLIB_API ZLX_LOCAL
  *      #elif defined(MYLIB_DYNAMIC)
  *      # define MYLIB_API ZLX_LIB_EXPORT
  *      #else
- *      # define ZLX_API ZLX_LIB_IMPORT
+ *      # define MYLIB_API ZLX_LIB_IMPORT
  *      #endif
  *      MYLIB_API int mylib_version;
  *      MYLIB_API char * mylib_answer (char * question);

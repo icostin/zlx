@@ -1,6 +1,8 @@
 #ifndef _ZLX_PLATFORM_H
 #define _ZLX_PLATFORM_H
 
+#include "arch.h"
+
 /** @defgroup platform Platform
  *  Target platform and ABI identification
  *  @{ 
@@ -112,6 +114,38 @@
 #ifndef ZLX_OPENBSD
 # define ZLX_OPENBSD 0
 #endif
+
+/** @def ZLX_ABI_MS
+ *  Microsoft ABI.
+ *  Non-zero when targetting a Microsoft ABI platform (Windows, UEFI-PC, etc)
+ */
+#ifdef _WIN32
+# define ZLX_ABI_MS 1
+#else
+# define ZLX_ABI_MS 0
+#endif
+
+/** @def ZLX_ABI_SYSV
+ *  System-V ABI.
+ *  Non-zero when targetting a Unix-like platform conforming to System V ABI.
+ */
+#if ZLX_UNIX
+# define ZLX_ABI_SYSV 1
+#else
+# define ZLX_ABI_SYSV 0
+#endif
+
+/** @def ZLX_FAST_CALL
+ *  A reasonably fast calling convention for the target platform. */
+
+#if ZLX_ABI_MS && ZLX_IA32
+# define ZLX_FAST_CALL __fastcall
+#elif ZLX_ABI_SYSV && ZLX_IA32
+# define ZLX_FAST_CALL __attribute__((regparm((3))))
+#else
+# define ZLX_FAST_CALL
+#endif
+
 
 /** @} */
 

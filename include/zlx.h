@@ -5,10 +5,8 @@
  *
  *  Freestanding portable library.
  */
-#include "zlx/compiler.h"
-#include "zlx/arch.h"
-#include "zlx/language.h"
-#include "zlx/platform.h"
+
+#include "zlx/lib.h"
 #include "zlx/int.h"
 
 
