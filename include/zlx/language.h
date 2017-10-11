@@ -38,7 +38,7 @@
  *  Macro defined to the compiler-specific supported keyword for C99's restrict
  *  keyword.
  *  C++ does not support as standard a restrict keyword but compilers have
- *  their extension for that.
+ *  their extension for it.
  */
 #if defined(__STDC_VERSION__) && __STDC_VERSION >= 199901L
 # define ZLX_RESTRICT restrict
@@ -52,6 +52,11 @@
 
 /* ZLX_LIB_EXPORT and ZLX_LIB_IMPORT */
 /**
+ *  @def ZLX_LOCAL
+ *  Compiler-specific global symbol declarator that specifies the symbol is
+ *  visible to other compilation units in the same module, but it is not
+ *  visible to other modules.
+ *
  *  @def ZLX_LIB_EXPORT
  *  Compiler-specific variable/function declarator telling the linker that the
  *  symbol should be exported by the binary.

@@ -42,12 +42,9 @@
 #include "options.h"
 
 #if ZLXOPT_FREESTANDING
-
-#define ZLX_FREESTANDING 1
-
+# define ZLX_FREESTANDING 1
 #else
-
-#define ZLX_FREESTANDING 0
+# define ZLX_FREESTANDING 0
 
 # if defined(_WIN32)
 #  define ZLX_MSWIN 1
@@ -129,7 +126,7 @@
  *  System-V ABI.
  *  Non-zero when targetting a Unix-like platform conforming to System V ABI.
  */
-#if ZLX_UNIX
+#if defined(__unix__)
 # define ZLX_ABI_SYSV 1
 #else
 # define ZLX_ABI_SYSV 0

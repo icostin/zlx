@@ -1,8 +1,11 @@
 #ifndef _ZLX_LIB_H
 #define _ZLX_LIB_H
 
-/** @defgroup lib zlx library
- *  ZLX Library specific macros/variables/functions.
+/** @defgroup lib Library API publishing support
+ *  Library specific macros/variables/functions to assist in declaring APIs
+ *  and to provide runtime identification of library flavor from client
+ *  modules.
+ *
  *  @{ */
 #include "options.h"
 #include "compiler.h"

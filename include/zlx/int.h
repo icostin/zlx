@@ -23,7 +23,8 @@
  *  - intptr_t
  *  - uintptr_t
  *
- *  @note: ssize_t is not necessarely defined as it is a POSIX type.
+ *  @note
+ *      ssize_t is not necessarely defined as it is a POSIX type.
  *
  *  @{
  */

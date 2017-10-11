@@ -1,7 +1,7 @@
 #ifndef _ZLX_OPTIONS_H
 #define _ZLX_OPTIONS_H
 
-/** @defgroup options ZLX compile-time options
+/** @defgroup options Compile-time options
  *  Macros that affect building or using the library.
  *  All options start with ZLXOPT_ prefix.
  *  @{ */
