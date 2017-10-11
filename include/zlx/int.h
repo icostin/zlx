@@ -38,6 +38,7 @@
 #endif
 
 #if ZLXOPT_USE_STDDEF
+# include <stddef.h>
 #else
 # error todo: mimick stddef.h
 #endif
