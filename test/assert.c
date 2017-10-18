@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include "../include/zlx/assert.h"
 #include "soft_abort.h"
+#include "test.h"
 
 int x = 40;
 int y = 2;
@@ -25,18 +26,14 @@ int fail_assert (void * ctx)
 
 int assert_fail_test (void)
 {
-    int r, fa;
     unsigned int ac = soft_abort_count;
 
-    fa = run_catching_aborts(fail_assert, NULL, 1);
+    T(run_catching_aborts(fail_assert, NULL, 1) == 1);
+    T(soft_abort_count == ac + 1);
+    TE(!strcmp(assert_msg, 
+               "test/assert.c:22: *** ASSERTION FAILED: x + y != 42"),
+       "assert_msg: %s", assert_msg);
 
-    r = fa && soft_abort_count == ac + 1 && !strcmp(assert_msg, "test/assert.c:24: *** ASSERTION FAILED: x + y != 42");
-    if (!r)
-    {
-        printf("assert_fail_test: fa=%d sac-ac=%d assert_msg=\"%s\"\n", 
-               fa, soft_abort_count - ac, assert_msg);
-    }
-
-    return !r;
+    return 0;
 }
 

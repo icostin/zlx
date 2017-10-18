@@ -1,3 +1,6 @@
 T(nop_writer_test)
 T(buffer_writer_test)
 T(assert_fail_test)
+T(log2_ceil_test)
+T(bswap_test)
+T(int_rw_test)

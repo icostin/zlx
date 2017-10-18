@@ -13,7 +13,6 @@ int buffer_writer_test (void)
     T(zlx_wbuf_writer(&wb, (uint8_t const *) "hello ", 6) == 6);
     T(zlx_wbuf_writer(&wb, (uint8_t const *) "world!", 6) == 6);
     T(buf[N] == 0);
-    printf("%s\n", (char *) buf);
     T(memcmp(buf, "hello worl", N) == 0);
     
     return 0;
