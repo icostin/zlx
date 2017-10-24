@@ -168,29 +168,68 @@ ZLX_INLINE uint64_t zlx_seqbswap64 (uint64_t v)
  */
 #define ZLX_UREAD_U8(p) (ZLX_READ_U8(p))
 
+/** @def ZLX_AREAD_U8LE(p)
+ *  Reads a uint8_t from the given pointer (byte-aligned, little endian). */
 #define ZLX_AREAD_U8LE(p) (ZLX_READ_U8(p))
+/** @def ZLX_UREAD_U8LE(p)
+ *  Reads a uint8_t from the given pointer (unaligned, little endian). */
 #define ZLX_UREAD_U8LE(p) (ZLX_READ_U8(p))
+/** @def ZLX_AREAD_U8BE(p)
+ *  Reads a uint8_t from the given pointer (byte-aligned, big endian). */
 #define ZLX_AREAD_U8BE(p) (ZLX_READ_U8(p))
+/** @def ZLX_UREAD_U8BE(p)
+ *  Reads a uint8_t from the given pointer (unaligned, big endian). */
 #define ZLX_UREAD_U8BE(p) (ZLX_READ_U8(p))
+/** @def ZLX_AREAD_U8NE(p)
+ *  Reads a uint8_t from the given pointer (byte-aligned, native endian). */
 #define ZLX_AREAD_U8NE(p) (ZLX_READ_U8(p))
+/** @def ZLX_UREAD_U8NE(p)
+ *  Reads a uint8_t from the given pointer (unaligned, native endian). */
 #define ZLX_UREAD_U8NE(p) (ZLX_READ_U8(p))
+/** @def ZLX_AREAD_U8RE(p)
+ *  Reads a uint8_t from the given pointer (byte-aligned, reverse endian). */
 #define ZLX_AREAD_U8RE(p) (ZLX_READ_U8(p))
+/** @def ZLX_UREAD_U8RE(p)
+ *  Reads a uint8_t from the given pointer (unaligned, reverse endian). */
 #define ZLX_UREAD_U8RE(p) (ZLX_READ_U8(p))
 
 /* macros for writing bytes */
+/** @def ZLX_WRITE_U8(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_WRITE_U8(p, v) (*(uint8_t *) (p) = (v))
+/** @def ZLX_AWRITE_U8(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_AWRITE_U8(p, v) (ZLX_WRITE_U8(p, v))
+/** @def ZLX_UWRITE_U8(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_UWRITE_U8(p, v) (ZLX_WRITE_U8(p, v))
+/** @def ZLX_AWRITE_U8LE(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_AWRITE_U8LE(p, v) (ZLX_WRITE_U8(p, v))
+/** @def ZLX_UWRITE_U8LE(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_UWRITE_U8LE(p, v) (ZLX_WRITE_U8(p, v))
+/** @def ZLX_AWRITE_U8BE(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_AWRITE_U8BE(p, v) (ZLX_WRITE_U8(p, v))
+/** @def ZLX_UWRITE_U8BE(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_UWRITE_U8BE(p, v) (ZLX_WRITE_U8(p, v))
+/** @def ZLX_AWRITE_U8NE(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_AWRITE_U8NE(p, v) (ZLX_WRITE_U8(p, v))
+/** @def ZLX_UWRITE_U8NE(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_UWRITE_U8NE(p, v) (ZLX_WRITE_U8(p, v))
+/** @def ZLX_AWRITE_U8RE(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_AWRITE_U8RE(p, v) (ZLX_WRITE_U8(p, v))
+/** @def ZLX_UWRITE_U8RE(p, v)
+ *  Writes a uint8_t value at a given pointer. */
 #define ZLX_UWRITE_U8RE(p, v) (ZLX_WRITE_U8(p, v))
 
 /* macros for reading 16-bit ints */
+/** Aligned read of a uint16_t with native endian */
 #define ZLX_AREAD_U16NE(p) (*(uint16_t const *) (p))
 #define ZLX_AREAD_U16RE(p) (ZLX_BSWAP16(ZLX_AREAD_U16NE(p)))
 #if ZLX_LITTLE_ENDIAN
