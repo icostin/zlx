@@ -19,6 +19,6 @@ int main (int argc, char const * const * argv)
 #include "test_list.inc"
 #undef T
 
-    return 0;
+    return rc;
 }
 

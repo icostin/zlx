@@ -38,4 +38,44 @@ void cov_dbg_free
     zlx_free(ma, ptr, size);
 }
 
+void cov_dbg_u32a_init
+(
+    uint32_t * * ZLX_RESTRICT ap,
+    size_t * ZLX_RESTRICT np
+)
+{
+    zlx_array_init(*ap, *np);
+}
+
+int cov_dbg_u32a_alloc
+(
+    zlx_ma_t * ZLX_RESTRICT ma,
+    uint32_t * * ZLX_RESTRICT ap,
+    size_t * ZLX_RESTRICT np,
+    size_t n
+)
+{
+    return zlx_array_alloc(ma, *ap, *np, n, "u32_alloc");
+}
+
+int cov_dbg_u32a_realloc
+(
+    zlx_ma_t * ZLX_RESTRICT ma,
+    uint32_t * * ZLX_RESTRICT ap,
+    size_t * ZLX_RESTRICT np,
+    size_t n
+)
+{
+    return zlx_array_realloc(ma, *ap, *np, n);
+}
+
+void cov_dbg_u32a_free
+(
+    zlx_ma_t * ZLX_RESTRICT ma,
+    uint32_t * * ZLX_RESTRICT ap,
+    size_t * ZLX_RESTRICT np
+)
+{
+    zlx_array_free(ma, *ap, *np);
+}
 
