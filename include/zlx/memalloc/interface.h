@@ -248,17 +248,116 @@ ZLX_INLINE int zlxi_array_realloc
     return !new_ptr;
 }
 
+/** @def zlx_alloc(ma, size, info)
+ *      Allocates a block of memory.
+ *  @param ma [in, out]
+ *      allocator instance
+ *  @param size [in]
+ *      size of block to allocate
+ *  @param info [in]
+ *      static string describing the allocated block; this gets evaluated
+ *      only on debug builds (#ZLXOPT_DEBUG != 0)
+ *  @returns 
+ *      pointer to allocated block or NULL if @a size is non-zero
+ *      and could not allocated the requested block
+ *  @note
+ *      allocators are free to return any pointer if @a size is zero as
+ *      long as they support reallocating/freeing it.
+ *
+ *  @def zlx_realloc(ma, old_ptr, old_size, new_size)
+ *      Reallocates a memory block.
+ *  @param ma [in, out]
+ *      allocator instance
+ *  @param old_ptr [in]
+ *      pointer to a previously allocated block
+ *  @param old_size [in]
+ *      size of the allocated block
+ *  @param new_size [in]
+ *      desired size of the reallocated block
+ *  @returns 
+ *      a pointer to the reallocated block or NULL if @a new_size is non-zero
+ *      and the block could not be reallocated
+ *  @note
+ *      on error, the existing allocation is not affected
+ *  @note
+ *      on checked builds (#ZLXOPT_ASSERT != 0) allocators may perform
+ *      validation checks that @a old_size matches the actual allocation
+ *
+ *  @def zlx_free(ma, ptr, size)
+ *      Frees a previously allocated memory block.
+ *  @param ma [in, out]
+ *      allocator instance
+ *  @param ptr [in]
+ *      pointer to a previously allocated block
+ *  @param size [in]
+ *      size of the allocated block
+ *  @note
+ *      on checked builds (#ZLXOPT_ASSERT != 0) allocators may perform
+ *      validation checks that @a old_size matches the actual allocation
+ *
+ *  @def zlx_array_alloc(ma, array_var, count_var, count, info)
+ *      Allocates an array of elements.
+ *  @param ma [in, out]
+ *      allocator instance
+ *  @param array_var [out]
+ *      an l-value that receives the pointer of the allocation
+ *  @param count_var [out]
+ *      an l-value that receives the count of elements successfully allocated
+ *  @param count [in]
+ *      number of desired elements
+ *  @param info [in]
+ *      static string describing the allocated block; this gets evaluated
+ *      only on debug builds (#ZLXOPT_DEBUG != 0)
+ *  @retval 0
+ *      array successfully allocated
+ *  @retval 1
+ *      failed to allocate; 
+ *      @a array_var is set to #NULL, @a count_var is set to 0
+ *  @note
+ *      it is guaranteed that the difference between the address of one byte 
+ *      past the last element and the start of the array does not overflow
+ *      the non-negative range of ptrdiff_t.
+ *
+ *  @def zlx_array_realloc(ma, array_var, count_var, count)
+ *      Reallocates a previously allocated array of elements.
+ *  @param ma [in, out]
+ *      allocator instance
+ *  @param array_var [in, out]
+ *      an l-value that holds the pointer to the first element
+ *  @param count_var [in, out]
+ *      an l-value that holds the count of elements successfully allocated
+ *  @param count [in]
+ *      new number of desired elements
+ *  @retval 0
+ *      array reallocated successfully
+ *  @retval 1
+ *      failed to reallocate; @a array_var and @a count_var are left unchanged
+ *
+ *  @def zlx_array_free(ma, array_var, count_var)
+ *      Frees a previously allocated array.
+ *  @param ma [in, out]
+ *      allocator instance
+ *  @param array_var [in]
+ *      an l-value that holds the pointer of the allocation
+ *  @param count_var [in]
+ *      an l-value that holds the count of elements successfully allocated
+ *  @warning
+ *      @a array_var and @a count_var are left unchanged therefore they should
+ *      not be passed to #zlx_array_realloc; if calling #zlx_array_realloc()
+ *      is desired then zlx_array_realloc(ma, array_var, count_var, 0) should
+ *      be used instead of this.
+ */
 #if ZLXOPT_DEBUG
-#define zlx_alloc(_ma, _size, _info) \
-    (zlxi_alloc((_ma), (_size), \
-                        __FILE__, __LINE__, __FUNCTION__, (_info)))
+#define zlx_alloc(ma, size, info) \
+    (zlxi_alloc((ma), (size), \
+                        __FILE__, __LINE__, __FUNCTION__, (info)))
 
-#define zlx_realloc(_ma, _old_ptr, _old_size, _new_size) \
-    (zlxi_realloc((_ma), (_old_ptr), (_old_size), (_new_size), \
+#define zlx_realloc(ma, old_ptr, old_size, new_size) \
+    (zlxi_realloc((ma), (old_ptr), (old_size), (new_size), \
                   __FILE__, __LINE__, __FUNCTION__, NULL))
 
-#define zlx_free(_ma, _ptr, _size) \
-    (zlxi_free((_ma), (_ptr), (_size), \
+#define zlx_free(ma, ptr, size) \
+    (zlxi_free((ma), (ptr), (size), \
                        __FILE__, __LINE__, __FUNCTION__))
 
 #define zlx_array_alloc(ma, array_var, count_var, count, info) \
@@ -272,14 +371,14 @@ ZLX_INLINE int zlxi_array_realloc
                                 __FILE__, __LINE__, __FUNCTION__, NULL))
 
 #else /* elif ZLXOPT_DEBUG == 0) */
-#define zlx_alloc(_ma, _size, _info) \
-    (zlxi_alloc((_ma), (_size)))
+#define zlx_alloc(ma, size, info) \
+    (zlxi_alloc((ma), (size)))
 
-#define zlx_realloc(_ma, _old_ptr, _old_size, _new_size) \
-    (zlxi_realloc((_ma), (_old_ptr), (_old_size), (_new_size)))
+#define zlx_realloc(ma, old_ptr, old_size, new_size) \
+    (zlxi_realloc((ma), (old_ptr), (old_size), (new_size)))
 
-#define zlx_free(_ma, _ptr, _size) \
-    (zlxi_free((_ma), (_ptr), (_size)))
+#define zlx_free(ma, ptr, size) \
+    (zlxi_free((ma), (ptr), (size)))
 
 #define zlx_array_alloc(ma, array_var, count_var, count, info) \
     (zlxi_array_alloc(ma, (void * *) &(array_var), &(count_var), \
@@ -299,8 +398,8 @@ ZLX_INLINE int zlxi_array_realloc
 /** @def zlx_array_free
  *  Macro to free an array of items.
  */
-#define zlx_array_free(_ma, _arr, _count) \
-    (zlx_free((_ma), (_arr), (_count) * sizeof(*(_arr))))
+#define zlx_array_free(ma, _arr, _count) \
+    (zlx_free((ma), (_arr), (_count) * sizeof(*(_arr))))
 
 
 ZLX_C_DECL_END
