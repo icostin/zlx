@@ -44,6 +44,8 @@ ZLX_API void ZLX_CALL zlx_ma_nop_check
     char const * ZLX_RESTRICT func
 );
 
+ZLX_API zlx_ma_t zlx_ma_nop;
+
 ZLX_C_DECL_END
 
 /** @} */

@@ -5,6 +5,7 @@
 #include <string.h>
 #include "../include/zlx/assert.h"
 #include "../include/zlx/memalloc/interface.h"
+#include "../include/zlx/memalloc/nop.h"
 #include "test.h"
 
 typedef struct test_ma test_ma_t;
@@ -126,8 +127,7 @@ int memalloc_test (void)
     cov_dbg_u32a_init(&a, &n);
     T(a == NULL); T(n == 0);
 
-    T(cov_dbg_u32a_alloc(&tma.ma, &a, &n, PTRDIFF_MAX / 4 + 1) == 1);
-    T(cov_dbg_u32a_alloc(&tma.ma, &a, &n, PTRDIFF_MAX / 4) == 0);
+    T(cov_dbg_u32a_alloc(&tma.ma, &a, &n, PTRDIFF_MAX / 4 + 1) == 1); T(cov_dbg_u32a_alloc(&tma.ma, &a, &n, PTRDIFF_MAX / 4) == 0);
     T((uintptr_t) a == PTRDIFF_MAX - 3); T(n == PTRDIFF_MAX / 4);
     T(!strcmp(tma.last_info, "u32_alloc"));
 
@@ -145,6 +145,9 @@ int memalloc_test (void)
 
     T(cov_dbg_u32a_alloc(&tma.ma, &a, &n, 345) == 1);
     T(a == NULL); T(n == 0);
+
+    a = (void *) (uintptr_t) 400; n = 100;
+    T(cov_dbg_u32a_realloc(&zlx_ma_nop, &a, &n, 100) == 0);
 
     return 0;
 }

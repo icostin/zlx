@@ -52,3 +52,10 @@ ZLX_API void ZLX_CALL zlx_ma_nop_check
     (void) func;
 }
 
+ZLX_API zlx_ma_t zlx_ma_nop =
+{
+    zlx_ma_nop_realloc,
+    zlx_ma_nop_info_set,
+    zlx_ma_nop_check
+};
+
