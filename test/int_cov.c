@@ -1,4 +1,5 @@
 #include "../include/zlx/int/ops.h"
+#include "../include/zlx/int/array.h"
 
 ZLX_LOCAL uint8_t u8_log2_ceil (uint8_t x) { return zlx_u8_log2_ceil(x); }
 ZLX_LOCAL uint16_t u16_log2_ceil (uint16_t x) { return zlx_u16_log2_ceil(x); }
@@ -102,3 +103,9 @@ ZLX_LOCAL uint64_t seqread_u64le (uint8_t const * p) { return zlx_seqread_u64le(
 ZLX_LOCAL uint64_t seqread_u64be (uint8_t const * p) { return zlx_seqread_u64be(p); }
 ZLX_LOCAL void seqwrite_u64le (uint8_t * p, uint64_t v) { zlx_seqwrite_u64le(p, v); }
 ZLX_LOCAL void seqwrite_u64be (uint8_t * p, uint64_t v) { zlx_seqwrite_u64be(p, v); }
+
+ZLX_LOCAL void u8a_zero (uint8_t * a, size_t n)
+{
+    zlx_u8a_zero(a, n);
+}
+

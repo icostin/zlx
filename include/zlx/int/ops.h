@@ -9,6 +9,8 @@
 #include "../lib.h"
 #include "type.h"
 
+ZLX_C_DECL_BEGIN
+
 /* zlx_u8_log2_ceil *********************************************************/
 /**
  *  Computes the smallest power of 2 that is greater or equal to the given
@@ -499,6 +501,7 @@ ZLX_INLINE void zlx_seqwrite_u64be (void * p, uint64_t v)
 # endif
 #endif
 
+ZLX_C_DECL_END
 /** @} */
 
 #endif /* _ZLX_INT_OPS_H */

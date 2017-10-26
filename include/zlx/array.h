@@ -1,5 +1,5 @@
-#include "base.h"
-#include "memalloc.h"
+#include "lib.h"
+#include "memalloc/interface.h"
 
 /** @defgroup array Array generator
  *  Defines and implements arrays of arbitrary types based on other macros
@@ -33,7 +33,7 @@
  *  Copies elements of an array to another. The two arrays must be disjunct.
  **/
 
-#ifdef ZLX_DOXYGEN
+#if ZLXOPT_DOXYGEN
 
 /** @def T
  *  Array item type name.
@@ -46,7 +46,7 @@
  *  Function name generator.
  *  Before including array.h defining this macro will tell <zlx/array.h> to 
  *  declare function names according to the expansion of this macro.
- *  For instance, including <zlx/array.h> will cause F(set), F(cmp), etc to be 
+ *  For instance, including <zlx/array.h> will cause F(fill), F(cmp), etc to be 
  *  defined.
  *  @note
  *      If the macro is not defined it will use <b>T</b>_array_<b>fname</b> for
@@ -61,7 +61,11 @@
 #endif
 
 #ifndef F
-#define F(_n) (ZLX_TP2D(ZLX_TP2B(T, _array_), _n))
+#define F(n) (ZLX_TP1(T, _array_##_n))
+#endif
+
+#ifndef CCONV
+#define CCONV
 #endif
 
 #ifndef CMP
@@ -147,26 +151,37 @@
  *  Sets all array items to a specific value
  *  @note The function does not return a value.
  */
-FDP void F(set) (T * ZLX_RESTRICT arr, size_t n, T val) FDS;
+FDP void CCONV F(fill) (T * ZLX_RESTRICT arr, size_t n, T val) FDS;
+
+/** Sets all array items to zero. */
+ZLX_INLINE void F(zero) (T * ZLX_RESTRICT array, size_t n)
+{
+    F(fill)(array, n, ZERO);
+}
 
 /**
  *  Copies array items to a non-overlapping location.
  *  @note The function does not return a value.
  */
-FDP void F(copy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b, size_t n) FDS;
+FDP void CCONV F(copy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b, size_t n) FDS;
 
 /**
  *  Copies a zero-terminated array of items.
  *  @returns the location of the zero terminator in the destination array.
  */
-FDP T * F(zcopy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b) FDS;
+FDP T * CCONV F(zcopy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b) FDS;
 
 /**
  *  Compares items of two arrays.
  *  @returns 0 for equal, negative for @a a less than @a b, positive for @a a
  *  greater than @a b
  */
-FDP int F(cmp) (T const * a, T const * b, size_t n) FDS;
+FDP int CCONV F(cmp) (T const * a, T const * b, size_t n) FDS;
+
+/**
+ *  Compares two zero-terminated arrays.
+ */
+FDP int CCONV F(zcmp) (T const * a, T const * b) FDS;
 
 /**
  *  Scans an array until it finds the given value.
@@ -175,15 +190,21 @@ FDP int F(cmp) (T const * a, T const * b, size_t n) FDS;
  *      This function will keep on scanning until it finds the given value or
  *      it will generate a page fault when reaches unmapped memory.
  */
-FDP T * F(scan) (T const * arr, T value) FDS;
+FDP T * CCONV F(scan) (T const * arr, T value) FDS;
+
+/**
+ *  Computes the length of the zero-terminated array.
+ */
+FDP size_t CCONV F(zlen) (T const * ZLX_RESTRICT a) FDS;
 
 /**
  *  Searches for a value in an array.
+ *  Searches for byte @a value from address @a begin to @a end - 1.
  *  @returns 
  *      the address where the search has stopped because it found the value
  *      or it reached the end
  */
-FDP T * F(search) (T const * a, T const * end, T value) FDS;
+FDP T * CCONV F(search) (T const * begin, T const * end, T value) FDS;
 
 /**
  *  Makes space inside an array to insert items.
@@ -204,7 +225,7 @@ FDP T * F(search) (T const * a, T const * end, T value) FDS;
  *      number of items to insert
  *  @returns a pointer to the start of inserted locations
  */
-FDP T * F(insert)
+FDP T * CCONV F(insert)
 (
     T * ZLX_RESTRICT * ZLX_RESTRICT ap,
     size_t * ZLX_RESTRICT np,
@@ -214,19 +235,12 @@ FDP T * F(insert)
     zlx_ma_t * ma
 ) FDS;
 
-/**
- *  Computes the length of the zero-terminated array.
- */
-FDP size_t F(zlen) (T const * ZLX_RESTRICT a) FDS;
-/**
- *  Compares two zero-terminated arrays.
- */
-FDP int F(zcmp) (T const * a, T const * b) FDS;
-
 
 #ifdef ZLX_BODY
 
-FDP void F(copy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b, size_t n) FDS
+#include "int/ops.h"
+
+FDP void CCONV F(copy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b, size_t n) FDS
 {
     size_t i;
     for (i = 0; i < n; ++i)
@@ -235,7 +249,7 @@ FDP void F(copy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b, size_t n) FDS
     }
 }
 
-FDP T * F(zcopy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b) FDS
+FDP T * CCONV F(zcopy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b) FDS
 {
     size_t i;
     for (i = 0;; ++i)
@@ -246,13 +260,13 @@ FDP T * F(zcopy) (T * ZLX_RESTRICT a, T const * ZLX_RESTRICT b) FDS
     return a + i;
 }
 
-FDP void F(set) (T * arr, size_t n, T val) FDS
+FDP void CCONV F(fill) (T * arr, size_t n, T val) FDS
 {
     size_t i;
     for (i = 0; i < n; ++i) arr[i] = val;
 }
 
-FDP int F(cmp) (T const * a, T const * b, size_t n) FDS
+FDP int CCONV F(cmp) (T const * a, T const * b, size_t n) FDS
 {
     size_t i;
     for (i = 0; i < n; ++i)
@@ -263,24 +277,24 @@ FDP int F(cmp) (T const * a, T const * b, size_t n) FDS
     return 0;
 }
 
-FDP T * F(scan) (T const * arr, T value) FDS
+FDP T * CCONV F(scan) (T const * arr, T value) FDS
 {
     while (!EQU(*arr, value)) ++arr;
     return (T *) arr;
 }
 
-FDP size_t F(zlen) (T const * ZLX_RESTRICT a) FDS
+FDP size_t CCONV F(zlen) (T const * ZLX_RESTRICT a) FDS
 {
     return (size_t) (F(scan)(a, ZERO) - a);
 }
 
-FDP T * F(search) (T const * a, T const * end, T value) FDS
+FDP T * CCONV F(search) (T const * a, T const * end, T value) FDS
 {
     while (a != end && !EQU(*a, value)) ++a;
     return (T *) a;
 }
 
-FDP T * F(insert)
+FDP T * CCONV F(insert)
 (
     T * ZLX_RESTRICT * ZLX_RESTRICT ap,
     size_t * ZLX_RESTRICT np,
@@ -294,7 +308,7 @@ FDP T * F(insert)
     size_t n, m, i;
     n = *np + q;
     if (n < q) return NULL;
-    if (n > (SIZE_MAX / 2 + 1) / sizeof(T)) return NULL;
+    if (n > PTRDIFF_MAX / sizeof(T)) return NULL;
     if (n > *mp)
     {
         m = ((size_t) 1 << zlx_size_log2_ceil(n * sizeof(T))) / sizeof(T);
@@ -313,7 +327,7 @@ FDP T * F(insert)
     return a + p;
 }
 
-FDP int F(zcmp) (T const * a, T const * b) FDS
+FDP int CCONV F(zcmp) (T const * a, T const * b) FDS
 {
     for (;; ++a, ++b)
     {
@@ -333,6 +347,7 @@ FDP int F(zcmp) (T const * a, T const * b) FDS
 #undef COPY
 #undef ZERO
 #undef F
+#undef CCONV
 #undef T
 
 /** @} */
