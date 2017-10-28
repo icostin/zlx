@@ -6,9 +6,14 @@
 #include "../include/zlx/int/ops.h"
 #include "test.h"
 #include "soft_abort.h"
+#include "../include/zlx/assert.h"
+
+void * g = NULL;
+
+#if ZLX_UNIX
+
 #include <signal.h>
 #include <setjmp.h>
-#include "../include/zlx/assert.h"
 
 int div_by_ptr (void * ctx)
 {
@@ -16,15 +21,15 @@ int div_by_ptr (void * ctx)
     zlx_u64_div_mod(1, (uint64_t) (uintptr_t) ctx, &r);
     return 0;
 }
-
-void * g = NULL;
 sigjmp_buf jb;
 sighandler_t div_sh;
+
 
 void trap_div_error (int signum)
 {
     siglongjmp(jb, signum);
 }
+#endif
 
 int div_mod_test (void)
 {
@@ -39,6 +44,8 @@ int div_mod_test (void)
     DMT(3, 2, 1, 1);
     DMT(0x100000000, 2, 0x80000000, 0);
     DMT(0xFFFFFFFFFFFFFFFF, 0x123456789A, 235929600, 174063615);
+
+#if ZLX_UNIX
     if (!sigsetjmp(jb, SIGFPE))
     {
         div_sh = signal(SIGFPE, trap_div_error);
@@ -49,6 +56,7 @@ int div_mod_test (void)
     {
         signal(SIGFPE, div_sh);
     }
+#endif
 
     return 0;
 }
