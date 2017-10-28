@@ -89,6 +89,55 @@ ZLX_INLINE uint8_t zlx_uptr_log2_ceil (uintptr_t x)
 #endif
 }
 
+/* zlx_u8_log2_floor ********************************************************/
+/**
+ *  Computes the smallest power of 2 whose increment is greater than the
+ *  given number.
+ */
+ZLX_INLINE uint8_t zlx_u8_log2_floor (uint8_t x)
+{
+    /* 0 0 1 1 2 2 2 2 3 3 3 3 3 3 3 3 => 0xFFFFAA50 */
+    if (x < 0x10) return (0xFFFFAA50 >> (x + x)) & 3;
+    x >>= 4;
+    return (uint8_t) (4 | ((0xFFFFAA50 >> (x + x)) & 3));
+}
+
+/* zlx_u16_log2_floor *******************************************************/
+/**
+ *  Computes the smallest power of 2 whose increment is greater than the
+ *  given number.
+ */
+ZLX_INLINE uint8_t zlx_u16_log2_floor (uint16_t x)
+{
+    return x == (uint8_t) x
+        ? zlx_u8_log2_floor((uint8_t) x)
+        : 8 | zlx_u8_log2_floor((uint8_t) (x >> 8));
+}
+
+/* zlx_u32_log2_floor *******************************************************/
+/**
+ *  Computes the smallest power of 2 whose increment is greater than the
+ *  given number.
+ */
+ZLX_INLINE uint8_t zlx_u32_log2_floor (uint32_t x)
+{
+    return x == (uint16_t) x
+        ? zlx_u16_log2_floor((uint16_t) x)
+        : 16 | zlx_u16_log2_floor((uint16_t) (x >> 16));
+}
+
+/* zlx_u64_log2_floor *******************************************************/
+/**
+ *  Computes the smallest power of 2 whose increment is greater than the
+ *  given number.
+ */
+ZLX_INLINE uint8_t zlx_u64_log2_floor (uint64_t x)
+{
+    return x == (uint32_t) x
+        ? zlx_u32_log2_floor((uint32_t) x)
+        : 32 | zlx_u32_log2_floor((uint32_t) (x >> 32));
+}
+
 /* zlx_seqbswap16 ***********************************************************/
 /**
  *  Sequential 16-bit byte-swap.
@@ -500,6 +549,21 @@ ZLX_INLINE void zlx_seqwrite_u64be (void * p, uint64_t v)
 #  define ZLX_UWRITE_U64RE(p, v) (ZLX_UWRITE_U64LE(((p), (v))))
 # endif
 #endif
+
+
+/* zlx_u64_div_mod **********************************************************/
+/**
+ *  Portable 64-bit unsigned int division.
+ *  @returns quotient
+ */
+ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
+(
+    uint64_t divisor,
+    uint64_t dividend,
+    uint64_t * ZLX_RESTRICT remainder
+);
+
+
 
 ZLX_C_DECL_END
 /** @} */

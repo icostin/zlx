@@ -1,5 +1,6 @@
 #include "../include/zlx/int/ops.h"
 #include "../include/zlx/int/array.h"
+#include "../include/zlx/int/fmt.h"
 
 ZLX_LOCAL uint8_t u8_log2_ceil (uint8_t x) { return zlx_u8_log2_ceil(x); }
 ZLX_LOCAL uint16_t u16_log2_ceil (uint16_t x) { return zlx_u16_log2_ceil(x); }
@@ -7,6 +8,11 @@ ZLX_LOCAL uint32_t u32_log2_ceil (uint32_t x) { return zlx_u32_log2_ceil(x); }
 ZLX_LOCAL uint64_t u64_log2_ceil (uint64_t x) { return zlx_u64_log2_ceil(x); }
 ZLX_LOCAL uint8_t size_log2_ceil (size_t x) { return zlx_size_log2_ceil(x); }
 ZLX_LOCAL uint8_t uptr_log2_ceil (uintptr_t x) { return zlx_uptr_log2_ceil(x); }
+
+ZLX_LOCAL uint8_t u8_log2_floor (uint8_t x) { return zlx_u8_log2_floor(x); }
+ZLX_LOCAL uint8_t u16_log2_floor (uint16_t x) { return zlx_u16_log2_floor(x); }
+ZLX_LOCAL uint8_t u32_log2_floor (uint32_t x) { return zlx_u32_log2_floor(x); }
+ZLX_LOCAL uint8_t u64_log2_floor (uint64_t x) { return zlx_u64_log2_floor(x); }
 
 uint16_t seqbswap16 (uint16_t v) { return zlx_seqbswap16(v); }
 uint32_t seqbswap32 (uint32_t v) { return zlx_seqbswap32(v); }
@@ -107,5 +113,15 @@ ZLX_LOCAL void seqwrite_u64be (uint8_t * p, uint64_t v) { zlx_seqwrite_u64be(p, 
 ZLX_LOCAL void u8a_zero (uint8_t * a, size_t n)
 {
     zlx_u8a_zero(a, n);
+}
+
+ZLX_LOCAL unsigned int digit_to_char (unsigned int digit)
+{
+    return zlx_digit_to_char(digit);
+}
+
+ZLX_LOCAL int digit_from_char (uint32_t ch, uint_fast8_t radix)
+{
+    return zlx_digit_from_char(ch, radix);
 }
 

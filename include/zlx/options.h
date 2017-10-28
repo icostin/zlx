@@ -70,6 +70,16 @@
 # define ZLXOPT_FREESTANDING 0
 #endif
 
+/** @def ZLXOPT_EMIT_BUILTINS
+ *  When building the library enables emitting functions for supporting
+ *  builtins.
+ *  This defaults to 1 when targetting a freestanding platform 
+ *  (#ZLXOPT_FREESTANDING != 0)
+ */
+#ifndef ZLXOPT_EMIT_BUILTINS
+# define ZLXOPT_EMIT_BUILTINS ZLXOPT_FREESTANDING
+#endif
+
 /** @} */
 
 #endif /* _ZLX_OPTIONS_H */

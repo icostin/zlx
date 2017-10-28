@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
 #include <string.h>
@@ -31,7 +32,9 @@ void soft_abort (void)
 {
     ++soft_abort_count;
     assert_msg[assert_wbuf.offset] = 0;
+    assert_wbuf.offset = 0;
     if (got_jmp_buf) longjmp(soft_abort_jmp_buf, 1);
+    fprintf(stderr, "%s\n", assert_msg);
     abort();
 }
 

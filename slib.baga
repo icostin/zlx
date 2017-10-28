@@ -8,4 +8,6 @@ pub_hdr := zlx.h zlx/*.h zlx/*/*.h
 cppflags += -DZLXOPT_FREESTANDING -DZLXOPT_STATIC
 cflags += -std=c11 -Wpedantic -Wall -Wextra -Wconversion -Werror -ffreestanding -fpic
 exclude-cflags[mingw] := -fpic
-cflags[clang-cov] += -DNDEBUG -DZLXOPT_ASSERT -O0 -fprofile-instr-generate -fcoverage-mapping
+cflags[clang-cov] += -DNDEBUG -DZLXOPT_ASSERT -DZLXOPT_EMIT_BUILTINS=0 -O0 -fprofile-instr-generate -fcoverage-mapping
+exclude-cflags[clang-cov][src/int/div_mod.c] := -DZLXOPT_ASSERT
+

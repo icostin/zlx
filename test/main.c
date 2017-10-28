@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <zlx.h>
+#include "../include/zlx.h"
 #include "soft_abort.h"
 
 #define T(fn) int fn (void);

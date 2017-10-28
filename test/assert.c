@@ -30,7 +30,7 @@ int assert_fail_test (void)
 
     T(run_catching_aborts(fail_assert, NULL, 1) == 1);
     T(soft_abort_count == ac + 1);
-    TE(!strcmp(assert_msg, 
+    TE(!strcmp(assert_msg,
                "test/assert.c:22: *** ASSERTION FAILED: x + y != 42"),
        "assert_msg: %s", assert_msg);
 
