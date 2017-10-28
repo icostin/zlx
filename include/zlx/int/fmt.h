@@ -71,20 +71,25 @@ ZLX_API size_t ZLX_CALL zlx_u64_to_str
     uint_fast8_t sep
 );
 
-#define ZLX_NO_SIGN 0
+typedef enum zlx_sign_fmt
+{
+    ZLX_NO_SIGN = 0,
     /**< consider the value unsigned (flag for zlx_i64_to_str#sign_mode) */
 
-#define ZLX_SIGN_NEG 1
+    ZLX_SIGN_NEG,
     /**< only put the sign if the value is negative
      *  (flag for zlx_i64_to_str#sign_mode) */
 
-#define ZLX_SIGN_ALWAYS 2
+    ZLX_SIGN_ALWAYS,
     /**< use '-' for negative, space for 0 and + for positive numbers
      *  (flag for zlx_i64_to_str#sign_mode) */
 
-#define ZLX_SIGN_ALIGN 3
+    ZLX_SIGN_ALIGN
     /**< use '-' for negative, space for non-negative numbers
      *  (flag for zlx_i64_to_str#sign_mode) */
+
+} zlx_sign_fmt_t;
+
 
 /* zlx_i64_to_str ***********************************************************/
 /**
@@ -111,7 +116,7 @@ ZLX_API size_t ZLX_CALL zlx_i64_to_str
 (
     uint8_t * str,
     int64_t value,
-    uint_fast8_t sign_mode,
+    zlx_sign_fmt_t sign_mode,
     uint_fast8_t radix,
     uint8_t const * prefix,
     uint32_t width,

@@ -50,7 +50,7 @@ ZLX_API size_t ZLX_CALL zlx_i64_to_str
 (
     uint8_t * str,
     int64_t value,
-    uint_fast8_t sign_mode,
+    zlx_sign_fmt_t sign_mode,
     uint_fast8_t radix,
     uint8_t const * prefix,
     uint32_t width,
