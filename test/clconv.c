@@ -65,6 +65,12 @@ int clconv_test (void)
       == ZLX_CLCONV_OK);
     T(il == 10); T(ol == 4); T(!memcmp(o, "A\000\377B-", 5));
 
+    memset(o, '-', sizeof(o));
+    T(zlx_clconv_hex_to_bin((uint8_t const *) "410:0 FF:42", 11,
+                            o, sizeof(o), &il, &ol, ": ")
+      == ZLX_CLCONV_MALFORMED);
+    T(il == 3); T(ol == 1); T(!memcmp(o, "A-", 2));
+
     return 0;
 }
 
