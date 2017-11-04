@@ -1,7 +1,12 @@
 #ifndef _ZLX_CLCONV_HEX_H
 #define _ZLX_CLCONV_HEX_H
 
+/** @addtogroup clconv
+ *  @{ */
+
 #include "interface.h"
+
+ZLX_C_DECL_BEGIN
 
 /* zlx_clconv_bin_to_hex ****************************************************/
 /**
@@ -55,5 +60,8 @@ ZLX_API zlx_clconv_status_t ZLX_CALL zlx_clconv_hex_to_bin
     size_t * ZLX_RESTRICT out_used_len,
     void * ctx
 );
+
+ZLX_C_DECL_END
+/** @} */
 
 #endif /* _ZLX_CLCONV_HEX_H */
