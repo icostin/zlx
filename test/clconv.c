@@ -78,7 +78,6 @@ int clconv_test (void)
     T(zlx_clconv_c_escape_force_hex(
             (uint8_t const *) "\\\x01\x41\aa\b\xFE""b\tt\nn\ff\rr\x7F", 17,
             o, sizeof(o), &il, &ol, NULL) == ZLX_CLCONV_OK);
-//printf("[%.*s]\n", (int) ol, o);
     TE(il == 17, "il: %u", (int) il); TE(ol == 33, "ol: %u", (int) ol);
     T(!memcmp(o, "\\\\\\x01A\\aa\\b\\xFEb\\tt\\nn\\ff\\rr\\x7F", ol));
 
@@ -99,14 +98,12 @@ int clconv_test (void)
     T(zlx_clconv_c_escape(
             (uint8_t const *) "\x01\x41\aa\b\xFE""b\tt\nn\ff\rr\x7F", 16,
             o, sizeof(o), &il, &ol, &ce) == ZLX_CLCONV_OK);
-//printf("[%.*s]\n", (int) ol, o);
     TE(il == 16, "il: %u", (int) il); TE(ol == 27, "ol: %u", (int) ol);
     T(!memcmp(o, "\\001A\\aa\\b\\376b\\tt\\nn\\ff\\rr-", ol + 1));
     T(ce.crt_byte == 0x7F);
 
     T(zlx_clconv_c_escape(NULL, 0, o, sizeof(o), &il, &ol, &ce)
       == ZLX_CLCONV_OK);
-//printf("[%.*s]\n", (int) ol, o);
     TE(ol == 4, "ol: %u", (int) ol);
     T(!memcmp(o, "\\x7F", ol));
 
@@ -114,13 +111,11 @@ int clconv_test (void)
     zlx_clconv_c_escape_init(&ce);
     T(zlx_clconv_c_escape( (uint8_t const *) "[\x01]", 3, o, 2, &il, &ol, &ce)
       == ZLX_CLCONV_FULL);
-//printf("[%.*s]\n", (int) ol, o);
     TE(il == 2, "il: %u", (int) il); TE(ol == 1, "ol: %u", (int) ol);
     T(!memcmp(o, "[", ol)); T(ce.crt_byte == 1);
 
     cs = zlx_clconv_c_escape((uint8_t const *) "]", 1, o, 8, &il, &ol, &ce);
     TE(cs == ZLX_CLCONV_OK, "cs: %u, il:%u o:'%.*s'", cs, (int) il, (int) ol, (char *) o);
-//printf("[%.*s]\n", (int) ol, o);
     TE(il == 1, "il: %u", (int) il); TE(ol == 5, "ol: %u", (int) ol);
     T(!memcmp(o, "\\x01]", ol));
 
@@ -143,7 +138,6 @@ int clconv_test (void)
 
     il = ol = 999; memset(o, '-', sizeof(o));
     cs = zlx_clconv_c_escape(NULL, 0, o, 4, &il, &ol, &ce);
-    printf("[%.*s]\n", (int) ol, (char *) o);
     T(cs == ZLX_CLCONV_OK); T(ol == 1); T(!memcmp(o, "b---", 4));
 
     return 0;
