@@ -36,6 +36,10 @@ struct zlx_clconv_c_escape_s
  *      will be filled in with length of output produced
  *  @param ctx
  *      NULL
+ *  @retval ZLX_CLCONV_OK
+ *      all input got processed and output data produced
+ *  @retval ZLX_CLCONV_FULL
+ *      output buffer cannot hold another converted item
  *  @warning
  *      This does not produce strings literals conforming to the C standard;
  *      AB 34 35 will be converted to "\\xAB45" which according to C is a 1 char
@@ -70,6 +74,25 @@ ZLX_API void ZLX_CALL zlx_clconv_c_escape_init
 /* zlx_clconv_c_escape ******************************************************/
 /**
  *  C-escapes a string.
+ *  @param in [in]
+ *      input buffer, or NULL when finishing the conversion
+ *  @param in_len [in]
+ *      input length
+ *  @param out [out]
+ *      output buffer
+ *  @param out_len [in]
+ *      output buffer available size
+ *  @param in_used_len [out]
+ *      size of input successfully processed
+ *  @param out_used_len [out]
+ *      size of output successfully emitted
+ *  @param ctx [in|out]
+ *      an initialized instance of #zlx_clconv_c_escape_t
+ *  @retval ZLX_CLCONV_OK
+ *  @retval ZLX_CLCONV_OK
+ *      all input got processed and output data produced
+ *  @retval ZLX_CLCONV_FULL
+ *      output buffer cannot hold another converted item
  */
 ZLX_API zlx_clconv_status_t ZLX_CALL zlx_clconv_c_escape
 (
