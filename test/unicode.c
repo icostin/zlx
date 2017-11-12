@@ -106,10 +106,10 @@ int unicode_test (void)
 #define UF 0xFFFFFFFF
 #define UT(enc, flags, rve, ucpe, ...) \
     { \
-        uint8_t const a[] = { __VA_ARGS__ }; \
+        uint8_t const a[] = { 0xCD, __VA_ARGS__ }; \
         uint32_t ucp = UF; \
         ptrdiff_t d; \
-        d = zlx_##enc##_to_ucp(a, a + sizeof(a), flags, &ucp); \
+        d = zlx_##enc##_to_ucp(a + 1, a + sizeof(a), flags, &ucp); \
         TE(d == rve, "d=%d (expected %d). ucp=%X", (int) d, (int) rve, ucp); \
         TE(ucp == ucpe, "ucp=%X (expected %X)", ucp, ucpe); \
     }
@@ -131,6 +131,59 @@ int unicode_test (void)
     UT(utf32le, ZLX_UTF32_DEC_SURROGATES, 4, 0xDBFF, 0xFF, 0xDB, 0x00, 0x00);
 
     UT(utf32le, 0, ZLX_UTF_ERR_CP_TOO_BIG, UF, 0x00, 0x00, 0x11, 0x00);
+
+    UT(utf16le, 0, 2, 0xD7FF, 0xFF, 0xD7);
+    UT(utf16le, 0, ZLX_UTF_ERR_TRUNC, UF, 0xFF);
+    UT(utf16le, 0, ZLX_UTF_ERR_TRUNC, UF, );
+    UT(utf16le, 0, 4, 0x10000, 0x00, 0xD8, 0x00, 0xDC);
+    UT(utf16le, 0, ZLX_UTF_ERR_TRUNC, UF, 0x00, 0xD8, 0x00);
+    UT(utf16le, ZLX_UTF16_DEC_NO_PAIRING, 2, 0xD800, 0x00, 0xD8, 0x00);
+    UT(utf16le, 0, 4, 0x10FFFF, 0xFF, 0xDB, 0xFF, 0xDF);
+    UT(utf16le, ZLX_UTF16_DEC_UNPAIRED_SURROGATES, 2, 0xD800, 0x00, 0xD8, 0xFF, 0xD7);
+    UT(utf16le, 0, ZLX_UTF_ERR_SURROGATE, UF, 0x00, 0xD8, 0xFF, 0xD7);
+    UT(utf16le, ZLX_UTF16_DEC_UNPAIRED_SURROGATES, 2, 0xDFFF, 0xFF, 0xDF);
+    UT(utf16le, 0, ZLX_UTF_ERR_SURROGATE, UF, 0xFF, 0xDF);
+
+    /* UTF8 ***************************/
+    UT(utf8, 0, 1, 0, 0x00);
+    UT(utf8, ZLX_UTF8_DEC_NO_NUL_BYTE, ZLX_UTF_ERR_NUL_BYTE, UF, 0x00);
+    UT(utf8, 0, ZLX_UTF_ERR_TRUNC, UF, );
+    UT(utf8, 0, ZLX_UTF_ERR_LEAD, UF, 0x80);
+    UT(utf8, 0, ZLX_UTF_ERR_LEAD, UF, 0xBF);
+    UT(utf8, 0, ZLX_UTF_ERR_TRUNC, UF, 0xC0);
+    UT(utf8, 0, ZLX_UTF_ERR_CONT1, UF, 0xC0, 0x7F);
+    UT(utf8, 0, ZLX_UTF_ERR_CONT1, UF, 0xC0, 0xC0);
+    UT(utf8, 0, ZLX_UTF_ERR_CONT1, UF, 0xC0, 0xFF);
+    UT(utf8, 0, ZLX_UTF_ERR_OVERLY_LONG, UF, 0xC0, 0x80);
+    UT(utf8, 0, 2, 0x80, 0xC2, 0x80);
+    UT(utf8, 0, 2, 0x7FF, 0xDF, 0xBF);
+    UT(utf8, ZLX_UTF8_DEC_OVERLY_LONG, 2, 0, 0xC0, 0x80);
+    UT(utf8, ZLX_UTF8_DEC_TWO_BYTE_NUL, 2, 0, 0xC0, 0x80);
+    UT(utf8, ZLX_UTF8_DEC_OVERLY_LONG, 2, 0x7F, 0xC1, 0xBF);
+    UT(utf8, 0, ZLX_UTF_ERR_TRUNC, UF, 0xE0, 0x80);
+    UT(utf8, 0, ZLX_UTF_ERR_CONT1, UF, 0xE0, 0xC0, 0x80);
+    UT(utf8, 0, ZLX_UTF_ERR_CONT2, UF, 0xE0, 0x80, 0xC0);
+    UT(utf8, 0, ZLX_UTF_ERR_OVERLY_LONG, UF, 0xE0, 0x80, 0x80);
+    UT(utf8, 0, ZLX_UTF_ERR_OVERLY_LONG, UF, 0xE0, 0x9F, 0xBF);
+    UT(utf8, 0, 3, 0x800, 0xE0, 0xA0, 0x80);
+    UT(utf8, ZLX_UTF8_DEC_SURROGATES, 3, 0xD800, 0xED, 0xA0, 0x80);
+    UT(utf8, ZLX_UTF8_DEC_SURROGATES, 3, 0xDC00, 0xED, 0xB0, 0x80);
+    UT(utf8, ZLX_UTF8_DEC_SURROGATE_PAIRS, 6, 0x10000, 0xED, 0xA0, 0x80, 0xED, 0xB0, 0x80);
+    UT(utf8, ZLX_UTF8_DEC_SURROGATE_PAIRS, 6, 0x10FFFF, 0xED, 0xAF, 0xBF, 0xED, 0xBF, 0xBF);
+    UT(utf8, 0, ZLX_UTF_ERR_SURROGATE, UF, 0xED, 0xA0, 0x80);
+    UT(utf8, 0, ZLX_UTF_ERR_TRUNC, UF, 0xF0, 0x80, 0x80);
+    UT(utf8, 0, ZLX_UTF_ERR_CONT1, UF, 0xF0, 0xC0, 0x80, 0x80);
+    UT(utf8, 0, ZLX_UTF_ERR_CONT2, UF, 0xF0, 0x80, 0xC0, 0x80);
+    UT(utf8, 0, ZLX_UTF_ERR_CONT3, UF, 0xF0, 0x80, 0x80, 0xC0);
+    UT(utf8, 0, 4, 0x10000, 0xF0, 0x90, 0x80, 0x80);
+    UT(utf8, ZLX_UTF8_DEC_OVERLY_LONG, 4, 0xFFFF, 0xF0, 0x8F, 0xBF, 0xBF);
+    UT(utf8, 0, ZLX_UTF_ERR_OVERLY_LONG, UF, 0xF0, 0x8F, 0xBF, 0xBF);
+    UT(utf8, 0, 4, 0x10FFFF, 0xF4, 0x8F, 0xBF, 0xBF);
+    UT(utf8, 0, ZLX_UTF_ERR_CP_TOO_BIG, UF, 0xF4, 0x90, 0x80, 0x80);
+
+
+#undef UT
+#undef UF
 
     return 0;
 }

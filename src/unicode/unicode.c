@@ -93,12 +93,13 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_to_ucp
         if (ucp < 0x80 && !(flags & ZLX_UTF8_DEC_OVERLY_LONG) &&
             (ucp || !(flags & ZLX_UTF8_DEC_TWO_BYTE_NUL)))
             return ZLX_UTF_ERR_OVERLY_LONG;
+        break;
     case 3:
         if ((in[1] & 0xC0) != 0x80) return ZLX_UTF_ERR_CONT1;
         if ((in[2] & 0xC0) != 0x80) return ZLX_UTF_ERR_CONT2;
         ucp = (uint32_t) (((in[0] & 0x0F) << 12)
                           | ((in[1] & 0x3F) << 6) | (in[2] & 0x3F));
-        if (ucp < 0x80 && !(flags & ZLX_UTF8_DEC_OVERLY_LONG))
+        if (ucp < 0x800 && !(flags & ZLX_UTF8_DEC_OVERLY_LONG))
             return ZLX_UTF_ERR_OVERLY_LONG;
     l_surrogate_check:
         if ((ucp & 0xF800) == 0xD800)
@@ -111,7 +112,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_to_ucp
                 /* decode the next utf8 and validate that it is a tail
                  * surrogate and combine it with our lead surrogate */
                 tl = zlx_utf8_to_ucp(in + l, end,
-                                     ZLX_UTF8_DEC_SURROGATE_PAIRS, &tcp);
+                                     ZLX_UTF8_DEC_SURROGATES, &tcp);
                 if (tl >= 0 && (tcp & 0xFC00) == 0xDC00)
                 {
                     /* got a valid surrogate pair and we're supposed to combine
