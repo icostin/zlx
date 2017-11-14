@@ -53,7 +53,7 @@ int unicode_test (void)
     T(ucp_to_utf8_len(0x10000) == 4);
     T(ucp_to_utf8_len(0x10FFFF) == 4);
 
-    memset(b, '-', sizeof(b)); T(ucp_to_utf8(0, b) == 1); 
+    memset(b, '-', sizeof(b)); T(ucp_to_utf8(0, b) == 1);
     T(!memcmp(b, "\x00-", 2));
     memset(b, '-', sizeof(b)); T(ucp_to_utf8(1, b) == 1);
     T(!memcmp(b, "\x01-", 2));
@@ -181,9 +181,98 @@ int unicode_test (void)
     UT(utf8, 0, 4, 0x10FFFF, 0xF4, 0x8F, 0xBF, 0xBF);
     UT(utf8, 0, ZLX_UTF_ERR_CP_TOO_BIG, UF, 0xF4, 0x90, 0x80, 0x80);
 
-
 #undef UT
 #undef UF
+
+
+    T(zlx_ucp_to_utf8_size(0, 0) == 1);
+    T(zlx_ucp_to_utf8_size(0, ZLX_UTF8_ENC_TWO_BYTE_NUL) == 2);
+    T(zlx_ucp_to_utf8_size(0x80, 0) == 2);
+    T(zlx_ucp_to_utf8_size(0x7FF, 0) == 2);
+    T(zlx_ucp_to_utf8_size(0x800, 0) == 3);
+    T(zlx_ucp_to_utf8_size(0xFFFF, 0) == 3);
+    T(zlx_ucp_to_utf8_size(0x10000, 0) == 4);
+    T(zlx_ucp_to_utf8_size(0x10000, ZLX_UTF8_ENC_BREAK_SUPPLEM) == 6);
+    T(zlx_ucp_to_utf16_size(0xFFFF, 0) == 2);
+    T(zlx_ucp_to_utf16_size(0x10000, 0) == 4);
+    T(zlx_ucp_to_utf32_size(0xFFFF, 0) == 4);
+    T(zlx_ucp_to_utf32_size(0x10000, 0) == 4);
+    T(zlx_ucp_to_utf32_size(0x10000, ZLX_UTF32_ENC_BREAK_SUPPLEM) == 8);
+
+#define UT(...) UT1(__VA_ARGS__, 0xCA)
+#define UT1(enc, ucp, flags, ...) \
+    { \
+        uint8_t const a[] = { __VA_ARGS__ }; \
+        uint8_t b[16]; memset(b, 0xCA, sizeof(b)); \
+        T(zlx_ucp_to_##enc(ucp, flags, b) == sizeof(a) - 1); \
+        TE(!memcmp(a, b, sizeof(a)), "%02X %02X %02X %02X %02X %02X", \
+           b[0], b[1], b[2], b[3], b[4], b[5]); \
+    }
+
+    UT(utf8, 0, 0, 0x00);
+    UT(utf8, 0, ZLX_UTF8_ENC_TWO_BYTE_NUL, 0xC0, 0x80);
+    UT(utf8, 0x80, 0, 0xC2, 0x80);
+    UT(utf8, 0x800, 0, 0xE0, 0xA0, 0x80);
+    UT(utf8, 0x10000, 0, 0xF0, 0x90, 0x80, 0x80);
+    UT(utf8, 0x10000, ZLX_UTF8_ENC_BREAK_SUPPLEM,
+       0xED, 0xA0, 0x80, 0xED, 0xB0, 0x80);
+    UT(utf16le, 0xABCD, 0, 0xCD, 0xAB);
+    UT(utf16le, 0xABCDE, 0, 0x6F, 0xDA, 0xDE, 0xDC);
+
+    UT(utf32le, 0x10FFFE, 0, 0xFE, 0xFF, 0x10, 0x00);
+    UT(utf32le, 0x10FFFE, ZLX_UTF32_ENC_BREAK_SUPPLEM,
+       0xFF, 0xDB, 0x00, 0x00, 0xFE, 0xDF, 0x00, 0x00);
+#undef UT1
+#undef UT
+
+{
+    uint8_t const a8[] = { 0xF4, 0x8F, 0xBF, 0xBF };
+    uint8_t const a8sp[] = { 0xED, 0xAF, 0xBF, 0xED, 0xBF, 0xBF };
+    uint8_t const a16[] = { 0xFF, 0xDB, 0xFF, 0xDF };
+    uint8_t const a32[] = { 0xFF, 0xFF, 0x10, 0x00 };
+    uint8_t o[16];
+    size_t pos;
+
+    memset(o, '-', sizeof(o));
+    T(zlx_uconv(ZLX_UTF8_DEC | ZLX_UTF8_DEC_SURROGATE_PAIRS | ZLX_UTF16LE_ENC,
+                a8sp, sizeof(a8sp), o, 3, &pos) == 4);
+    TE(!memcmp(o, a16, 3), "%02X %02X", o[0], o[1]); T(o[3] == '-'); T(pos == 6);
+
+    memset(o, '-', sizeof(o));
+    T(zlx_uconv(ZLX_UTF8_DEC | ZLX_UTF16LE_ENC,
+                a8, 3, o, 3, &pos) == ZLX_UTF_ERR_TRUNC);
+
+    memset(o, '-', sizeof(o)); pos = 99;
+    T(zlx_uconv(0, a8sp, 1, o, 1, &pos) == ZLX_UTF_ERR_NO_CONV); T(pos == 0);
+
+    memset(o, '-', sizeof(o)); pos = 99;
+    T(zlx_uconv(ZLX_UTF8_DEC, a8sp, 1, o, 1, &pos) == ZLX_UTF_ERR_NO_CONV); 
+    T(pos == 0);
+
+    memset(o, '-', sizeof(o));
+    T(zlx_uconv(ZLX_UTF16LE_DEC | ZLX_UTF32LE_ENC, a16, sizeof(a16), o, 4, NULL)
+      == 4);
+    T(!memcmp(o, a32, 4));
+
+    memset(o, '-', sizeof(o));
+    T(zlx_uconv(ZLX_UTF32LE_DEC | ZLX_UTF8_ENC, a32, sizeof(a32), o, 4, &pos)
+      == 4);
+    T(!memcmp(o, a8, 4)); T(o[4] == '-');
+}
+
+    T(zlx_ucp_term_width(0x41) == 1);
+    T(zlx_ucp_term_width(0x300) == 0);
+    T(zlx_ucp_term_width(0x1100) == 2);
+    T(zlx_ucp_term_width(0xFFFF) == -1);
+
+{
+    ptrdiff_t rv;
+    T(zlx_utf8_term_width(NULL, (uint8_t const *) "a\xCC\x80g", 4) == 2);
+    T(zlx_utf8_term_width(NULL, (uint8_t const *) "a\xCC\xC0g", 4) == -1);
+    rv = zlx_utf8_term_width(NULL, (uint8_t const *) "a\xEF\xBF\xBFg", 4);
+    TE(rv == -2, "rv=%d", (int) rv);
+}
+
 
     return 0;
 }

@@ -9,7 +9,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf32le_to_ucp
     uint8_t const * in,
     uint8_t const * end,
     unsigned int flags,
-    uint32_t * restrict out
+    uint32_t * ZLX_RESTRICT out
 )
 {
     uint32_t ucp;
@@ -28,7 +28,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf16le_to_ucp
     uint8_t const * in,
     uint8_t const * end,
     unsigned int flags,
-    uint32_t * restrict out
+    uint32_t * ZLX_RESTRICT out
 )
 {
     uint32_t ucp, tcp;
@@ -70,7 +70,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_to_ucp
     uint8_t const * in,
     uint8_t const * end,
     unsigned int flags,
-    uint32_t * restrict out
+    uint32_t * ZLX_RESTRICT out
 )
 {
     size_t l;
@@ -187,7 +187,7 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf8
 (
     uint32_t ucp,
     unsigned int flags,
-    uint8_t * restrict out
+    uint8_t * ZLX_RESTRICT out
 )
 {
     if (!ucp && (flags & ZLX_UTF8_ENC_TWO_BYTE_NUL))
@@ -198,7 +198,10 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf8
     }
     if (ucp >= 0x10000 && (flags & ZLX_UTF8_ENC_BREAK_SUPPLEM))
     {
-        size_t l = zlxi_ucp_to_utf8(0xD800 | (ucp >> 10), out);
+        size_t l;
+        
+        ucp -= 0x10000;
+        l = zlxi_ucp_to_utf8(0xD800 | (ucp >> 10), out);
         l += zlxi_ucp_to_utf8(0xDC00 | (ucp & 0x3FF), out + l);
         return l;
     }
@@ -210,7 +213,7 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf16le
 (
     uint32_t ucp,
     unsigned int flags,
-    uint8_t * restrict out
+    uint8_t * ZLX_RESTRICT out
 )
 {
     (void) flags;
@@ -219,8 +222,9 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf16le
         ZLX_UWRITE_U16LE(out, (uint16_t) ucp);
         return 2;
     }
+    ucp -= 0x10000;
     ZLX_UWRITE_U16LE(out, (uint16_t) (0xD800 | (ucp >> 10)));
-    ZLX_UWRITE_U16LE(out, (uint16_t) (0xDC00 | (ucp & 0x3FF)));
+    ZLX_UWRITE_U16LE(out + 2, (uint16_t) (0xDC00 | (ucp & 0x3FF)));
     return 4;
 }
 
@@ -229,11 +233,12 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf32le
 (
     uint32_t ucp,
     unsigned int flags,
-    uint8_t * restrict out
+    uint8_t * ZLX_RESTRICT out
 )
 {
     if ((ucp >= 0x10000) && (flags & ZLX_UTF32_ENC_BREAK_SUPPLEM))
     {
+        ucp -= 0x10000;
         ZLX_UWRITE_U32LE(out, (0xD800 | (ucp >> 10)));
         ZLX_UWRITE_U32LE(out + 4, (0xDC00 | (ucp & 0x3FF)));
         return 8;
@@ -245,10 +250,10 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf32le
 /* zlx_uconv ****************************************************************/
 ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
 (
-    uint8_t const * restrict in,
-    size_t in_size,
     unsigned int flags,
-    uint8_t * restrict out,
+    uint8_t const * ZLX_RESTRICT in,
+    size_t in_size,
+    uint8_t * ZLX_RESTRICT out,
     size_t out_size,
     size_t * in_pos
 )
@@ -267,7 +272,9 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
     case ZLX_UTF32LE_DEC: decode = zlx_utf32le_to_ucp; break;
     case ZLX_UTF16LE_DEC: decode = zlx_utf16le_to_ucp; break;
     case ZLX_UTF8_DEC: decode = zlx_utf8_to_ucp; break;
-    default: return ZLX_UTF_ERR_NO_CONV;
+    default: 
+        if (in_pos) *in_pos = 0;
+        return ZLX_UTF_ERR_NO_CONV;
     }
     switch ((flags & (7 << 3)))
     {
@@ -283,7 +290,9 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
         measure = zlx_ucp_to_utf8_size;
         encode = zlx_ucp_to_utf8;
         break;
-    default: return ZLX_UTF_ERR_NO_CONV;
+    default: 
+        if (in_pos) *in_pos = 0;
+        return ZLX_UTF_ERR_NO_CONV;
     }
     while (i < end)
     {
@@ -298,6 +307,14 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
         i += cl;
         ol = measure(ucp, flags);
         if (o + ol <= oend) encode(ucp, flags, o);
+        else if (o < oend)
+        {
+            uint8_t tmp[8];
+            size_t j, l = (size_t) (oend - o);
+            encode(ucp, flags, tmp);
+            for (j = 0; j < l; ++j) o[j] = tmp[j];
+        }
+
         o += ol;
     }
 
@@ -319,8 +336,8 @@ ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp)
 /* zlx_utf8_term_width ******************************************************/
 ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_term_width
 (
-    void * restrict obj,
-    uint8_t const * restrict data,
+    void * ZLX_RESTRICT obj,
+    uint8_t const * ZLX_RESTRICT data,
     size_t size
 )
 {
@@ -338,7 +355,6 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_term_width
         cw = zlx_ucp_term_width(ucp);
         if (cw < 0) return -2;
         w += cw;
-        if (w < 0) return -3;
     }
     return w;
 }

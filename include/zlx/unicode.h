@@ -14,17 +14,17 @@ ZLX_C_DECL_BEGIN
 #define ZLX_UNICODE_MAX_CODEPOINT               ((uint32_t) 0x10FFFF)
 #define ZLX_UNICODE_CODEPOINT_LIMIT             ((uint32_t) 0x110000)
 
-#define ZLX_UTF32LE_DEC                         (0 << 0)
-#define ZLX_UTF32BE_DEC                         (1 << 0)
-#define ZLX_UTF16LE_DEC                         (2 << 0)
-#define ZLX_UTF16BE_DEC                         (3 << 0)
-#define ZLX_UTF8_DEC                            (4 << 0)
+#define ZLX_UTF32LE_DEC                         (1 << 0)
+#define ZLX_UTF32BE_DEC                         (2 << 0)
+#define ZLX_UTF16LE_DEC                         (3 << 0)
+#define ZLX_UTF16BE_DEC                         (4 << 0)
+#define ZLX_UTF8_DEC                            (5 << 0)
 
-#define ZLX_UTF32LE_ENC                         (0 << 3)
-#define ZLX_UTF32BE_ENC                         (1 << 3)
-#define ZLX_UTF16LE_ENC                         (2 << 3)
-#define ZLX_UTF16BE_ENC                         (3 << 3)
-#define ZLX_UTF8_ENC                            (4 << 3)
+#define ZLX_UTF32LE_ENC                         (1 << 3)
+#define ZLX_UTF32BE_ENC                         (2 << 3)
+#define ZLX_UTF16LE_ENC                         (3 << 3)
+#define ZLX_UTF16BE_ENC                         (4 << 3)
+#define ZLX_UTF8_ENC                            (5 << 3)
 
 #define ZLX_UTF32_DEC_SURROGATES                (1 << 6)
 
@@ -232,17 +232,169 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_to_ucp
     uint32_t * ZLX_RESTRICT out
 );
 
+/* zlx_ucp_to_utf8_size *****************************************************/
+/**
+ *  Computes the size in bytes of the UTF8 encoded Unicode codepoint.
+ *  @param ucp [in]
+ *      codepoint (any integer strictly under ZLX_UNICODE_CODEPOINT_LIMIT)
+ *  @param flags [in]
+ *      bitmask with only the following relevant flags:
+ *      - #ZLX_UTF8_ENC_TWO_BYTE_NUL
+ *      - #ZLX_UTF8_ENC_BREAK_SUPPLEM
+ *  @returns 
+ *      a value from 1 to 6
+ *  @note
+ *      specifying @a flags as 
+ *      #ZLX_UTF8_ENC_TWO_BYTE_NUL | #ZLX_UTF8_ENC_BREAK_SUPPLEM
+ *      correponds to MUTF8 encoding (modified utf8 encoding)
+ */
+ZLX_API size_t ZLX_CALL zlx_ucp_to_utf8_size
+(
+    uint32_t ucp,
+    unsigned int flags
+);
+
+/* zlx_ucp_to_utf16_size ****************************************************/
+/**
+ *  Computes the size in bytes of the UTF16 encoded Unicode codepoint.
+ *  @param ucp [in]
+ *      codepoint (any integer strictly under ZLX_UNICODE_CODEPOINT_LIMIT)
+ *  @param flags [ignored]
+ *      ignored
+ *  @returns
+ *      2 or 4
+ */
+ZLX_API size_t ZLX_CALL zlx_ucp_to_utf16_size // in bytes
+(
+    uint32_t ucp,
+    unsigned int flags
+);
+
+/* zlx_ucp_to_utf32_size ****************************************************/
+/**
+ *  Computes the size in bytes of the UTF32 encoded Unicode codepoint.
+ *  @param ucp [in]
+ *      codepoint (any integer strictly under ZLX_UNICODE_CODEPOINT_LIMIT)
+ *  @param flags [in]
+ *      0 or #ZLX_UTF32_ENC_BREAK_SUPPLEM
+ *  @returns 
+ *      4 or 8
+ *  @note
+ *      specifying #ZLX_UTF32_ENC_BREAK_SUPPLEM causes a supplemental plane
+ *      codepoint (>= 0x10000) to be broken into a surrogate pair
+ */
+ZLX_API size_t ZLX_CALL zlx_ucp_to_utf32_size
+(
+    uint32_t ucp,
+    unsigned int flags
+);
+
+/* zlx_ucp_to_utf8 **********************************************************/
+/**
+ *  Encodes a Unicode codepoint in UTF8.
+ *  @param ucp [in]
+ *      codepoint
+ *  @param flags [in]
+ *      bitmask with only the following relevant flags:
+ *      - #ZLX_UTF8_ENC_TWO_BYTE_NUL
+ *      - #ZLX_UTF8_ENC_BREAK_SUPPLEM
+ *  @param out [out]
+ *      buffer to write the encoded character; the buffer must be large enough
+ *      to hold the encoded character; the size needed should be obtained with
+ *      a prior call to zlx_ucp_to_utf8_size()
+ *  @note
+ *      specifying @a flags as 
+ *      #ZLX_UTF8_ENC_TWO_BYTE_NUL | #ZLX_UTF8_ENC_BREAK_SUPPLEM
+ *      correponds to MUTF8 encoding (modified utf8 encoding)
+ */
+ZLX_API size_t ZLX_CALL zlx_ucp_to_utf8
+(
+    uint32_t ucp,
+    unsigned int flags,
+    uint8_t * ZLX_RESTRICT out
+);
+
+/* zlx_ucp_to_utf16le *******************************************************/
+/**
+ *  Encodes a Unicode codepoint in UTF16LE.
+ *  @param ucp [in]
+ *      codepoint
+ *  @param flags [ignored]
+ *      ignored
+ *  @param out [out]
+ *      buffer to write the encoded character; the buffer must be large enough
+ *      to hold the encoded character; the size needed should be obtained with
+ *      a prior call to zlx_ucp_to_utf16_size()
+ */
+ZLX_API size_t ZLX_CALL zlx_ucp_to_utf16le
+(
+    uint32_t ucp,
+    unsigned int flags,
+    uint8_t * ZLX_RESTRICT out
+);
+
+/* zlx_ucp_to_utf32le *******************************************************/
+/**
+ *  Encodes a Unicode codepoint in UTF32.
+ *  @param ucp [in]
+ *      codepoint
+ *  @param flags [in]
+ *      0 or #ZLX_UTF32_ENC_BREAK_SUPPLEM
+ *  @param out [out]
+ *      buffer to write the encoded character; the buffer must be large enough
+ *      to hold the encoded character; the size needed should be obtained with
+ *      a prior call to zlx_ucp_to_utf32_size()
+ */
+ZLX_API size_t ZLX_CALL zlx_ucp_to_utf32le
+(
+    uint32_t ucp,
+    unsigned int flags,
+    uint8_t * ZLX_RESTRICT out
+);
+
 /* zlx_uconv ****************************************************************/
 /**
  *  Converts unicode text from one encoding to another.
+ *  @param flags [in]
+ *      conversion flags; must contain just one of:
+ *      - #ZLX_UTF8_DEC
+ *      - #ZLX_UTF16_DEC
+ *      - #ZLX_UTF32_DEC
+ *      and just one of:
+ *      - #ZLX_UTF8_ENC
+ *      - #ZLX_UTF16_ENC
+ *      - #ZLX_UTF32_ENC
+ *      and optionally a meaningful combination of the following:
+ *      - #ZLX_UTF8_DEC_NO_NUL_BYTE
+ *      - #ZLX_UTF8_DEC_TWO_BYTE_NUL
+ *      - #ZLX_UTF8_DEC_OVERLY_LONG
+ *      - #ZLX_UTF8_DEC_SURROGATES
+ *      - #ZLX_UTF8_DEC_SURROGATE_PAIRS
+ *      - #ZLX_UTF16_DEC_UNPAIRED_SURROGATES
+ *      - #ZLX_UTF16_DEC_NO_PAIRING
+ *      - #ZLX_UTF8_ENC_TWO_BYTE_NUL
+ *      - #ZLX_UTF8_ENC_BREAK_SUPPLEM
+ *      - #ZLX_UTF32_ENC_BREAK_SUPPLEM
+ *  @param in [in]
+ *      input buffer
+ *  @param in_size [in]
+ *      size in bytes of input data
+ *  @param out [out]
+ *      output buffer
+ *  @param out_size [in]
+ *      size of output buffer
+ *  @param in_pos [out, opt]
+ *      if non-NULL stores the byte index in the input buffer where convesion
+ *      stopped (on success and on error)
+ *
  *  @returns the size needed to hold all converted input; on error a negative
- *      value is returned (see ZLX_UTF[...]_ERR_[...])
+ *      value is returned (see ZLX_UTF_ERR_[...])
  */
 ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
 (
+    unsigned int flags,
     uint8_t const * ZLX_RESTRICT in,
     size_t in_size,
-    unsigned int flags,
     uint8_t * ZLX_RESTRICT out,
     size_t out_size,
     size_t * in_pos
@@ -255,12 +407,13 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
  *  @retval -1 Unicode codepoint invalid or not printable
  *  @retval 0 zero-width character (f.ex. combining characters)
  *  @retval 1 normal width character
- *  @retval 2 double width characted
+ *  @retval 2 double width character
  */
 ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp);
 
 /* zlx_utf8_term_width ******************************************************/
 /**
+ *  Computes the width in character cells for a typical terminal.
  *  @param obj [unused]
  *  @param data [in]
  *      printable UTF8 string
