@@ -42,15 +42,16 @@ ZLX_C_DECL_BEGIN
 #define ZLX_UTF8_ENC_BREAK_SUPPLEM              (1 << 16)
 
 #define ZLX_UTF_ERR_TRUNC                       (-1)
-#define ZLX_UTF_ERR_NUL_BYTE                   (-2)
-#define ZLX_UTF_ERR_LEAD                       (-3)
-#define ZLX_UTF_ERR_CONT1                      (-4)
-#define ZLX_UTF_ERR_CONT2                      (-5)
-#define ZLX_UTF_ERR_CONT3                      (-6)
-#define ZLX_UTF_ERR_OVERLY_LONG                (-7)
+#define ZLX_UTF_ERR_NUL_BYTE                    (-2)
+#define ZLX_UTF_ERR_LEAD                        (-3)
+#define ZLX_UTF_ERR_CONT1                       (-4)
+#define ZLX_UTF_ERR_CONT2                       (-5)
+#define ZLX_UTF_ERR_CONT3                       (-6)
+#define ZLX_UTF_ERR_OVERLY_LONG                 (-7)
 #define ZLX_UTF_ERR_SURROGATE                   (-8)
-#define ZLX_UTF_ERR_CP_TOO_BIG                 (-9)
+#define ZLX_UTF_ERR_CP_TOO_BIG                  (-9)
 #define ZLX_UTF_ERR_NO_CONV                     (-10)
+#define ZLX_UTF_ERR_NON_PRINTABLE               (-11)
 
 
 /* zlx_decode_ucp_func_t ****************************************************/
@@ -411,10 +412,18 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
  */
 ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp);
 
+typedef struct zlx_term_width_info zlx_term_width_info_t;
+struct zlx_term_width_info
+{
+    size_t width;
+    int8_t error;
+};
+
 /* zlx_utf8_term_width ******************************************************/
 /**
  *  Computes the width in character cells for a typical terminal.
- *  @param obj [unused]
+ *  @param obj [out]
+ *      must point to #zlx_term_width_info_t
  *  @param data [in]
  *      printable UTF8 string
  *  @param size [in]
@@ -422,13 +431,11 @@ ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp);
  *  @returns 
  *      width in terminal character cells of the given text or a negative
  *      number for errors
- *  @retval -1 bad UTF8
- *  @retval -2 non printable character (such as control char)
- *  @retval -3 int overflow storing width
+ *  @returns size of data parsed
  */
-ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_term_width
+ZLX_API size_t ZLX_CALL zlx_utf8_term_width
 (
-    void * ZLX_RESTRICT obj,
+    void * obj,
     uint8_t const * ZLX_RESTRICT data,
     size_t size
 );

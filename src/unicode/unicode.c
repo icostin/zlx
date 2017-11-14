@@ -334,29 +334,43 @@ ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp)
 }
 
 /* zlx_utf8_term_width ******************************************************/
-ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_term_width
+ZLX_API size_t ZLX_CALL zlx_utf8_term_width
 (
-    void * ZLX_RESTRICT obj,
+    void * obj,
     uint8_t const * ZLX_RESTRICT data,
     size_t size
 )
 {
-    ptrdiff_t w = 0;
-    uint8_t const * end = data + size;
-    (void) obj;
-    while (data != end)
+    size_t w = 0;
+    uint8_t const * p = data;
+    uint8_t const * const end = data + size;
+    zlx_term_width_info_t * ZLX_RESTRICT twi = obj;
+
+    while (p != end)
     {
         ptrdiff_t l;
         uint32_t ucp;
         int cw;
-        l = zlx_utf8_to_ucp(data, end, 0, &ucp);
-        if (l < 0) return -1;
-        data += l;
-        cw = zlx_ucp_term_width(ucp);
-        if (cw < 0) return -2;
-        w += cw;
-    }
-    return w;
-}
 
+        l = zlx_utf8_to_ucp(p, end, 0, &ucp);
+        if (l < 0)
+        {
+            twi->width = w;
+            twi->error = (int8_t) l;
+            return (size_t) (p - data);
+        }
+        p += l;
+        cw = zlx_ucp_term_width(ucp);
+        if (cw < 0)
+        {
+            twi->width = w;
+            twi->error = (int8_t) ZLX_UTF_ERR_NON_PRINTABLE;
+            return (size_t) (p - data);
+        }
+
+        w += (size_t) cw;
+    }
+    twi->width = w;
+    return size;
+}
 
