@@ -416,7 +416,7 @@ ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp);
 /**
  *  Function pointer type for measuring width of Unicode text.
  *  The encoding is not specified so it must be deduced from the actual
- *  function or from the context parameter.
+ *  function symbol or from the context parameter.
  */
 typedef int (ZLX_CALL * zlx_unicode_text_width_measure_func_t)
     (
