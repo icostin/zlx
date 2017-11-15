@@ -199,7 +199,7 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf8
     if (ucp >= 0x10000 && (flags & ZLX_UTF8_ENC_BREAK_SUPPLEM))
     {
         size_t l;
-        
+
         ucp -= 0x10000;
         l = zlxi_ucp_to_utf8(0xD800 | (ucp >> 10), out);
         l += zlxi_ucp_to_utf8(0xDC00 | (ucp & 0x3FF), out + l);
@@ -272,7 +272,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
     case ZLX_UTF32LE_DEC: decode = zlx_utf32le_to_ucp; break;
     case ZLX_UTF16LE_DEC: decode = zlx_utf16le_to_ucp; break;
     case ZLX_UTF8_DEC: decode = zlx_utf8_to_ucp; break;
-    default: 
+    default:
         if (in_pos) *in_pos = 0;
         return ZLX_UTF_ERR_NO_CONV;
     }
@@ -290,7 +290,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
         measure = zlx_ucp_to_utf8_size;
         encode = zlx_ucp_to_utf8;
         break;
-    default: 
+    default:
         if (in_pos) *in_pos = 0;
         return ZLX_UTF_ERR_NO_CONV;
     }
@@ -334,43 +334,45 @@ ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp)
 }
 
 /* zlx_utf8_term_width ******************************************************/
-ZLX_API size_t ZLX_CALL zlx_utf8_term_width
+ZLX_API int ZLX_CALL zlx_utf8_term_width
 (
-    void * obj,
     uint8_t const * ZLX_RESTRICT data,
-    size_t size
+    size_t size,
+    size_t * ZLX_RESTRICT width,
+    size_t * ZLX_RESTRICT parsed_size,
+    void * ctx
 )
 {
     size_t w = 0;
-    uint8_t const * p = data;
-    uint8_t const * const end = data + size;
-    zlx_term_width_info_t * ZLX_RESTRICT twi = obj;
+    size_t o = 0;
+    int err = 0;
 
-    while (p != end)
+    (void) ctx;
+
+    while (o != size)
     {
         ptrdiff_t l;
         uint32_t ucp;
         int cw;
 
-        l = zlx_utf8_to_ucp(p, end, 0, &ucp);
+        l = zlx_utf8_to_ucp(data + o, data + size, 0, &ucp);
         if (l < 0)
         {
-            twi->width = w;
-            twi->error = (int8_t) l;
-            return (size_t) (p - data);
+            err = (int) l;
+            break;
         }
-        p += l;
+        o += (size_t) l;
         cw = zlx_ucp_term_width(ucp);
         if (cw < 0)
         {
-            twi->width = w;
-            twi->error = (int8_t) ZLX_UTF_ERR_NON_PRINTABLE;
-            return (size_t) (p - data);
+            err = ZLX_UTF_ERR_NON_PRINTABLE;
+            break;
         }
 
         w += (size_t) cw;
     }
-    twi->width = w;
-    return size;
+    *width = w;
+    *parsed_size = o;
+    return err;
 }
 

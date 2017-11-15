@@ -246,7 +246,7 @@ int unicode_test (void)
     T(zlx_uconv(0, a8sp, 1, o, 1, &pos) == ZLX_UTF_ERR_NO_CONV); T(pos == 0);
 
     memset(o, '-', sizeof(o)); pos = 99;
-    T(zlx_uconv(ZLX_UTF8_DEC, a8sp, 1, o, 1, &pos) == ZLX_UTF_ERR_NO_CONV); 
+    T(zlx_uconv(ZLX_UTF8_DEC, a8sp, 1, o, 1, &pos) == ZLX_UTF_ERR_NO_CONV);
     T(pos == 0);
 
     memset(o, '-', sizeof(o));
@@ -267,17 +267,18 @@ int unicode_test (void)
 
 #define WT(str, len, err, w) \
 { \
-    zlx_term_width_info_t twi = { 0, 0 }; \
-    size_t rv; \
-    rv = zlx_utf8_term_width(&twi, (uint8_t const *) str, sizeof(str) - 1); \
-    TE(rv == len, "rv=%u", (int) rv); \
-    TE(err == twi.error, "err=%d", err); \
-    TE(w == twi.width, "width=%u", (int) w); \
+    int e; size_t parsed_size, width; \
+    e = zlx_utf8_term_width((uint8_t const *) str, sizeof(str) - 1, &width, \
+                             &parsed_size, NULL); \
+    TE(e == err, "err=%d", e); \
+    TE(parsed_size == len, "parsed_size=%u", (int) parsed_size); \
+    TE(w == width, "width=%u", (int) w); \
 }
 
     WT("a\xCC\x80g", 4, 0, 2);
     WT("a\xCC\xC0g", 1, ZLX_UTF_ERR_CONT1, 1);
     WT("a\xEF\xBF\xBFg", 4, ZLX_UTF_ERR_NON_PRINTABLE, 1);
+#undef WT
 
     return 0;
 }

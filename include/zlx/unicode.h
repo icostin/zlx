@@ -77,10 +77,10 @@ ZLX_C_DECL_BEGIN
  *      - #ZLX_UTF8_DEC_SURROGATES
  *      - #ZLX_UTF8_DEC_SURROGATE_PAIRS
  *  @param out [out]
- *      decoded codepoint 
- *  @returns 
+ *      decoded codepoint
+ *  @returns
  *      on success a positive integer representing the number of bytes used
- *      to decode the codepoint, or a negative interger on error 
+ *      to decode the codepoint, or a negative interger on error
  *      - ZLX_UTF_ERR_TRUNC
  *      - ZLX_UTF_ERR_NUL_BYTE
  *      - ZLX_UTF_ERR_LEAD
@@ -92,7 +92,7 @@ ZLX_C_DECL_BEGIN
  *      - ZLX_UTF_ERR_CP_TOO_BIG
  *      - ZLX_UTF_ERR_NO_CONV
  */
-typedef ptrdiff_t (ZLX_CALL * zlx_decode_ucp_func_t) 
+typedef ptrdiff_t (ZLX_CALL * zlx_decode_ucp_func_t)
     (
         uint8_t const * in,
         uint8_t const * end,
@@ -242,10 +242,10 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_to_ucp
  *      bitmask with only the following relevant flags:
  *      - #ZLX_UTF8_ENC_TWO_BYTE_NUL
  *      - #ZLX_UTF8_ENC_BREAK_SUPPLEM
- *  @returns 
+ *  @returns
  *      a value from 1 to 6
  *  @note
- *      specifying @a flags as 
+ *      specifying @a flags as
  *      #ZLX_UTF8_ENC_TWO_BYTE_NUL | #ZLX_UTF8_ENC_BREAK_SUPPLEM
  *      correponds to MUTF8 encoding (modified utf8 encoding)
  */
@@ -278,7 +278,7 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf16_size // in bytes
  *      codepoint (any integer strictly under ZLX_UNICODE_CODEPOINT_LIMIT)
  *  @param flags [in]
  *      0 or #ZLX_UTF32_ENC_BREAK_SUPPLEM
- *  @returns 
+ *  @returns
  *      4 or 8
  *  @note
  *      specifying #ZLX_UTF32_ENC_BREAK_SUPPLEM causes a supplemental plane
@@ -304,7 +304,7 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf32_size
  *      to hold the encoded character; the size needed should be obtained with
  *      a prior call to zlx_ucp_to_utf8_size()
  *  @note
- *      specifying @a flags as 
+ *      specifying @a flags as
  *      #ZLX_UTF8_ENC_TWO_BYTE_NUL | #ZLX_UTF8_ENC_BREAK_SUPPLEM
  *      correponds to MUTF8 encoding (modified utf8 encoding)
  */
@@ -412,33 +412,46 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
  */
 ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp);
 
-typedef struct zlx_term_width_info zlx_term_width_info_t;
-struct zlx_term_width_info
-{
-    size_t width;
-    int8_t error;
-};
+/* zlx_unicode_text_width_measure_func_t ************************************/
+/**
+ *  Function pointer type for measuring width of Unicode text.
+ *  The encoding is not specified so it must be deduced from the actual
+ *  function or from the context parameter.
+ */
+typedef int (ZLX_CALL * zlx_unicode_text_width_measure_func_t)
+    (
+        uint8_t const * ZLX_RESTRICT data,
+        size_t size,
+        size_t * ZLX_RESTRICT width,
+        size_t * ZLX_RESTRICT parsed_size,
+        void * ctx
+    );
 
-/* zlx_utf8_term_width ******************************************************/
 /**
  *  Computes the width in character cells for a typical terminal.
- *  @param obj [out]
- *      must point to #zlx_term_width_info_t
  *  @param data [in]
  *      printable UTF8 string
  *  @param size [in]
  *      size of UTF8 data in bytes
- *  @returns 
- *      width in terminal character cells of the given text or a negative
- *      number for errors
- *  @returns size of data parsed
+ *  @param width [out]
+ *      receives the width of parsed text (on success and on error)
+ *  @param parsed_size [out]
+ *      receives how much from the input buffer was parsed successfully
+ *  @param ctx [unused]
+ *      ignored
+ *
+ *  @returns
+ *      0 on success or negative for error
  */
-ZLX_API size_t ZLX_CALL zlx_utf8_term_width
+ZLX_API int ZLX_CALL zlx_utf8_term_width
 (
-    void * obj,
     uint8_t const * ZLX_RESTRICT data,
-    size_t size
+    size_t size,
+    size_t * ZLX_RESTRICT width,
+    size_t * ZLX_RESTRICT parsed_size,
+    void * ctx
 );
+
 
 ZLX_C_DECL_END
 
