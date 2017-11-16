@@ -35,7 +35,8 @@ ZLX_API void ZLX_CALL zlx_wbuf_init
     size_t size
 );
 
-/** Writer function to work with a write-buffer.
+/** Writer function for a write-buffer that counts how much data was sent but
+ *  fills only the amount available in the write-buffer.
  *  @param context [in]
  *      pointer to a initialized #zlx_wbuf_t instance
  *  @param data [in]
@@ -45,6 +46,19 @@ ZLX_API void ZLX_CALL zlx_wbuf_init
  *  @returns always @a size
  */
 ZLX_API size_t ZLX_CALL zlx_wbuf_writer
+(
+    void * context,
+    uint8_t const * ZLX_RESTRICT data,
+    size_t size
+);
+
+/* zlx_wbuf_limit_writer ****************************************************/
+/**
+ *  Writer function for a write-buffer that succeeds as long as the data fits
+ *  in the buffer.
+ *  @returns how much was able to fit in the write-buffer.
+ */
+ZLX_API size_t ZLX_CALL zlx_wbuf_limit_writer
 (
     void * context,
     uint8_t const * ZLX_RESTRICT data,

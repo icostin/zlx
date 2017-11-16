@@ -5,6 +5,7 @@
 #include "../include/zlx/clconv/hex.h"
 #include "../include/zlx/clconv/c_escape.h"
 #include "../include/zlx/unicode.h"
+#include "../include/zlx/writer/buffer.h"
 
 /* zlx_vwfmt ****************************************************************/
 #define CMD_NONE 0
@@ -199,7 +200,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                 {
                 case STR_ESC_NONE:
                     cmd = CMD_STR;
-                    if (width_func(buffer, arg_len, &arg_width, &wparsed,
+                    if (width_func(str, arg_len, &arg_width, &wparsed,
                                    width_context))
                         return ZLX_FMT_WIDTH_ERROR;
                     break;
@@ -400,6 +401,46 @@ ZLX_API unsigned int ZLX_CALL zlx_fmt
 
     va_start(va, fmt);
     rc = zlx_vfmt(writer, writer_context, fmt, va);
+    va_end(va);
+    return rc;
+}
+
+/* zlx_vfmt *****************************************************************/
+ZLX_API ptrdiff_t ZLX_CALL zlx_vsfmt
+(
+    uint8_t * ZLX_RESTRICT out,
+    size_t size,
+    char const * ZLX_RESTRICT fmt,
+    va_list va
+)
+{
+    zlx_wbuf_t wb;
+    unsigned int rv;
+
+    if (!size) return -ZLX_FMT_WRITE_ERROR;
+    zlx_wbuf_init(&wb, out, size - 1);
+    rv = zlx_vfmt(zlx_wbuf_writer, &wb, fmt, va);
+    out[wb.offset < size ? wb.offset : size - 1] = 0;
+    if (rv == ZLX_FMT_WRITE_ERROR) rv = 0;
+
+    return rv ? -(ptrdiff_t) rv : (ptrdiff_t) wb.offset;
+}
+
+
+/* zlx_sfmt *****************************************************************/
+ZLX_API ptrdiff_t ZLX_CALL zlx_sfmt
+(
+    uint8_t * ZLX_RESTRICT out,
+    size_t size,
+    char const * ZLX_RESTRICT fmt,
+    ...
+)
+{
+    va_list va;
+    ptrdiff_t rc;
+
+    va_start(va, fmt);
+    rc = zlx_vsfmt(out, size, fmt, va);
     va_end(va);
     return rc;
 }

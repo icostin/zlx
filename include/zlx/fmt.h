@@ -47,7 +47,7 @@
  *  * 'p': uintptr_t
  *  * 'P': intptr_t
  *  * 'c': Unicode codepoint (32-bit int between 0-0x10FFFF minus 0xD800-0xDFFF)
- *  * 's': string
+ *  * 's': UTF8 encoded string with only printable characters
  *  ALIGN:
  *  * '<' align left
  *  * '>' align right
@@ -101,6 +101,24 @@ ZLX_API unsigned int ZLX_CALL zlx_fmt
 (
     zlx_writer_func_t writer,
     void * writer_context,
+    char const * ZLX_RESTRICT fmt,
+    ...
+);
+
+/* zlx_vfmt *****************************************************************/
+ZLX_API ptrdiff_t ZLX_CALL zlx_vsfmt
+(
+    uint8_t * ZLX_RESTRICT out,
+    size_t out_size,
+    char const * ZLX_RESTRICT fmt,
+    va_list va
+);
+
+/* zlx_sfmt *****************************************************************/
+ZLX_API ptrdiff_t ZLX_CALL zlx_sfmt
+(
+    uint8_t * ZLX_RESTRICT out,
+    size_t out_size,
     char const * ZLX_RESTRICT fmt,
     ...
 );

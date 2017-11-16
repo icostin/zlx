@@ -275,6 +275,7 @@ int unicode_test (void)
     TE(w == width, "width=%u", (int) w); \
 }
 
+    WT("coo coo", 7, 0, 7);
     WT("a\xCC\x80g", 4, 0, 2);
     WT("a\xCC\xC0g", 1, ZLX_UTF_ERR_CONT1, 1);
     WT("a\xEF\xBF\xBFg", 4, ZLX_UTF_ERR_NON_PRINTABLE, 1);

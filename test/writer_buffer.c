@@ -15,6 +15,13 @@ int buffer_writer_test (void)
     T(buf[N] == 0);
     T(memcmp(buf, "hello worl", N) == 0);
     
+    zlx_wbuf_init(&wb, buf, N);
+    buf[N] = 0;
+    T(zlx_wbuf_limit_writer(&wb, (uint8_t const *) "hello ", 6) == 6);
+    T(zlx_wbuf_limit_writer(&wb, (uint8_t const *) "world!", 6) == 4);
+    T(buf[N] == 0);
+    T(memcmp(buf, "hello worl", N) == 0);
+
     return 0;
 }
 
