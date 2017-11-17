@@ -6,6 +6,7 @@
 #include "../include/zlx/clconv/c_escape.h"
 #include "../include/zlx/unicode.h"
 #include "../include/zlx/writer/buffer.h"
+#include "../include/zlx/assert.h"
 
 /* zlx_vwfmt ****************************************************************/
 #define CMD_NONE 0
@@ -23,7 +24,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
     zlx_writer_func_t writer,
     void * writer_context,
     zlx_unicode_text_width_measure_func_t width_func,
-    void * width_context,
+    void * width_ctx,
     char const * ZLX_RESTRICT fmt,
     va_list va
 )
@@ -92,7 +93,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                 if (!zlx_ucp_is_valid(ucp)) return ZLX_FMT_MALFORMED;
                 arg_len = zlxi_ucp_to_utf8(ucp, buffer);
                 if (width_func(buffer, arg_len, &arg_width, &wparsed,
-                               width_context))
+                               width_ctx))
                     return ZLX_FMT_WIDTH_ERROR;
                 cmd = CMD_BUF;
                 if (align_mode == ALIGN_DEFAULT) align_mode = ALIGN_LEFT;
@@ -106,7 +107,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                                          zero_fill ? (uint32_t) req_width : 1,
                                          group_len, sep);
                 if (width_func(buffer, arg_len, &arg_width, &wparsed,
-                               width_context))
+                               width_ctx))
                     return ZLX_FMT_WIDTH_ERROR;
                 cmd = CMD_BUF;
                 if (align_mode == ALIGN_DEFAULT) align_mode = ALIGN_RIGHT;
@@ -165,8 +166,6 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                 goto l_int;
             case 'p':
                 sign_mode = ZLX_NO_SIGN;
-                i64 = va_arg(va, intptr_t);
-                goto l_int;
             case 'P':
                 i64 = va_arg(va, intptr_t);
                 if (radix == 0) radix = 16;
@@ -201,7 +200,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                 case STR_ESC_NONE:
                     cmd = CMD_STR;
                     if (width_func(str, arg_len, &arg_width, &wparsed,
-                                   width_context))
+                                   width_ctx))
                         return ZLX_FMT_WIDTH_ERROR;
                     break;
                 case STR_ESC_HEX:
@@ -215,28 +214,23 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                     conv = zlx_clconv_c_escape;
                     conv_ctx = &cectx;
                     break;
-                default:
-                    return ZLX_FMT_NO_CODE;
                 }
                 if (cmd == CMD_CONV && req_width)
                 {
                     size_t width;
                     for (arg_width = 0, ofs = 0; ofs < arg_len; ofs += in_len)
                     {
-                        cc = conv(str + ofs, arg_len - ofs, 
-                                  buffer, sizeof buffer, 
+                        cc = conv(str + ofs, arg_len - ofs, buffer, sizeof buffer,
                                   &in_len, &out_len, conv_ctx);
                         if (cc && cc != ZLX_CLCONV_FULL)
                             return ZLX_FMT_CONV_ERROR;
-                        if (width_func(buffer, arg_len, &width, &wparsed,
-                                       width_context))
+                        if (width_func(buffer, out_len, &width, &wparsed, width_ctx))
                             return ZLX_FMT_WIDTH_ERROR;
                         arg_width += width;
                     }
-                    cc = conv(NULL, 0, buffer, sizeof buffer, 
+                    cc = conv(NULL, 0, buffer, sizeof buffer,
                               &in_len, &out_len, conv_ctx);
-                    if (width_func(buffer, arg_len, &width, &wparsed,
-                                   width_context))
+                    if (width_func(buffer, out_len, &width, &wparsed, width_ctx))
                         return ZLX_FMT_WIDTH_ERROR;
                     arg_width += width;
                 }
@@ -261,8 +255,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                 align_mode = ALIGN_RIGHT;
                 break;
             case '/':
-                if (f[1] < '0' || f[1] > '9' ||
-                    f[2] == 0) return ZLX_FMT_MALFORMED;
+                if (f[1] < '0' || f[1] > '9' || f[2] == 0) return ZLX_FMT_MALFORMED;
                 group_len = (uint_fast8_t) (f[1] - '0');
                 sep = f[2];
                 f += 2;
@@ -275,7 +268,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
             }
         }
 
-        if ((size_t) arg_width < req_width && align_mode == ALIGN_RIGHT)
+        if (arg_width < req_width && align_mode == ALIGN_RIGHT)
         {
             size_t pad_width = req_width - arg_width;
             size_t clen;
@@ -312,20 +305,20 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
 
             for (ofs = 0; ofs < arg_len; ofs += in_len)
             {
-                cc = conv(str + ofs, arg_len - ofs, 
+                cc = conv(str + ofs, arg_len - ofs,
                           buffer, sizeof buffer, &in_len, &out_len, conv_ctx);
                 if (cc && cc != ZLX_CLCONV_FULL) return ZLX_FMT_CONV_ERROR;
                 if (writer(writer_context, buffer, out_len) != out_len)
                     return ZLX_FMT_WRITE_ERROR;
             }
-            cc = conv(NULL, 0, buffer, sizeof buffer, &in_len, &out_len, 
+            cc = conv(NULL, 0, buffer, sizeof buffer, &in_len, &out_len,
                       conv_ctx);
             if (cc) return ZLX_FMT_CONV_ERROR;
             if (writer(writer_context, buffer, out_len) != out_len)
                 return ZLX_FMT_WRITE_ERROR;
         }
 
-        if ((size_t) arg_width < req_width && align_mode == ALIGN_LEFT)
+        if (arg_width < req_width && align_mode == ALIGN_LEFT)
         {
             size_t pad_width = req_width - arg_width;
             size_t clen;
@@ -361,7 +354,7 @@ ZLX_API unsigned int ZLX_CALL zlx_wfmt
     zlx_writer_func_t writer,
     void * writer_context,
     zlx_unicode_text_width_measure_func_t width_func,
-    void * width_context,
+    void * width_ctx,
     char const * ZLX_RESTRICT fmt,
     ...
 )
@@ -370,7 +363,7 @@ ZLX_API unsigned int ZLX_CALL zlx_wfmt
     unsigned int rc;
 
     va_start(va, fmt);
-    rc = zlx_vwfmt(writer, writer_context, width_func, width_context, fmt, va);
+    rc = zlx_vwfmt(writer, writer_context, width_func, width_ctx, fmt, va);
     va_end(va);
     return rc;
 }
@@ -421,7 +414,8 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_vsfmt
     zlx_wbuf_init(&wb, out, size - 1);
     rv = zlx_vfmt(zlx_wbuf_writer, &wb, fmt, va);
     out[wb.offset < size ? wb.offset : size - 1] = 0;
-    if (rv == ZLX_FMT_WRITE_ERROR) rv = 0;
+    //if (rv == ZLX_FMT_WRITE_ERROR) rv = 0;
+    ZLX_ASSERT(rv != ZLX_FMT_WRITE_ERROR);
 
     return rv ? -(ptrdiff_t) rv : (ptrdiff_t) wb.offset;
 }

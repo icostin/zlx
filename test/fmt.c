@@ -74,6 +74,9 @@ int fmt_test (void)
     TE(fs == ZLX_FMT_WIDTH_ERROR, "fs: %u", fs);
     TE(!strcmp((char *) buf, "zzz "), "s: '%s'", (char *) buf);
 
+    d = zlx_sfmt(buf, 99, "bad_fmt=$\a");
+    TE(d == -ZLX_FMT_MALFORMED, "d=%ld", (long) d);
+
     d = zlx_sfmt(buf, 99, "i8=$B", (int8_t) -2);
     TE(!strcmp((char *) buf, "i8=-2"), "s: '%s'", (char *) buf);
 
@@ -107,6 +110,106 @@ int fmt_test (void)
     d = zlx_sfmt(buf, 99, "ul=$l", (unsigned long) 3000000000);
     TE(!strcmp((char *) buf, "ul=3000000000"), "s: '%s'", (char *) buf);
 
+    d = zlx_sfmt(buf, 99, "short=$H", (short) -256);
+    TE(!strcmp((char *) buf, "short=-256"), "s: '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "ushort=$h", (unsigned short) 32768);
+    TE(!strcmp((char *) buf, "ushort=32768"), "s: '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "ptrdiff=$Z", (ptrdiff_t) -65536);
+    TE(!strcmp((char *) buf, "ptrdiff=-65536"), "s: '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "size=$z", (size_t) 3000000000);
+    TE(!strcmp((char *) buf, "size=3000000000"), "s: '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "iptr=$P", (intptr_t) -65536);
+    TE(!strcmp((char *) buf, "iptr=-10000"), "s: '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "uptr=$p", (size_t) 0x55555555);
+    TE(!strcmp((char *) buf, "uptr=55555555"), "s: '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "bin=$yi", 0x5A);
+    TE(!strcmp((char *) buf, "bin=0b1011010"), "got '%s'", (char *) buf);
+    d = zlx_sfmt(buf, 99, "bin=$08Yi", 0x5A);
+    TE(!strcmp((char *) buf, "bin=01011010"), "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "oct=$oi", 0x5A);
+    TE(!strcmp((char *) buf, "oct=0o132"), "got '%s'", (char *) buf);
+    d = zlx_sfmt(buf, 99, "oct=$08Oi", 0x5A);
+    TE(!strcmp((char *) buf, "oct=00000132"), "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "decimal=$ni", 0x63);
+    TE(!strcmp((char *) buf, "decimal=0d99"), "got '%s'", (char *) buf);
+    d = zlx_sfmt(buf, 99, "decimal=$08Ni", 0x63);
+    TE(!strcmp((char *) buf, "decimal=00000099"), "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "dec_grp=$/3,i", 12345);
+    TE(!strcmp((char *) buf, "dec_grp=12,345"), "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "dec_grp=$/3", 12345);
+    TE(d == -ZLX_FMT_MALFORMED, "d=%ld", (long) d);
+
+    d = zlx_sfmt(buf, 99, "hex=$xi", 0x63);
+    TE(!strcmp((char *) buf, "hex=0x63"), "got '%s'", (char *) buf);
+    d = zlx_sfmt(buf, 99, "hex=$08Xi", 0x63);
+    TE(!strcmp((char *) buf, "hex=00000063"), "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "sprec=$.3s", "abcdef");
+    TE(!strcmp((char *) buf, "sprec=abc"), "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "sprec=$.*s", (size_t) 3, "abcdef");
+    TE(!strcmp((char *) buf, "sprec=abc"), "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "str_non_printable: $s", "\xEF\xBF\xBF");
+    TE(d == -ZLX_FMT_WIDTH_ERROR, "d=%ld", (long) d);
+
+    d = zlx_sfmt(buf, 99, "hex_str=$xs", "\xEF\xBF\xBF");
+    TE(!strcmp((char *) buf, "hex_str=EFBFBF"), "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "c_esc_str=$es", "\n\\\xEF\xBF\xBF\a");
+    TE(!strcmp((char *) buf, "c_esc_str=\\n\\\\\\xEF\\xBF\\xBF\\a"), 
+       "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "hex_str=$xs", "\xEF\xBF\xBF");
+    TE(!strcmp((char *) buf, "hex_str=EFBFBF"), "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "c_esc_str=$10es", "\xEF\xBF\xBF");
+    TE(!strcmp((char *) buf, "c_esc_str=\\xEF\\xBF\\xBF"), 
+       "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "c_esc_str=$>15es", "\xEF\xBF\xBF");
+    TE(!strcmp((char *) buf, "c_esc_str=   \\xEF\\xBF\\xBF"), 
+       "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 99, "c_esc_str=$<15es.", "\xEF\xBF\xBF");
+    TE(!strcmp((char *) buf, "c_esc_str=\\xEF\\xBF\\xBF   ."), 
+       "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 199, "c_esc_str=$>100s", "x");
+    TE(!strcmp((char *) buf, "c_esc_str=                                                                                                   x"), 
+       "got '%s'", (char *) buf);
+
+    d = zlx_sfmt(buf, 199, "c_esc_str=$<100s.", "x");
+    TE(!strcmp((char *) buf, "c_esc_str=x                                                                                                   ."), 
+       "got '%s'", (char *) buf);
+
+    memset(buf, 0, sizeof(buf));
+    zlx_wbuf_init(&wb, buf, 10); buf[N] = 0;
+    fs = zlx_fmt(zlx_wbuf_limit_writer, &wb, "hello $10i", 2);
+    TE(fs == ZLX_FMT_WRITE_ERROR, "fmt status: %u", fs);
+    T(!memcmp(buf, "hello     ", 10));
+
+    memset(buf, 0, sizeof(buf));
+    zlx_wbuf_init(&wb, buf, 12); buf[N] = 0;
+    fs = zlx_fmt(zlx_wbuf_limit_writer, &wb, "trunc_buf=$i", 1234);
+    TE(fs == ZLX_FMT_WRITE_ERROR, "fmt status: %u", fs);
+    T(!memcmp(buf, "trunc_buf=12", 12));
+
+    memset(buf, 0, sizeof(buf));
+    zlx_wbuf_init(&wb, buf, 12); buf[N] = 0;
+    fs = zlx_fmt(zlx_wbuf_limit_writer, &wb, "trunc_str=$s", "abcd");
+    TE(fs == ZLX_FMT_WRITE_ERROR, "fmt status: %u", fs);
+    T(!memcmp(buf, "trunc_str=ab", 12));
     return 0;
 }
 
