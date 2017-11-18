@@ -53,6 +53,8 @@
  *  * '>' align right
  *  MOD:
  *  * 'e': escapes strings C-style
+ *  * 'E': custom string escaping - reads zlx_clconv_func_t and void * context
+ *         from va args
  *  * 'y': radix 2 (binary) and use '0b' prefix
  *  * 'Y': radix 2 (binary)
  *  * 'o': radix 8 (octal) and use '0o' prefix

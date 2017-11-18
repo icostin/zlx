@@ -1,6 +1,7 @@
 #include <string.h>
 #include "../include/zlx/fmt.h"
 #include "../include/zlx/writer/buffer.h"
+#include "../include/zlx/clconv/interface.h"
 #include "test.h"
 
 int ZLX_CALL test_width_measure
@@ -18,6 +19,35 @@ int ZLX_CALL test_width_measure
     return 0;
 }
 
+zlx_clconv_status_t ZLX_CALL test_conv
+(
+    uint8_t const * ZLX_RESTRICT in,
+    size_t in_len,
+    uint8_t * ZLX_RESTRICT out,
+    size_t out_len,
+    size_t * ZLX_RESTRICT in_used_len,
+    size_t * ZLX_RESTRICT out_used_len,
+    void * ctx
+)
+{
+    (void) ctx;
+    if (in == NULL)
+    {
+        if (ctx != NULL) return ZLX_CLCONV_MALFORMED;
+        if (out_len < 3) return ZLX_CLCONV_FULL;
+        memcpy(out, "\xEF\xBF\xBF", 3);
+        *out_used_len = 3;
+        return ZLX_CLCONV_OK;
+    }
+
+
+    if (out_len > in_len) out_len = in_len;
+
+    if (memchr(in, 'X', out_len)) return ZLX_CLCONV_MALFORMED;
+    memcpy(out, in, out_len);
+    *in_used_len = *out_used_len = out_len;
+    return in_len > out_len ? ZLX_CLCONV_FULL : ZLX_CLCONV_OK;
+}
 
 int fmt_test (void)
 {
@@ -167,30 +197,30 @@ int fmt_test (void)
     TE(!strcmp((char *) buf, "hex_str=EFBFBF"), "got '%s'", (char *) buf);
 
     d = zlx_sfmt(buf, 99, "c_esc_str=$es", "\n\\\xEF\xBF\xBF\a");
-    TE(!strcmp((char *) buf, "c_esc_str=\\n\\\\\\xEF\\xBF\\xBF\\a"), 
+    TE(!strcmp((char *) buf, "c_esc_str=\\n\\\\\\xEF\\xBF\\xBF\\a"),
        "got '%s'", (char *) buf);
 
     d = zlx_sfmt(buf, 99, "hex_str=$xs", "\xEF\xBF\xBF");
     TE(!strcmp((char *) buf, "hex_str=EFBFBF"), "got '%s'", (char *) buf);
 
     d = zlx_sfmt(buf, 99, "c_esc_str=$10es", "\xEF\xBF\xBF");
-    TE(!strcmp((char *) buf, "c_esc_str=\\xEF\\xBF\\xBF"), 
+    TE(!strcmp((char *) buf, "c_esc_str=\\xEF\\xBF\\xBF"),
        "got '%s'", (char *) buf);
 
     d = zlx_sfmt(buf, 99, "c_esc_str=$>15es", "\xEF\xBF\xBF");
-    TE(!strcmp((char *) buf, "c_esc_str=   \\xEF\\xBF\\xBF"), 
+    TE(!strcmp((char *) buf, "c_esc_str=   \\xEF\\xBF\\xBF"),
        "got '%s'", (char *) buf);
 
     d = zlx_sfmt(buf, 99, "c_esc_str=$<15es.", "\xEF\xBF\xBF");
-    TE(!strcmp((char *) buf, "c_esc_str=\\xEF\\xBF\\xBF   ."), 
+    TE(!strcmp((char *) buf, "c_esc_str=\\xEF\\xBF\\xBF   ."),
        "got '%s'", (char *) buf);
 
     d = zlx_sfmt(buf, 199, "c_esc_str=$>100s", "x");
-    TE(!strcmp((char *) buf, "c_esc_str=                                                                                                   x"), 
+    TE(!strcmp((char *) buf, "c_esc_str=                                                                                                   x"),
        "got '%s'", (char *) buf);
 
     d = zlx_sfmt(buf, 199, "c_esc_str=$<100s.", "x");
-    TE(!strcmp((char *) buf, "c_esc_str=x                                                                                                   ."), 
+    TE(!strcmp((char *) buf, "c_esc_str=x                                                                                                   ."),
        "got '%s'", (char *) buf);
 
     memset(buf, 0, sizeof(buf));
@@ -210,6 +240,64 @@ int fmt_test (void)
     fs = zlx_fmt(zlx_wbuf_limit_writer, &wb, "trunc_str=$s", "abcd");
     TE(fs == ZLX_FMT_WRITE_ERROR, "fmt status: %u", fs);
     T(!memcmp(buf, "trunc_str=ab", 12));
+
+    memset(buf, 0, sizeof(buf));
+    zlx_wbuf_init(&wb, buf, 15); buf[N] = 0;
+    fs = zlx_fmt(zlx_wbuf_limit_writer, &wb, "trunc_pad=$<20s", "ab");
+    TE(fs == ZLX_FMT_WRITE_ERROR, "fmt status: %u", fs);
+    TE(!memcmp(buf, "trunc_pad=ab   ", 15), "got '%s'", (char *) buf);
+
+    /* converted string arg produces non-printable char */
+    zlx_wbuf_init(&wb, buf, N); buf[N] = 0;
+    fs = zlx_wfmt(zlx_wbuf_writer, &wb, test_width_measure, NULL, "npconv: $1xs", "9");
+    buf[wb.offset] = 0;
+    TE(fs == ZLX_FMT_WIDTH_ERROR, "fs: %u", fs);
+    TE(!strcmp((char *) buf, "npconv: "), "s: '%s'", (char *) buf);
+
+    /* custom converter */
+    d = zlx_sfmt(buf, 99, "custom_conv=$Es.", test_conv, NULL, "abc");
+    TE(!strcmp((char *) buf, "custom_conv=abc\xEF\xBF\xBF."),
+       "got '%s'", (char *) buf);
+
+    /* custom converter rejects input during width calculation */
+    d = zlx_sfmt(buf, 99, "ccrej=$1Es.", test_conv, NULL, "abXc");
+    TE(d == -ZLX_FMT_CONV_ERROR, "d=%d", (int) d);
+    TE(!strcmp((char *) buf, "ccrej="), "got '%s'", (char *) buf);
+
+    /* custom converter rejects input during pasting */
+    d = zlx_sfmt(buf, 99, "ccrej=$Es.", test_conv, NULL, "abXc");
+    TE(d == -ZLX_FMT_CONV_ERROR, "d=%d", (int) d);
+    TE(!strcmp((char *) buf, "ccrej="), "got '%s'", (char *) buf);
+
+    /* custom converter rejects at end of conversion (width calc) */
+    d = zlx_sfmt(buf, 99, "ccrej=$2Es.", test_conv, "z", "abc");
+    TE(d == -ZLX_FMT_CONV_ERROR, "d=%d", (int) d);
+    TE(!strcmp((char *) buf, "ccrej="), "got '%s'", (char *) buf);
+
+    /* custom converter rejects at end of conversion (pasting) */
+    d = zlx_sfmt(buf, 99, "ccrej=$Es.", test_conv, "z", "abc");
+    TE(d == -ZLX_FMT_CONV_ERROR, "d=%d", (int) d);
+    TE(!strcmp((char *) buf, "ccrej=abc"), "got '%s'", (char *) buf);
+
+    /* custom converter produces a non-printable tail */
+    d = zlx_sfmt(buf, 99, "ccrej=$1Es.", test_conv, NULL, "abc");
+    TE(d == -ZLX_FMT_WIDTH_ERROR, "d=%d", (int) d);
+    TE(!strcmp((char *) buf, "ccrej="), "got '%s'", (char *) buf);
+
+    /* run out of space while converting big input */
+    memset(buf, 0, sizeof(buf));
+    zlx_wbuf_init(&wb, buf, 15); buf[N] = 0;
+    fs = zlx_fmt(zlx_wbuf_limit_writer, &wb, "big=$es", "xxxxxxxxxxxxxxxxxxxx");
+    TE(fs == ZLX_FMT_WRITE_ERROR, "fmt status: %u", fs);
+    TE(!memcmp(buf, "big=xxxxxxxxxxx", 15), "got '%s'", (char *) buf);
+
+    memset(buf, 0, sizeof(buf));
+    zlx_wbuf_init(&wb, buf, 15); buf[N] = 0;
+    fs = zlx_fmt(zlx_wbuf_limit_writer, &wb, "ha=$Es", test_conv, NULL,
+                 "xxxxxxxxxx");
+    TE(fs == ZLX_FMT_WRITE_ERROR, "fmt status: %u", fs);
+    TE(!memcmp(buf, "ha=xxxxxxxxxx\xEF\xBF", 15), "got '%s'", (char *) buf);
+
     return 0;
 }
 

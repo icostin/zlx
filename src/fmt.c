@@ -19,6 +19,8 @@
 #define STR_ESC_NONE 0
 #define STR_ESC_C 1
 #define STR_ESC_HEX 2
+#define STR_ESC_CUSTOM 3
+
 ZLX_API unsigned int ZLX_CALL zlx_vwfmt
 (
     zlx_writer_func_t writer,
@@ -37,7 +39,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
     uint8_t const * str = NULL;
     uint8_t const * num_pfx;
     zlx_clconv_func_t conv = NULL;
-    void * conv_ctx;
+    void * conv_ctx = NULL;
     uint_fast8_t sep;
     uint_fast8_t group_len;
     char zero_fill;
@@ -214,22 +216,28 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                     conv = zlx_clconv_c_escape;
                     conv_ctx = &cectx;
                     break;
+                case STR_ESC_CUSTOM:
+                    cmd = CMD_CONV;
+                    break;
                 }
                 if (cmd == CMD_CONV && req_width)
                 {
                     size_t width;
                     for (arg_width = 0, ofs = 0; ofs < arg_len; ofs += in_len)
                     {
-                        cc = conv(str + ofs, arg_len - ofs, buffer, sizeof buffer,
+                        cc = conv(str + ofs, arg_len - ofs,
+                                  buffer, sizeof buffer,
                                   &in_len, &out_len, conv_ctx);
                         if (cc && cc != ZLX_CLCONV_FULL)
                             return ZLX_FMT_CONV_ERROR;
-                        if (width_func(buffer, out_len, &width, &wparsed, width_ctx))
+                        if (width_func(buffer, out_len, &width,
+                                       &wparsed, width_ctx))
                             return ZLX_FMT_WIDTH_ERROR;
                         arg_width += width;
                     }
                     cc = conv(NULL, 0, buffer, sizeof buffer,
                               &in_len, &out_len, conv_ctx);
+                    if (cc) return ZLX_FMT_CONV_ERROR;
                     if (width_func(buffer, out_len, &width, &wparsed, width_ctx))
                         return ZLX_FMT_WIDTH_ERROR;
                     arg_width += width;
@@ -255,13 +263,19 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                 align_mode = ALIGN_RIGHT;
                 break;
             case '/':
-                if (f[1] < '0' || f[1] > '9' || f[2] == 0) return ZLX_FMT_MALFORMED;
+                if (f[1] < '0' || f[1] > '9' || f[2] == 0)
+                    return ZLX_FMT_MALFORMED;
                 group_len = (uint_fast8_t) (f[1] - '0');
                 sep = f[2];
                 f += 2;
                 break;
             case 'e':
                 esc_mode = STR_ESC_C;
+                break;
+            case 'E':
+                esc_mode = STR_ESC_CUSTOM;
+                conv = va_arg(va, zlx_clconv_func_t);
+                conv_ctx = va_arg(va, void *);
                 break;
             default:
                 return ZLX_FMT_MALFORMED;
@@ -293,16 +307,6 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
             if (z != arg_len) return ZLX_FMT_WRITE_ERROR;
             break;
         case CMD_CONV:
-            switch (esc_mode)
-            {
-            case STR_ESC_C:
-                zlx_clconv_c_escape_init(&cectx);
-                conv_ctx = &cectx;
-                break;
-            default:
-                conv_ctx = NULL;
-            }
-
             for (ofs = 0; ofs < arg_len; ofs += in_len)
             {
                 cc = conv(str + ofs, arg_len - ofs,
@@ -414,7 +418,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_vsfmt
     zlx_wbuf_init(&wb, out, size - 1);
     rv = zlx_vfmt(zlx_wbuf_writer, &wb, fmt, va);
     out[wb.offset < size ? wb.offset : size - 1] = 0;
-    //if (rv == ZLX_FMT_WRITE_ERROR) rv = 0;
+    /* wbuf_writer should never return write error */
     ZLX_ASSERT(rv != ZLX_FMT_WRITE_ERROR);
 
     return rv ? -(ptrdiff_t) rv : (ptrdiff_t) wb.offset;
