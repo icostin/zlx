@@ -1,7 +1,7 @@
 #ifndef _ZLX_ASSERT_H
 #define _ZLX_ASSERT_H
 
-/** @defgroup Assert
+/** @defgroup assert Assert
  *
  *  Basic assert support.
  *

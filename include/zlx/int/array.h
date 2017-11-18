@@ -106,6 +106,9 @@ ZLX_API uint8_t * ZLX_CALL zlx_u8a_search
  *      index where to insert
  *  @param q [in]
  *      number of bytes to insert
+ *  @param ma [in, out]
+ *      allocator to be used if the capacity of the array needs to be
+ *      increased
  *  @returns 
  *      a pointer to the start of the inserted location or NULL on error;
  *      basically, on success the return value is (*ap + p)

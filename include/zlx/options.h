@@ -6,7 +6,7 @@
  *  All options start with ZLXOPT_ prefix.
  *  @{ */
 
-/** @def ZLXOPT_DOXYGEN
+/*  @def ZLXOPT_DOXYGEN
  *  This is defined as 1 in Doxygen configuration to control how documentation 
  *  is generated. */
 #ifndef ZLXOPT_DOXYGEN

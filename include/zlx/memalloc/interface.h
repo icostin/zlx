@@ -312,7 +312,7 @@ ZLX_INLINE int zlxi_array_realloc
  *      array successfully allocated
  *  @retval 1
  *      failed to allocate; 
- *      @a array_var is set to #NULL, @a count_var is set to 0
+ *      @a array_var is set to @b NULL, @a count_var is set to 0
  *  @note
  *      it is guaranteed that the difference between the address of one byte 
  *      past the last element and the start of the array does not overflow
@@ -333,14 +333,17 @@ ZLX_INLINE int zlxi_array_realloc
  *  @retval 1
  *      failed to reallocate; @a array_var and @a count_var are left unchanged
  *
- *  @def zlx_array_free(ma, array_var, count_var)
+ *  @def zlx_array_init
+ *      Initializes to (NULL, 0) the pair (pointer, size) representing an array.
+ * 
+ *  @def zlx_array_free
  *      Frees a previously allocated array.
  *  @param ma [in, out]
  *      allocator instance
  *  @param array_var [in]
  *      an l-value that holds the pointer of the allocation
- *  @param count_var [in]
- *      an l-value that holds the count of elements successfully allocated
+ *  @param count [in]
+ *      the count of elements successfully allocated
  *  @warning
  *      @a array_var and @a count_var are left unchanged therefore they should
  *      not be passed to #zlx_array_realloc; if calling #zlx_array_realloc()
@@ -389,17 +392,11 @@ ZLX_INLINE int zlxi_array_realloc
                                 (count), sizeof((array_var)[0])))
 #endif
 
-/** @def zlx_array_init
- *  Initializes to (NULL, 0) the pair (pointer, size) representing an array.
- */
 #define zlx_array_init(array_var, count_var) \
     ((array_var) = NULL, (count_var) = 0)
 
-/** @def zlx_array_free
- *  Macro to free an array of items.
- */
-#define zlx_array_free(ma, _arr, _count) \
-    (zlx_free((ma), (_arr), (_count) * sizeof(*(_arr))))
+#define zlx_array_free(ma, array_var, count) \
+    (zlx_free((ma), (array_var), (count) * sizeof(*(array_var))))
 
 
 ZLX_C_DECL_END

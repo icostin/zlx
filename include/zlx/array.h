@@ -26,10 +26,10 @@
  *
  *  @{ 
  *
- *  @fn void FOO_set (TYPE * ZLX_RESTRICT arr, size_t n, TYPE val)
+ *  @fn void foo_fill (TYPE * ZLX_RESTRICT arr, size_t n, TYPE val)
  *  Sets the elements of the array.
  *
- *  @fn void FOO_copy (TYPE * ZLX_RESTRICT dest, TYPE_ const ZLX_RESTRICT src, size_t n)
+ *  @fn void foo_copy (TYPE * ZLX_RESTRICT dest, TYPE_ const ZLX_RESTRICT src, size_t n)
  *  Copies elements of an array to another. The two arrays must be disjunct.
  **/
 
@@ -223,6 +223,9 @@ FDP T * CCONV F(search) (T const * begin, T const * end, T value) FDS;
  *      index where to insert items
  *  @param q [in]
  *      number of items to insert
+ *  @param ma [in, out]
+ *      allocator to be used if the capacity of the array needs to be
+ *      increased
  *  @returns a pointer to the start of inserted locations
  */
 FDP T * CCONV F(insert)

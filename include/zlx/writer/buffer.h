@@ -67,5 +67,7 @@ ZLX_API size_t ZLX_CALL zlx_wbuf_limit_writer
 
 ZLX_C_DECL_END
 
+/** @} */
+
 #endif
 

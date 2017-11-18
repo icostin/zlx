@@ -58,6 +58,7 @@ typedef zlx_clconv_status_t (ZLX_CALL * zlx_clconv_func_t)
     );
 
 ZLX_C_DECL_END
+/** @} */
 
 #endif /* _ZLX_CLCONV_INTERFACE_H */
 

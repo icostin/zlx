@@ -65,6 +65,8 @@ ZLX_API zlx_clconv_status_t ZLX_CALL zlx_clconv_c_escape_force_hex
 /* zlx_clconv_c_escape_init *************************************************/
 /**
  *  Inits the state of the C-escape converter.
+ *  @param ctx [out]
+ *      C-escape context to be initialized
  */
 ZLX_API void ZLX_CALL zlx_clconv_c_escape_init
 (
@@ -87,7 +89,7 @@ ZLX_API void ZLX_CALL zlx_clconv_c_escape_init
  *  @param out_used_len [out]
  *      size of output successfully emitted
  *  @param ctx [in|out]
- *      an initialized instance of #zlx_clconv_c_escape_t
+ *      an initialized instance of zlx_clconv_c_escape_t
  *  @retval ZLX_CLCONV_OK
  *  @retval ZLX_CLCONV_OK
  *      all input got processed and output data produced

@@ -2,7 +2,7 @@
 #define _ZLX_FMT_H
 
 /** @defgroup fmt Formatted printing
- *  This module provides support for format-printing (printf-like but with 
+ *  This module provides support for format-printing (printf-like but with
  *  different escapes).
  *
  *  @{
@@ -22,12 +22,21 @@
 /* zlx_vfmt *****************************************************************/
 /**
  *  Writes formatted UTF-8 text (similar to printf formatting).
- *  @retval 0 success
- *  @retval ZLX_FMT_MALFORMED bad format string
+ *  @retval 0
+ *      success
+ *  @retval ZLX_FMT_MALFORMED
+ *      bad format string
  *  @retval ZLX_FMT_WIDTH_ERROR
+ *      output text contains non-printable characters (or characters rejected
+ *      by the width measuring function)
  *  @retval ZLX_FMT_WRITE_ERROR
- *  Formatting: "$" [[ALIGN] WIDTH] ["." PREC] ["/" GROUP_LEN] [MOD] TYPE
- *  TYPE:
+ *      the writer function reports error
+ *  @retval ZLX_FMT_CONV_ERROR
+ *      the escape converter reported an error
+ *
+ *  @b FORMAT: "$" [[ALIGN] WIDTH] ["." PREC] ["/" GROUP_LEN] [MOD] TYPE
+ *
+ *  @b TYPE:
  *  * 'b': unsigned 8-bit int (byte)
  *  * 'B': signed 8-bit int (char)
  *  * 'w': unsigned 16-bit int
@@ -48,10 +57,12 @@
  *  * 'P': intptr_t
  *  * 'c': Unicode codepoint (32-bit int between 0-0x10FFFF minus 0xD800-0xDFFF)
  *  * 's': UTF8 encoded string with only printable characters
- *  ALIGN:
+ *
+ *  @b ALIGN:
  *  * '<' align left
  *  * '>' align right
- *  MOD:
+ *
+ *  @b MOD:
  *  * 'e': escapes strings C-style
  *  * 'E': custom string escaping - reads zlx_clconv_func_t and void * context
  *         from va args
