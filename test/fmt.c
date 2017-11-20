@@ -4,7 +4,7 @@
 #include "../include/zlx/clconv/interface.h"
 #include "test.h"
 
-int ZLX_CALL test_width_measure
+zlx_utf_error_t ZLX_CALL test_width_measure
 (
     uint8_t const * ZLX_RESTRICT data,
     size_t size,

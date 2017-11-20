@@ -104,18 +104,21 @@ ZLX_C_DECL_BEGIN
  *  This flag must be ORed with #ZLX_UTF8_ENC when calling zlx_uconv() */
 #define ZLX_UTF8_ENC_BREAK_SUPPLEM              (1 << 16)
 
-#define ZLX_UTF_ERR_TRUNC                       (-1)
-#define ZLX_UTF_ERR_NUL_BYTE                    (-2)
-#define ZLX_UTF_ERR_LEAD                        (-3)
-#define ZLX_UTF_ERR_CONT1                       (-4)
-#define ZLX_UTF_ERR_CONT2                       (-5)
-#define ZLX_UTF_ERR_CONT3                       (-6)
-#define ZLX_UTF_ERR_OVERLY_LONG                 (-7)
-#define ZLX_UTF_ERR_SURROGATE                   (-8)
-#define ZLX_UTF_ERR_CP_TOO_BIG                  (-9)
-#define ZLX_UTF_ERR_NO_CONV                     (-10)
-#define ZLX_UTF_ERR_NON_PRINTABLE               (-11)
-
+typedef enum zlx_utf_error
+{
+    ZLX_UTF_ERR_NONE = 0,
+    ZLX_UTF_ERR_TRUNC,
+    ZLX_UTF_ERR_NUL_BYTE,
+    ZLX_UTF_ERR_LEAD,
+    ZLX_UTF_ERR_CONT1,
+    ZLX_UTF_ERR_CONT2,
+    ZLX_UTF_ERR_CONT3,
+    ZLX_UTF_ERR_OVERLY_LONG,
+    ZLX_UTF_ERR_SURROGATE,
+    ZLX_UTF_ERR_CP_TOO_BIG,
+    ZLX_UTF_ERR_NO_CONV,
+    ZLX_UTF_ERR_NON_PRINTABLE,
+} zlx_utf_error_t;
 
 /* zlx_decode_ucp_func_t ****************************************************/
 /**
@@ -143,7 +146,8 @@ ZLX_C_DECL_BEGIN
  *      decoded codepoint
  *  @returns
  *      on success a positive integer representing the number of bytes used
- *      to decode the codepoint, or a negative interger on error
+ *      to decode the codepoint, or a negative integer on error representing
+ *      a negated zlx_utf_error_t:
  *      - ZLX_UTF_ERR_TRUNC
  *      - ZLX_UTF_ERR_NUL_BYTE
  *      - ZLX_UTF_ERR_LEAD
@@ -455,8 +459,9 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf32le
  *      if non-NULL stores the byte index in the input buffer where convesion
  *      stopped (on success and on error)
  *
- *  @returns the size needed to hold all converted input; on error a negative
- *      value is returned (see ZLX_UTF_ERR_[...])
+ *  @returns 
+ *      the size needed to hold all converted input; on error a negative
+ *      value is returned representing a negated zlx_utf_error_t.
  */
 ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
 (
@@ -465,7 +470,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
     size_t in_size,
     uint8_t * ZLX_RESTRICT out,
     size_t out_size,
-    size_t * in_pos
+    size_t * ZLX_RESTRICT in_pos
 );
 
 /* zlx_ucp_term_width *******************************************************/
@@ -485,7 +490,7 @@ ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp);
  *  The encoding is not specified so it must be deduced from the actual
  *  function symbol or from the context parameter.
  */
-typedef int (ZLX_CALL * zlx_unicode_text_width_measure_func_t)
+typedef zlx_utf_error_t (ZLX_CALL * zlx_unicode_text_width_measure_func_t)
     (
         uint8_t const * ZLX_RESTRICT data,
         size_t size,
@@ -510,7 +515,7 @@ typedef int (ZLX_CALL * zlx_unicode_text_width_measure_func_t)
  *  @returns
  *      0 on success or negative for error
  */
-ZLX_API int ZLX_CALL zlx_utf8_term_width
+ZLX_API zlx_utf_error_t ZLX_CALL zlx_utf8_term_width
 (
     uint8_t const * ZLX_RESTRICT data,
     size_t size,
@@ -518,7 +523,6 @@ ZLX_API int ZLX_CALL zlx_utf8_term_width
     size_t * ZLX_RESTRICT parsed_size,
     void * ctx
 );
-
 
 ZLX_C_DECL_END
 

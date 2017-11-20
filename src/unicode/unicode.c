@@ -13,11 +13,11 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf32le_to_ucp
 )
 {
     uint32_t ucp;
-    if (end - in < 4) return ZLX_UTF_ERR_TRUNC;
+    if (end - in < 4) return -ZLX_UTF_ERR_TRUNC;
     ucp = ZLX_UREAD_U32LE(in);
-    if (ucp >= ZLX_UNICODE_CODEPOINT_LIMIT) return ZLX_UTF_ERR_CP_TOO_BIG;
+    if (ucp >= ZLX_UNICODE_CODEPOINT_LIMIT) return -ZLX_UTF_ERR_CP_TOO_BIG;
     if ((ucp & 0x1FF800) == 0xD800 && !(flags & ZLX_UTF32_DEC_SURROGATES))
-        return ZLX_UTF_ERR_SURROGATE;
+        return -ZLX_UTF_ERR_SURROGATE;
     *out = ucp;
     return 4;
 }
@@ -32,7 +32,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf16le_to_ucp
 )
 {
     uint32_t ucp, tcp;
-    if (end - in < 2) return ZLX_UTF_ERR_TRUNC;
+    if (end - in < 2) return -ZLX_UTF_ERR_TRUNC;
     ucp = ZLX_UREAD_U16LE(in);
     if ((ucp & 0xF800) == 0xD800)
     {
@@ -42,7 +42,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf16le_to_ucp
             /* lead surrogate */
             if (!(flags & ZLX_UTF16_DEC_NO_PAIRING))
             {
-                if (end - in < 4) return ZLX_UTF_ERR_TRUNC;
+                if (end - in < 4) return -ZLX_UTF_ERR_TRUNC;
                 tcp = ZLX_UREAD_U16LE(in + 2);
                 if ((tcp & 0xFC00) == 0xDC00)
                 {
@@ -50,14 +50,14 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf16le_to_ucp
                     return 4;
                 }
                 else if (!(flags & ZLX_UTF16_DEC_UNPAIRED_SURROGATES))
-                    return ZLX_UTF_ERR_SURROGATE;
+                    return -ZLX_UTF_ERR_SURROGATE;
             }
         }
         else
         {
             /* tail surrogate */
             if (!(flags & ZLX_UTF16_DEC_UNPAIRED_SURROGATES))
-                return ZLX_UTF_ERR_SURROGATE;
+                return -ZLX_UTF_ERR_SURROGATE;
         }
     }
     *out = ucp;
@@ -76,31 +76,31 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_to_ucp
     size_t l;
     uint32_t ucp;
 
-    if (in >= end) return ZLX_UTF_ERR_TRUNC;
-    if (!zlx_utf8_lead_valid(*in)) return ZLX_UTF_ERR_LEAD;
+    if (in >= end) return -ZLX_UTF_ERR_TRUNC;
+    if (!zlx_utf8_lead_valid(*in)) return -ZLX_UTF_ERR_LEAD;
     l = zlx_utf8_lead_to_len(*in);
-    if ((size_t) (end - in) < l) return ZLX_UTF_ERR_TRUNC;
+    if ((size_t) (end - in) < l) return -ZLX_UTF_ERR_TRUNC;
     switch (l)
     {
     case 1:
         if (!*in && (flags & ZLX_UTF8_DEC_NO_NUL_BYTE))
-            return ZLX_UTF_ERR_NUL_BYTE;
+            return -ZLX_UTF_ERR_NUL_BYTE;
         ucp = *in;
         break;
     case 2:
-        if ((in[1] & 0xC0) != 0x80) return ZLX_UTF_ERR_CONT1;
+        if ((in[1] & 0xC0) != 0x80) return -ZLX_UTF_ERR_CONT1;
         ucp = (uint32_t) (((in[0] & 0x1F) << 6) | (in[1] & 0x3F));
         if (ucp < 0x80 && !(flags & ZLX_UTF8_DEC_OVERLY_LONG) &&
             (ucp || !(flags & ZLX_UTF8_DEC_TWO_BYTE_NUL)))
-            return ZLX_UTF_ERR_OVERLY_LONG;
+            return -ZLX_UTF_ERR_OVERLY_LONG;
         break;
     case 3:
-        if ((in[1] & 0xC0) != 0x80) return ZLX_UTF_ERR_CONT1;
-        if ((in[2] & 0xC0) != 0x80) return ZLX_UTF_ERR_CONT2;
+        if ((in[1] & 0xC0) != 0x80) return -ZLX_UTF_ERR_CONT1;
+        if ((in[2] & 0xC0) != 0x80) return -ZLX_UTF_ERR_CONT2;
         ucp = (uint32_t) (((in[0] & 0x0F) << 12)
                           | ((in[1] & 0x3F) << 6) | (in[2] & 0x3F));
         if (ucp < 0x800 && !(flags & ZLX_UTF8_DEC_OVERLY_LONG))
-            return ZLX_UTF_ERR_OVERLY_LONG;
+            return -ZLX_UTF_ERR_OVERLY_LONG;
     l_surrogate_check:
         if ((ucp & 0xF800) == 0xD800)
         {
@@ -124,21 +124,21 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_utf8_to_ucp
             }
             /* unpaired surrogate */
             if (!(flags & ZLX_UTF8_DEC_SURROGATES))
-                return ZLX_UTF_ERR_SURROGATE;
+                return -ZLX_UTF_ERR_SURROGATE;
         }
         break;
     case 4:
-        if ((in[1] & 0xC0) != 0x80) return ZLX_UTF_ERR_CONT1;
-        if ((in[2] & 0xC0) != 0x80) return ZLX_UTF_ERR_CONT2;
-        if ((in[3] & 0xC0) != 0x80) return ZLX_UTF_ERR_CONT3;
+        if ((in[1] & 0xC0) != 0x80) return -ZLX_UTF_ERR_CONT1;
+        if ((in[2] & 0xC0) != 0x80) return -ZLX_UTF_ERR_CONT2;
+        if ((in[3] & 0xC0) != 0x80) return -ZLX_UTF_ERR_CONT3;
         ucp = (uint32_t) (((in[0] & 0x07) << 18) | ((in[1] & 0x3F) << 12)
                           | ((in[2] & 0x3F) << 6) | (in[3] & 0x3F));
         if (ucp < 0x10000)
         {
             if (!(flags & ZLX_UTF8_DEC_OVERLY_LONG))
-                return ZLX_UTF_ERR_OVERLY_LONG;
+                return -ZLX_UTF_ERR_OVERLY_LONG;
         }
-        if (ucp >= 0x110000) return ZLX_UTF_ERR_CP_TOO_BIG;
+        if (ucp >= 0x110000) return -ZLX_UTF_ERR_CP_TOO_BIG;
         goto l_surrogate_check;
     }
     *out = ucp;
@@ -255,7 +255,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
     size_t in_size,
     uint8_t * ZLX_RESTRICT out,
     size_t out_size,
-    size_t * in_pos
+    size_t * ZLX_RESTRICT in_pos
 )
 {
     uint8_t const * i = in;
@@ -274,7 +274,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
     case ZLX_UTF8_DEC: decode = zlx_utf8_to_ucp; break;
     default:
         if (in_pos) *in_pos = 0;
-        return ZLX_UTF_ERR_NO_CONV;
+        return -ZLX_UTF_ERR_NO_CONV;
     }
     switch ((flags & (7 << 3)))
     {
@@ -292,7 +292,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_uconv
         break;
     default:
         if (in_pos) *in_pos = 0;
-        return ZLX_UTF_ERR_NO_CONV;
+        return -ZLX_UTF_ERR_NO_CONV;
     }
     while (i < end)
     {
@@ -334,7 +334,7 @@ ZLX_API int ZLX_CALL zlx_ucp_term_width (uint32_t ucp)
 }
 
 /* zlx_utf8_term_width ******************************************************/
-ZLX_API int ZLX_CALL zlx_utf8_term_width
+ZLX_API zlx_utf_error_t ZLX_CALL zlx_utf8_term_width
 (
     uint8_t const * ZLX_RESTRICT data,
     size_t size,
@@ -345,7 +345,7 @@ ZLX_API int ZLX_CALL zlx_utf8_term_width
 {
     size_t w = 0;
     size_t o = 0;
-    int err = 0;
+    zlx_utf_error_t err = ZLX_UTF_ERR_NONE;
 
     (void) ctx;
 
@@ -358,7 +358,7 @@ ZLX_API int ZLX_CALL zlx_utf8_term_width
         l = zlx_utf8_to_ucp(data + o, data + size, 0, &ucp);
         if (l < 0)
         {
-            err = (int) l;
+            err = (zlx_utf_error_t) -l;
             break;
         }
         o += (size_t) l;
