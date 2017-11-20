@@ -11,34 +11,97 @@
 
 ZLX_C_DECL_BEGIN
 
+/** Highest value for a valid Unicode codepoint. */
 #define ZLX_UNICODE_MAX_CODEPOINT               ((uint32_t) 0x10FFFF)
+/** One past highest valid Unicode codepoint. */
 #define ZLX_UNICODE_CODEPOINT_LIMIT             ((uint32_t) 0x110000)
 
+/** Decode UTF32LE. See zlx_uconv(). */
 #define ZLX_UTF32LE_DEC                         (1 << 0)
+
+/** Decode UTF32BE. See zlx_uconv(). */
 #define ZLX_UTF32BE_DEC                         (2 << 0)
+
+/** Decode UTF16LE. See zlx_uconv(). */
 #define ZLX_UTF16LE_DEC                         (3 << 0)
+
+/** Decode UTF16BE. See zlx_uconv(). */
 #define ZLX_UTF16BE_DEC                         (4 << 0)
+
+/** Decode UTF8. See zlx_uconv(). */
 #define ZLX_UTF8_DEC                            (5 << 0)
 
+/** Encode UTF32LE. See zlx_uconv(). */
 #define ZLX_UTF32LE_ENC                         (1 << 3)
+
+/** Encode UTF32BE. See zlx_uconv(). */
 #define ZLX_UTF32BE_ENC                         (2 << 3)
+
+/** Encode UTF16LE. See zlx_uconv(). */
 #define ZLX_UTF16LE_ENC                         (3 << 3)
+
+/** Encode UTF16BE. See zlx_uconv(). */
 #define ZLX_UTF16BE_ENC                         (4 << 3)
+
+/** Encode UTF8. See zlx_uconv(). */
 #define ZLX_UTF8_ENC                            (5 << 3)
 
+/** Accept surrogate codepoints when decoding UTF32 text.
+ *  This flag must be ORed with #ZLX_UTF32LE_DEC or ZLX_UTF32BE_DEC when
+ *  calling zlx_uconv(), zlx_utf32le_to_ucp() */
 #define ZLX_UTF32_DEC_SURROGATES                (1 << 6)
 
+/** Accept unpaired surrogate codepoints when decoding UTF16 text.
+ *  This flag must be ORed with #ZLX_UTF16LE_DEC or ZLX_UTF16BE_DEC when
+ *  calling zlx_uconv(), zlx_utf32le_to_ucp() */
 #define ZLX_UTF16_DEC_UNPAIRED_SURROGATES       (1 << 7)
+
+/** Don't attempt to decode surrogate pairs as a single codepoint when 
+ *  decoding UTF16 text.
+ *  This flag must be ORed with #ZLX_UTF16LE_DEC or ZLX_UTF16BE_DEC when
+ *  calling zlx_uconv(), zlx_utf16le_to_ucp() */
 #define ZLX_UTF16_DEC_NO_PAIRING                (1 << 8)
 
+/** Reject NUL byte when decoding input. 
+ *  This flag must be ORed with #ZLX_UTF8_DEC when calling zlx_uconv(), 
+ *  zlx_utf8_to_ucp() */
 #define ZLX_UTF8_DEC_NO_NUL_BYTE                (1 << 9)
+
+/** Allow decoding a NUL codepoint from its 2 byte encoding 0xC0 0x80.
+ *  This flag must be ORed with #ZLX_UTF8_DEC when calling zlx_uconv(), 
+ *  zlx_utf8_to_ucp() */
 #define ZLX_UTF8_DEC_TWO_BYTE_NUL               (1 << 10)
+
+/** Allow decoding overy long encoded codepoints.
+ *  This flag must be ORed with #ZLX_UTF8_DEC when calling zlx_uconv(), 
+ *  zlx_utf8_to_ucp() */
 #define ZLX_UTF8_DEC_OVERLY_LONG                (1 << 11)
+
+/** Decode surrogate codepoints.
+ *  Surrogate codepoints (0xD800 - 0xDFFF) are rejected when decoding
+ *  unless this flag is specified.
+ *  This flag must be ORed with #ZLX_UTF8_DEC when calling zlx_uconv(), 
+ *  zlx_utf8_to_ucp() */
 #define ZLX_UTF8_DEC_SURROGATES                 (1 << 12)
+
+/** Decode surrogate pairs.
+ *  Combine decoded surrogate codepoints into the corresponding supplemental
+ *  codepoint (0x10000 - 0x10FFFF).
+ *  This flag must be ORed with #ZLX_UTF8_DEC when calling zlx_uconv(), 
+ *  zlx_utf8_to_ucp() */
 #define ZLX_UTF8_DEC_SURROGATE_PAIRS            (1 << 13)
 
+/** Break supplemental codepoints into surrogate pairs when encoding UTF32.
+ *  This flag must be ORed with ZLX_UTF32LE_ENC or ZLX_UTF32BE_ENC when calling 
+ *  zlx_uconv() */
 #define ZLX_UTF32_ENC_BREAK_SUPPLEM             (1 << 14)
+
+/** Encode NUL codepoint as two-byte UTF8 sequence.
+ *  This flag must be ORed with #ZLX_UTF8_ENC when calling zlx_uconv() */
 #define ZLX_UTF8_ENC_TWO_BYTE_NUL               (1 << 15)
+
+/** Break supplemental codepoints into surrogate pairs when encoding UTF8.
+ *  This flag must be ORed with #ZLX_UTF8_ENC when calling zlx_uconv() */
 #define ZLX_UTF8_ENC_BREAK_SUPPLEM              (1 << 16)
 
 #define ZLX_UTF_ERR_TRUNC                       (-1)
@@ -359,12 +422,16 @@ ZLX_API size_t ZLX_CALL zlx_ucp_to_utf32le
  *  @param flags [in]
  *      conversion flags; must contain just one of:
  *      - #ZLX_UTF8_DEC
- *      - #ZLX_UTF16_DEC
- *      - #ZLX_UTF32_DEC
+ *      - #ZLX_UTF16LE_DEC
+ *      - #ZLX_UTF16BE_DEC
+ *      - #ZLX_UTF32LE_DEC
+ *      - #ZLX_UTF32BE_DEC
  *      and just one of:
  *      - #ZLX_UTF8_ENC
- *      - #ZLX_UTF16_ENC
- *      - #ZLX_UTF32_ENC
+ *      - #ZLX_UTF16LE_ENC
+ *      - #ZLX_UTF16BE_ENC
+ *      - #ZLX_UTF32LE_ENC
+ *      - #ZLX_UTF32BE_ENC
  *      and optionally a meaningful combination of the following:
  *      - #ZLX_UTF8_DEC_NO_NUL_BYTE
  *      - #ZLX_UTF8_DEC_TWO_BYTE_NUL

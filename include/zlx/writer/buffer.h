@@ -38,7 +38,7 @@ ZLX_API void ZLX_CALL zlx_wbuf_init
 /** Writer function for a write-buffer that counts how much data was sent but
  *  fills only the amount available in the write-buffer.
  *  @param context [in]
- *      pointer to a initialized #zlx_wbuf_t instance
+ *      pointer to a initialized zlx_wbuf_t instance
  *  @param data [in]
  *      data to write
  *  @param size [in]
