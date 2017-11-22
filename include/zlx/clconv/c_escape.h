@@ -108,6 +108,7 @@ ZLX_API zlx_clconv_status_t ZLX_CALL zlx_clconv_c_escape
 );
 
 ZLX_C_DECL_END
+
 /** @} */
 
 #endif /* _ZLX_CLCONV_C_ESCAPE_H */

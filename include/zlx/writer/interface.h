@@ -7,6 +7,8 @@
 #include "../lib.h"
 #include "../int.h"
 
+ZLX_C_DECL_BEGIN
+
 /** Function for writing data.
  *  @param context [in/out]
  *      writer context
@@ -25,6 +27,8 @@ typedef size_t (ZLX_CALL * zlx_writer_func_t)
         uint8_t const * ZLX_RESTRICT data,
         size_t size
     );
+
+ZLX_C_DECL_END
 
 /** @} */
 

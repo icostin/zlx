@@ -21,7 +21,7 @@
 #define STR_ESC_HEX 2
 #define STR_ESC_CUSTOM 3
 
-ZLX_API unsigned int ZLX_CALL zlx_vwfmt
+ZLX_API zlx_fmt_status_t ZLX_CALL zlx_vwfmt
 (
     zlx_writer_func_t writer,
     void * writer_context,
@@ -238,7 +238,8 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
                     cc = conv(NULL, 0, buffer, sizeof buffer,
                               &in_len, &out_len, conv_ctx);
                     if (cc) return ZLX_FMT_CONV_ERROR;
-                    if (width_func(buffer, out_len, &width, &wparsed, width_ctx))
+                    if (width_func(buffer, out_len, &width,
+                                   &wparsed, width_ctx))
                         return ZLX_FMT_WIDTH_ERROR;
                     arg_width += width;
                 }
@@ -339,7 +340,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
     }
     //if (writer(&nul, 1, writer_context) != 1) return ZLX_FMT_WRITE_ERROR;
 
-    return 0;
+    return ZLX_FMT_OK;
 }
 #undef CMD_NONE
 #undef CMD_BUF
@@ -353,7 +354,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
 #undef STR_ESC_HEX
 
 /* zlx_wfmt *****************************************************************/
-ZLX_API unsigned int ZLX_CALL zlx_wfmt
+ZLX_API zlx_fmt_status_t ZLX_CALL zlx_wfmt
 (
     zlx_writer_func_t writer,
     void * writer_context,
@@ -373,7 +374,7 @@ ZLX_API unsigned int ZLX_CALL zlx_wfmt
 }
 
 /* zlx_vfmt *****************************************************************/
-ZLX_API unsigned int ZLX_CALL zlx_vfmt
+ZLX_API zlx_fmt_status_t ZLX_CALL zlx_vfmt
 (
     zlx_writer_func_t writer,
     void * writer_context,
@@ -381,7 +382,8 @@ ZLX_API unsigned int ZLX_CALL zlx_vfmt
     va_list va
 )
 {
-    return zlx_vwfmt(writer, writer_context, zlx_utf8_term_width, NULL, fmt, va);
+    return zlx_vwfmt(writer, writer_context, 
+                     zlx_utf8_term_width, NULL, fmt, va);
 }
 
 /* zlx_fmt ******************************************************************/
@@ -423,7 +425,6 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_vsfmt
 
     return rv ? -(ptrdiff_t) rv : (ptrdiff_t) wb.offset;
 }
-
 
 /* zlx_sfmt *****************************************************************/
 ZLX_API ptrdiff_t ZLX_CALL zlx_sfmt

@@ -13,11 +13,18 @@
 #include "writer/interface.h"
 #include "unicode.h"
 
-#define ZLX_FMT_MALFORMED 1 /**< bad format string error code */
-#define ZLX_FMT_WIDTH_ERROR 2 /**< width function returned error */
-#define ZLX_FMT_WRITE_ERROR 3 /**< write error */
-#define ZLX_FMT_CONV_ERROR 4 /**< conversion error during escaping of some string */
-#define ZLX_FMT_NO_CODE 5 /**< feature not implemented */
+ZLX_C_DECL_BEGIN
+
+/** Status for formatting. */
+typedef enum zlx_fmt_status
+{
+    ZLX_FMT_OK = 0,
+    ZLX_FMT_MALFORMED, /**< bad format string error code */
+    ZLX_FMT_WIDTH_ERROR, /**< width function returned error */
+    ZLX_FMT_WRITE_ERROR, /**< write error */
+    ZLX_FMT_CONV_ERROR, /**< conversion error during escaping of some string */
+    ZLX_FMT_NO_CODE, /**< feature not implemented */
+} zlx_fmt_status_t;
 
 /* zlx_vfmt *****************************************************************/
 /**
@@ -75,7 +82,7 @@
  *  * 'x': radix 16 (hexadecimal) and use '0x' prefix
  *  * 'X': radix 16 (hexadecimal)
  */
-ZLX_API unsigned int ZLX_CALL zlx_vwfmt
+ZLX_API zlx_fmt_status_t ZLX_CALL zlx_vwfmt
 (
     zlx_writer_func_t writer,
     void * writer_context,
@@ -86,7 +93,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vwfmt
 );
 
 /* zlx_vfmt *****************************************************************/
-ZLX_API unsigned int ZLX_CALL zlx_vfmt
+ZLX_API zlx_fmt_status_t ZLX_CALL zlx_vfmt
 (
     zlx_writer_func_t writer,
     void * writer_context,
@@ -99,7 +106,7 @@ ZLX_API unsigned int ZLX_CALL zlx_vfmt
  *  Writes formatted UTF-8 text.
  *  See zlx_vwfmt().
  */
-ZLX_API unsigned int ZLX_CALL zlx_wfmt
+ZLX_API zlx_fmt_status_t ZLX_CALL zlx_wfmt
 (
     zlx_writer_func_t writer,
     void * writer_context,
@@ -110,7 +117,7 @@ ZLX_API unsigned int ZLX_CALL zlx_wfmt
 );
 
 /* zlx_fmt ******************************************************************/
-ZLX_API unsigned int ZLX_CALL zlx_fmt
+ZLX_API zlx_fmt_status_t ZLX_CALL zlx_fmt
 (
     zlx_writer_func_t writer,
     void * writer_context,
@@ -135,6 +142,8 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_sfmt
     char const * ZLX_RESTRICT fmt,
     ...
 );
+
+ZLX_C_DECL_END
 
 /** @} */
 
