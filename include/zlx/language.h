@@ -141,7 +141,7 @@
 #endif
 
 /** @def ZLX_C_DECL_BEGIN
- *  Macro to mark de start of a C-mode declaration block (functions/globals).
+ *  Macro to mark the start of a C-mode declaration block (functions/globals).
  *  When compiling under C++ this is required to provide symbols from C files.
  *
  *  @def ZLX_C_DECL_END
