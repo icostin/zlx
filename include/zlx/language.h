@@ -233,17 +233,17 @@
  *      Due to the preprocessor macros used to generate the code the enum
  *      is limited to 64 values.
  */
-#define ZLX_ENUM_DECL(name, seed, first, ...) \
-    enum name { first = seed, __VA_ARGS__ }; \
-    ZLX_INLINE char const * name##_as_str (enum name e) { \
+#define ZLX_ENUM_DECL(type, prefix, seed, first, ...) \
+    enum prefix##_enum { first = seed, __VA_ARGS__ }; \
+    ZLX_INLINE char const * prefix##_as_str (enum prefix##_enum e) { \
         static char const * const t[] = { \
             ZLX_S1(first) ZLX_VA_FOR_EACH(_ZLX_ENUM_STR, x, __VA_ARGS__) \
         }; \
         unsigned int i = (unsigned int) e - first; \
-        if (i >= ZLX_ITEM_COUNT(t)) return "<unknown-" #name ">"; \
+        if (i >= ZLX_ITEM_COUNT(t)) return "<unknown-" #prefix ">"; \
         return t[i]; \
     } \
-    typedef enum name name##_t
+    typedef enum prefix##_enum type
 
 
 /** @} */
