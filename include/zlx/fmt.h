@@ -12,19 +12,46 @@
 #include "lib.h"
 #include "writer/interface.h"
 #include "unicode.h"
+#include "int/sizerr.h"
 
 ZLX_C_DECL_BEGIN
 
-/** Status for formatting. */
-typedef enum zlx_fmt_status
-{
-    ZLX_FMT_OK = 0,
-    ZLX_FMT_MALFORMED, /**< bad format string error code */
-    ZLX_FMT_WIDTH_ERROR, /**< width function returned error */
-    ZLX_FMT_WRITE_ERROR, /**< write error */
-    ZLX_FMT_CONV_ERROR, /**< conversion error during escaping of some string */
-    ZLX_FMT_NO_CODE, /**< feature not implemented */
-} zlx_fmt_status_t;
+/** @enum zlx_fmt_status_enum
+ *  Status for formatting.
+ *  @var zlx_fmt_status_t::ZLX_FMT_OK
+ *      Formatting ok.
+ *  @var zlx_fmt_status_t::ZLX_FMT_MALFORMED
+ *      bad format string error code
+ *  @var zlx_fmt_status_t::ZLX_FMT_WIDTH_ERROR
+ *      width function returned error
+ *  @var zlx_fmt_status_t::ZLX_FMT_WRITE_ERROR
+ *      write error
+ *  @var zlx_fmt_status_t::ZLX_FMT_CONV_ERROR
+ *      conversion error during escaping of some string
+ *  @var zlx_fmt_status_t::ZLX_FMT_NO_CODE
+ *      feature not implemented
+ *  @typedef zlx_fmt_status_t
+ *      Type for enum zlx_fmt_status_enum.
+ **/
+ZLX_ENUM_DECL(zlx_fmt_status_t, zlx_fmt_status, 0,
+    ZLX_FMT_OK,
+    ZLX_FMT_MALFORMED,
+    ZLX_FMT_WIDTH_ERROR,
+    ZLX_FMT_WRITE_ERROR,
+    ZLX_FMT_CONV_ERROR,
+    ZLX_FMT_NO_CODE);
+
+/** @struct zlx_fmt_sizerr_struct
+ *  Struct representing a size returned by a successful formatting operation 
+ *  or a status from zlx_fmt_status_t on error.
+ *  @fn int zlx_fmt_sizerr_is_size (zlx_fmt_sizerr_t fse);
+ *  @fn int zlx_fmt_sizerr_is_error (zlx_fmt_sizerr_t fse);
+ *  @fn size_t zlx_fmt_sizerr_to_size (zlx_fmt_sizerr_t fse);
+ *  @fn zlx_fmt_status_t zlx_fmt_sizerr_to_error (zlx_fmt_sizerr_t fse);
+ *  @typedef zlx_fmt_sizerr_t
+ *      Type for zlx_fmt_sizerr_struct.
+ */
+ZLX_SIZERR_DECL(zlx_fmt_sizerr_t, zlx_fmt_sizerr, zlx_fmt_status_t);
 
 /* zlx_vfmt *****************************************************************/
 /**
