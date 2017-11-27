@@ -54,7 +54,7 @@ int fmt_test (void)
 #define N 100
     uint8_t buf[N + 1];
     zlx_wbuf_t wb;
-    unsigned int fs;
+    zlx_fmt_status_t fs;
     ptrdiff_t d;
 
     zlx_wbuf_init(&wb, buf, N); buf[N] = 0;
@@ -68,7 +68,7 @@ int fmt_test (void)
     TE(fs == 0, "fmt status: %u", fs);
     TE(!strcmp((char *) buf, "str: coo coo"), "got: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 9, "test $i", 12345);
+    d = zlx_sfmt(buf, 9, "test $i", 12345)._raw;
     TE(d == 10, "d=%d", (int) d);
     TE(!strcmp((char *) buf, "test 123"), "s: '%s'", (char *) buf);
 
@@ -78,24 +78,24 @@ int fmt_test (void)
     TE(fs == ZLX_FMT_WRITE_ERROR, "fmt status: %u", fs);
     T(!memcmp(buf, "hell", 4));
 
-    T(zlx_sfmt(buf, 0, "") == -ZLX_FMT_WRITE_ERROR);
+    T(zlx_sfmt(buf, 0, "")._raw == -ZLX_FMT_WRITE_ERROR);
 
-    d = zlx_sfmt(buf, 99, "test $08i", 12345);
+    d = zlx_sfmt(buf, 99, "test $08i", 12345)._raw;
     TE(!strcmp((char *) buf, "test 00012345"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "test $c", 0xD800);
+    d = zlx_sfmt(buf, 99, "test $c", 0xD800)._raw;
     TE(d == -ZLX_FMT_MALFORMED, "d=%ld", (long) d);
     TE(!strcmp((char *) buf, "test "), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "test $c", 0xFFFF);
+    d = zlx_sfmt(buf, 99, "test $c", 0xFFFF)._raw;
     TE(d == -ZLX_FMT_WIDTH_ERROR, "d=%ld", (long) d);
     TE(!strcmp((char *) buf, "test "), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "test $c", 0x100);
+    d = zlx_sfmt(buf, 99, "test $c", 0x100)._raw;
     TE(d == 7, "d=%ld", (long) d);
     TE(!strcmp((char *) buf, "test \xC4\x80"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "test $xb", 0xFE);
+    d = zlx_sfmt(buf, 99, "test $xb", 0xFE)._raw;
     TE(!strcmp((char *) buf, "test 0xFE"), "s: '%s'", (char *) buf);
 
     zlx_wbuf_init(&wb, buf, N); buf[N] = 0;
@@ -104,122 +104,122 @@ int fmt_test (void)
     TE(fs == ZLX_FMT_WIDTH_ERROR, "fs: %u", fs);
     TE(!strcmp((char *) buf, "zzz "), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "bad_fmt=$\a");
+    d = zlx_sfmt(buf, 99, "bad_fmt=$\a")._raw;
     TE(d == -ZLX_FMT_MALFORMED, "d=%ld", (long) d);
 
-    d = zlx_sfmt(buf, 99, "i8=$B", (int8_t) -2);
+    d = zlx_sfmt(buf, 99, "i8=$B", (int8_t) -2)._raw;
     TE(!strcmp((char *) buf, "i8=-2"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "i16=$W", (int16_t) -256);
+    d = zlx_sfmt(buf, 99, "i16=$W", (int16_t) -256)._raw;
     TE(!strcmp((char *) buf, "i16=-256"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "u16=$w", (uint16_t) 32768);
+    d = zlx_sfmt(buf, 99, "u16=$w", (uint16_t) 32768)._raw;
     TE(!strcmp((char *) buf, "u16=32768"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "i32=$D", (int32_t) -65536);
+    d = zlx_sfmt(buf, 99, "i32=$D", (int32_t) -65536)._raw;
     TE(!strcmp((char *) buf, "i32=-65536"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "u32=$d", (uint32_t) 3000000000);
+    d = zlx_sfmt(buf, 99, "u32=$d", (uint32_t) 3000000000)._raw;
     TE(!strcmp((char *) buf, "u32=3000000000"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "i64=$Q", INT64_C(-30000000000));
+    d = zlx_sfmt(buf, 99, "i64=$Q", INT64_C(-30000000000))._raw;
     TE(!strcmp((char *) buf, "i64=-30000000000"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "u64=$q", UINT64_C(300000000000));
+    d = zlx_sfmt(buf, 99, "u64=$q", UINT64_C(300000000000))._raw;
     TE(!strcmp((char *) buf, "u64=300000000000"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "i=$I", (int) -65536);
+    d = zlx_sfmt(buf, 99, "i=$I", (int) -65536)._raw;
     TE(!strcmp((char *) buf, "i=-65536"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "u=$i", (unsigned int) 3000000000);
+    d = zlx_sfmt(buf, 99, "u=$i", (unsigned int) 3000000000)._raw;
     TE(!strcmp((char *) buf, "u=3000000000"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "l=$L", (long) -65536);
+    d = zlx_sfmt(buf, 99, "l=$L", (long) -65536)._raw;
     TE(!strcmp((char *) buf, "l=-65536"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "ul=$l", (unsigned long) 3000000000);
+    d = zlx_sfmt(buf, 99, "ul=$l", (unsigned long) 3000000000)._raw;
     TE(!strcmp((char *) buf, "ul=3000000000"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "short=$H", (short) -256);
+    d = zlx_sfmt(buf, 99, "short=$H", (short) -256)._raw;
     TE(!strcmp((char *) buf, "short=-256"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "ushort=$h", (unsigned short) 32768);
+    d = zlx_sfmt(buf, 99, "ushort=$h", (unsigned short) 32768)._raw;
     TE(!strcmp((char *) buf, "ushort=32768"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "ptrdiff=$Z", (ptrdiff_t) -65536);
+    d = zlx_sfmt(buf, 99, "ptrdiff=$Z", (ptrdiff_t) -65536)._raw;
     TE(!strcmp((char *) buf, "ptrdiff=-65536"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "size=$z", (size_t) 3000000000);
+    d = zlx_sfmt(buf, 99, "size=$z", (size_t) 3000000000)._raw;
     TE(!strcmp((char *) buf, "size=3000000000"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "iptr=$P", (intptr_t) -65536);
+    d = zlx_sfmt(buf, 99, "iptr=$P", (intptr_t) -65536)._raw;
     TE(!strcmp((char *) buf, "iptr=-10000"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "uptr=$p", (size_t) 0x55555555);
+    d = zlx_sfmt(buf, 99, "uptr=$p", (size_t) 0x55555555)._raw;
     TE(!strcmp((char *) buf, "uptr=55555555"), "s: '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "bin=$yi", 0x5A);
+    d = zlx_sfmt(buf, 99, "bin=$yi", 0x5A)._raw;
     TE(!strcmp((char *) buf, "bin=0b1011010"), "got '%s'", (char *) buf);
-    d = zlx_sfmt(buf, 99, "bin=$08Yi", 0x5A);
+    d = zlx_sfmt(buf, 99, "bin=$08Yi", 0x5A)._raw;
     TE(!strcmp((char *) buf, "bin=01011010"), "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "oct=$oi", 0x5A);
+    d = zlx_sfmt(buf, 99, "oct=$oi", 0x5A)._raw;
     TE(!strcmp((char *) buf, "oct=0o132"), "got '%s'", (char *) buf);
-    d = zlx_sfmt(buf, 99, "oct=$08Oi", 0x5A);
+    d = zlx_sfmt(buf, 99, "oct=$08Oi", 0x5A)._raw;
     TE(!strcmp((char *) buf, "oct=00000132"), "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "decimal=$ni", 0x63);
+    d = zlx_sfmt(buf, 99, "decimal=$ni", 0x63)._raw;
     TE(!strcmp((char *) buf, "decimal=0d99"), "got '%s'", (char *) buf);
-    d = zlx_sfmt(buf, 99, "decimal=$08Ni", 0x63);
+    d = zlx_sfmt(buf, 99, "decimal=$08Ni", 0x63)._raw;
     TE(!strcmp((char *) buf, "decimal=00000099"), "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "dec_grp=$/3,i", 12345);
+    d = zlx_sfmt(buf, 99, "dec_grp=$/3,i", 12345)._raw;
     TE(!strcmp((char *) buf, "dec_grp=12,345"), "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "dec_grp=$/3", 12345);
+    d = zlx_sfmt(buf, 99, "dec_grp=$/3", 12345)._raw;
     TE(d == -ZLX_FMT_MALFORMED, "d=%ld", (long) d);
 
-    d = zlx_sfmt(buf, 99, "hex=$xi", 0x63);
+    d = zlx_sfmt(buf, 99, "hex=$xi", 0x63)._raw;
     TE(!strcmp((char *) buf, "hex=0x63"), "got '%s'", (char *) buf);
-    d = zlx_sfmt(buf, 99, "hex=$08Xi", 0x63);
+    d = zlx_sfmt(buf, 99, "hex=$08Xi", 0x63)._raw;
     TE(!strcmp((char *) buf, "hex=00000063"), "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "sprec=$.3s", "abcdef");
+    d = zlx_sfmt(buf, 99, "sprec=$.3s", "abcdef")._raw;
     TE(!strcmp((char *) buf, "sprec=abc"), "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "sprec=$.*s", (size_t) 3, "abcdef");
+    d = zlx_sfmt(buf, 99, "sprec=$.*s", (size_t) 3, "abcdef")._raw;
     TE(!strcmp((char *) buf, "sprec=abc"), "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "str_non_printable: $s", "\xEF\xBF\xBF");
+    d = zlx_sfmt(buf, 99, "str_non_printable: $s", "\xEF\xBF\xBF")._raw;
     TE(d == -ZLX_FMT_WIDTH_ERROR, "d=%ld", (long) d);
 
-    d = zlx_sfmt(buf, 99, "hex_str=$xs", "\xEF\xBF\xBF");
+    d = zlx_sfmt(buf, 99, "hex_str=$xs", "\xEF\xBF\xBF")._raw;
     TE(!strcmp((char *) buf, "hex_str=EFBFBF"), "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "c_esc_str=$es", "\n\\\xEF\xBF\xBF\a");
+    d = zlx_sfmt(buf, 99, "c_esc_str=$es", "\n\\\xEF\xBF\xBF\a")._raw;
     TE(!strcmp((char *) buf, "c_esc_str=\\n\\\\\\xEF\\xBF\\xBF\\a"),
        "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "hex_str=$xs", "\xEF\xBF\xBF");
+    d = zlx_sfmt(buf, 99, "hex_str=$xs", "\xEF\xBF\xBF")._raw;
     TE(!strcmp((char *) buf, "hex_str=EFBFBF"), "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "c_esc_str=$10es", "\xEF\xBF\xBF");
+    d = zlx_sfmt(buf, 99, "c_esc_str=$10es", "\xEF\xBF\xBF")._raw;
     TE(!strcmp((char *) buf, "c_esc_str=\\xEF\\xBF\\xBF"),
        "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "c_esc_str=$>15es", "\xEF\xBF\xBF");
+    d = zlx_sfmt(buf, 99, "c_esc_str=$>15es", "\xEF\xBF\xBF")._raw;
     TE(!strcmp((char *) buf, "c_esc_str=   \\xEF\\xBF\\xBF"),
        "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 99, "c_esc_str=$<15es.", "\xEF\xBF\xBF");
+    d = zlx_sfmt(buf, 99, "c_esc_str=$<15es.", "\xEF\xBF\xBF")._raw;
     TE(!strcmp((char *) buf, "c_esc_str=\\xEF\\xBF\\xBF   ."),
        "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 199, "c_esc_str=$>100s", "x");
+    d = zlx_sfmt(buf, 199, "c_esc_str=$>100s", "x")._raw;
     TE(!strcmp((char *) buf, "c_esc_str=                                                                                                   x"),
        "got '%s'", (char *) buf);
 
-    d = zlx_sfmt(buf, 199, "c_esc_str=$<100s.", "x");
+    d = zlx_sfmt(buf, 199, "c_esc_str=$<100s.", "x")._raw;
     TE(!strcmp((char *) buf, "c_esc_str=x                                                                                                   ."),
        "got '%s'", (char *) buf);
 
@@ -255,32 +255,32 @@ int fmt_test (void)
     TE(!strcmp((char *) buf, "npconv: "), "s: '%s'", (char *) buf);
 
     /* custom converter */
-    d = zlx_sfmt(buf, 99, "custom_conv=$Es.", test_conv, NULL, "abc");
+    d = zlx_sfmt(buf, 99, "custom_conv=$Es.", test_conv, NULL, "abc")._raw;
     TE(!strcmp((char *) buf, "custom_conv=abc\xEF\xBF\xBF."),
        "got '%s'", (char *) buf);
 
     /* custom converter rejects input during width calculation */
-    d = zlx_sfmt(buf, 99, "ccrej=$1Es.", test_conv, NULL, "abXc");
+    d = zlx_sfmt(buf, 99, "ccrej=$1Es.", test_conv, NULL, "abXc")._raw;
     TE(d == -ZLX_FMT_CONV_ERROR, "d=%d", (int) d);
     TE(!strcmp((char *) buf, "ccrej="), "got '%s'", (char *) buf);
 
     /* custom converter rejects input during pasting */
-    d = zlx_sfmt(buf, 99, "ccrej=$Es.", test_conv, NULL, "abXc");
+    d = zlx_sfmt(buf, 99, "ccrej=$Es.", test_conv, NULL, "abXc")._raw;
     TE(d == -ZLX_FMT_CONV_ERROR, "d=%d", (int) d);
     TE(!strcmp((char *) buf, "ccrej="), "got '%s'", (char *) buf);
 
     /* custom converter rejects at end of conversion (width calc) */
-    d = zlx_sfmt(buf, 99, "ccrej=$2Es.", test_conv, "z", "abc");
+    d = zlx_sfmt(buf, 99, "ccrej=$2Es.", test_conv, "z", "abc")._raw;
     TE(d == -ZLX_FMT_CONV_ERROR, "d=%d", (int) d);
     TE(!strcmp((char *) buf, "ccrej="), "got '%s'", (char *) buf);
 
     /* custom converter rejects at end of conversion (pasting) */
-    d = zlx_sfmt(buf, 99, "ccrej=$Es.", test_conv, "z", "abc");
+    d = zlx_sfmt(buf, 99, "ccrej=$Es.", test_conv, "z", "abc")._raw;
     TE(d == -ZLX_FMT_CONV_ERROR, "d=%d", (int) d);
     TE(!strcmp((char *) buf, "ccrej=abc"), "got '%s'", (char *) buf);
 
     /* custom converter produces a non-printable tail */
-    d = zlx_sfmt(buf, 99, "ccrej=$1Es.", test_conv, NULL, "abc");
+    d = zlx_sfmt(buf, 99, "ccrej=$1Es.", test_conv, NULL, "abc")._raw;
     TE(d == -ZLX_FMT_WIDTH_ERROR, "d=%d", (int) d);
     TE(!strcmp((char *) buf, "ccrej="), "got '%s'", (char *) buf);
 

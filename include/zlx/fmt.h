@@ -153,7 +153,7 @@ ZLX_API zlx_fmt_status_t ZLX_CALL zlx_fmt
 );
 
 /* zlx_vfmt *****************************************************************/
-ZLX_API ptrdiff_t ZLX_CALL zlx_vsfmt
+ZLX_API zlx_fmt_sizerr_t ZLX_CALL zlx_vsfmt
 (
     uint8_t * ZLX_RESTRICT out,
     size_t out_size,
@@ -162,7 +162,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_vsfmt
 );
 
 /* zlx_sfmt *****************************************************************/
-ZLX_API ptrdiff_t ZLX_CALL zlx_sfmt
+ZLX_API zlx_fmt_sizerr_t ZLX_CALL zlx_sfmt
 (
     uint8_t * ZLX_RESTRICT out,
     size_t out_size,

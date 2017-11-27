@@ -21,6 +21,7 @@
 #define STR_ESC_HEX 2
 #define STR_ESC_CUSTOM 3
 
+/* zlx_vwfmt ****************************************************************/
 ZLX_API zlx_fmt_status_t ZLX_CALL zlx_vwfmt
 (
     zlx_writer_func_t writer,
@@ -365,7 +366,7 @@ ZLX_API zlx_fmt_status_t ZLX_CALL zlx_wfmt
 )
 {
     va_list va;
-    unsigned int rc;
+    zlx_fmt_status_t rc;
 
     va_start(va, fmt);
     rc = zlx_vwfmt(writer, writer_context, width_func, width_ctx, fmt, va);
@@ -387,7 +388,7 @@ ZLX_API zlx_fmt_status_t ZLX_CALL zlx_vfmt
 }
 
 /* zlx_fmt ******************************************************************/
-ZLX_API unsigned int ZLX_CALL zlx_fmt
+ZLX_API zlx_fmt_status_t ZLX_CALL zlx_fmt
 (
     zlx_writer_func_t writer,
     void * writer_context,
@@ -396,7 +397,7 @@ ZLX_API unsigned int ZLX_CALL zlx_fmt
 )
 {
     va_list va;
-    unsigned int rc;
+    zlx_fmt_status_t rc;
 
     va_start(va, fmt);
     rc = zlx_vfmt(writer, writer_context, fmt, va);
@@ -404,8 +405,8 @@ ZLX_API unsigned int ZLX_CALL zlx_fmt
     return rc;
 }
 
-/* zlx_vfmt *****************************************************************/
-ZLX_API ptrdiff_t ZLX_CALL zlx_vsfmt
+/* zlx_vsfmt ****************************************************************/
+ZLX_API zlx_fmt_sizerr_t ZLX_CALL zlx_vsfmt
 (
     uint8_t * ZLX_RESTRICT out,
     size_t size,
@@ -414,20 +415,22 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_vsfmt
 )
 {
     zlx_wbuf_t wb;
-    unsigned int rv;
+    zlx_fmt_status_t rv;
 
-    if (!size) return -ZLX_FMT_WRITE_ERROR;
+    if (!size) return zlx_fmt_sizerr_from_error(ZLX_FMT_WRITE_ERROR);
     zlx_wbuf_init(&wb, out, size - 1);
     rv = zlx_vfmt(zlx_wbuf_writer, &wb, fmt, va);
     out[wb.offset < size ? wb.offset : size - 1] = 0;
     /* wbuf_writer should never return write error */
     ZLX_ASSERT(rv != ZLX_FMT_WRITE_ERROR);
 
-    return rv ? -(ptrdiff_t) rv : (ptrdiff_t) wb.offset;
+    return rv 
+        ? zlx_fmt_sizerr_from_error(rv) 
+        : zlx_fmt_sizerr_from_size(wb.offset);
 }
 
 /* zlx_sfmt *****************************************************************/
-ZLX_API ptrdiff_t ZLX_CALL zlx_sfmt
+ZLX_API zlx_fmt_sizerr_t ZLX_CALL zlx_sfmt
 (
     uint8_t * ZLX_RESTRICT out,
     size_t size,
@@ -436,7 +439,7 @@ ZLX_API ptrdiff_t ZLX_CALL zlx_sfmt
 )
 {
     va_list va;
-    ptrdiff_t rc;
+    zlx_fmt_sizerr_t rc;
 
     va_start(va, fmt);
     rc = zlx_vsfmt(out, size, fmt, va);
