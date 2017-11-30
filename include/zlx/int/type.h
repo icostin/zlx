@@ -41,6 +41,19 @@
 # error todo: mimick stddef.h
 #endif
 
+typedef uint8_t zlx_u8_t;
+typedef uint16_t zlx_u16_t;
+typedef uint32_t zlx_u32_t;
+typedef uint64_t zlx_u64_t;
+typedef int8_t zlx_s8_t;
+typedef int16_t zlx_s16_t;
+typedef int32_t zlx_s32_t;
+typedef int64_t zlx_s64_t;
+typedef size_t zlx_size_t, zlx_usize_t;
+typedef ptrdiff_t zlx_ptrdiff_t, zlx_ssize_t;
+typedef uintptr_t zlx_uptr_t;
+typedef intptr_t zlx_sptr_t;
+
 /** @} */
 
 #endif /* _ZLX_INT_TYPE_H */

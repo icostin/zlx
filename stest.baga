@@ -3,6 +3,7 @@ prod := exe
 src := test/*.c
 cppflags += -DZLXOPT_STATIC
 cflags += -std=c11 -Wpedantic -Wall -Wextra -Wconversion -Werror
+cflags[mingw] := -Wno-pedantic-ms-format
 ldflags += -static
 ldlibs += -lzlx
 cflags[clang-cov] += -O0

@@ -48,8 +48,6 @@ ZLX_ENUM_DECL(zlx_fmt_status_t, zlx_fmt_status, 0,
  *  @fn int zlx_fmt_sizerr_is_error (zlx_fmt_sizerr_t fse);
  *  @fn size_t zlx_fmt_sizerr_to_size (zlx_fmt_sizerr_t fse);
  *  @fn zlx_fmt_status_t zlx_fmt_sizerr_to_error (zlx_fmt_sizerr_t fse);
- *  @typedef zlx_fmt_sizerr_t
- *      Type for zlx_fmt_sizerr_struct.
  */
 ZLX_SIZERR_DECL(zlx_fmt_sizerr_t, zlx_fmt_sizerr, zlx_fmt_status_t);
 

@@ -7,6 +7,7 @@
  */
 
 #include "../lib.h"
+#include "../assert.h"
 #include "type.h"
 
 ZLX_C_DECL_BEGIN
@@ -564,6 +565,64 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
 );
 
 
+#define _ZLX_INT_CONV(src_type, dest_type) \
+    ZLX_INLINE zlx_##dest_type##_t zlx_##dest_type##_from_##src_type \
+        (zlx_##src_type##_t src_value) { \
+        zlx_##dest_type##_t dest_value = (zlx_##dest_type##_t) src_value; \
+        ZLX_ASSERT((zlx_##src_type##_t) dest_value == src_value); \
+        return dest_value; \
+    } \
+    ZLX_INLINE zlx_##dest_type##_t zlx_##src_type##_to_##dest_type \
+        (zlx_##src_type##_t src_value) { \
+        zlx_##dest_type##_t dest_value = (zlx_##dest_type##_t) src_value; \
+        ZLX_ASSERT((zlx_##src_type##_t) dest_value == src_value); \
+        return dest_value; \
+    } \
+    ZLX_INLINE zlx_##dest_type##_t zlx_trunc_##dest_type##_from_##src_type \
+        (zlx_##src_type##_t src_value) { \
+        return  (zlx_##dest_type##_t) src_value; \
+    } \
+    ZLX_INLINE zlx_##dest_type##_t zlx_trunc_##src_type##_to_##dest_type \
+        (zlx_##src_type##_t src_value) { \
+        return (zlx_##dest_type##_t) src_value; \
+    } \
+    typedef zlx_##dest_type##_t zlx_##dest_type##_from_##src_type##_ret_t
+
+#define _ZLX_INT_MIX_CONV(src_type, dest_type) \
+    ZLX_INLINE zlx_##dest_type##_t zlx_##dest_type##_from_##src_type \
+        (zlx_##src_type##_t src_value) { \
+        zlx_##dest_type##_t dest_value = (zlx_##dest_type##_t) src_value; \
+        ZLX_ASSERT((zlx_##src_type##_t) dest_value == src_value); \
+        return dest_value; \
+    } \
+    ZLX_INLINE zlx_##dest_type##_t zlx_##src_type##_to_##dest_type \
+        (zlx_##src_type##_t src_value) { \
+        zlx_##dest_type##_t dest_value = (zlx_##dest_type##_t) src_value; \
+        ZLX_ASSERT((zlx_##src_type##_t) dest_value == src_value); \
+        return dest_value; \
+    } \
+    ZLX_INLINE zlx_##dest_type##_t zlx_trunc_##dest_type##_from_##src_type \
+        (zlx_##src_type##_t src_value) { \
+        return  (zlx_##dest_type##_t) src_value; \
+    } \
+    ZLX_INLINE zlx_##dest_type##_t zlx_trunc_##src_type##_to_##dest_type \
+        (zlx_##src_type##_t src_value) { \
+        return (zlx_##dest_type##_t) src_value; \
+    } \
+    typedef zlx_##dest_type##_t zlx_##dest_type##_from_##src_type##_ret_t
+
+
+/* zlx_u16_to_u8 ************************************************************/
+/** Lossless conversion from 16-bit unsigned int to 8-bit unsigned int.
+ *  @param value [in] value
+ *  @return same @a value
+ *  @note The function asserts that the value can fit the output type.
+ */
+ZLX_INLINE uint8_t zlx_u16_to_u8 (uint16_t value);
+ZLX_INLINE uint8_t zlx_u8_from_u16 (uint16_t value);
+ZLX_INLINE uint8_t zlx_trunc_u16_to_u8 (uint16_t value);
+ZLX_INLINE uint8_t zlx_trunc_u8_from_u16 (uint16_t value);
+_ZLX_INT_CONV(u16, u8);
 
 ZLX_C_DECL_END
 /** @} */

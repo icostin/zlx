@@ -5,7 +5,7 @@
  *  @{ */
 
 #include "../lib.h"
-#include "../int.h"
+#include "../int/type.h"
 
 ZLX_C_DECL_BEGIN
 
