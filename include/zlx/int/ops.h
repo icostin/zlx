@@ -640,6 +640,7 @@ uint8_t zlx_cast_u8_from_u16 (uint16_t value);
 #endif
 
 _ZLX_INT_CONV(u16, u8);
+_ZLX_INT_CONV(u32, u8);
 _ZLX_INT_MIX_CONV(u8, s8);
 _ZLX_INT_MIX_CONV(u16, s8);
 
