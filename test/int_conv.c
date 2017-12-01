@@ -8,8 +8,18 @@
 
 ZLX_LOCAL uint8_t u16_to_u8 (uint16_t v16);
 ZLX_LOCAL uint8_t u8_from_u16 (uint16_t v16);
-ZLX_LOCAL uint8_t trunc_u16_to_u8 (uint16_t v16);
-ZLX_LOCAL uint8_t trunc_u8_from_u16 (uint16_t v16);
+ZLX_LOCAL uint8_t cast_u16_to_u8 (uint16_t v16);
+ZLX_LOCAL uint8_t cast_u8_from_u16 (uint16_t v16);
+
+ZLX_LOCAL int8_t u8_to_s8 (uint8_t v8);
+ZLX_LOCAL int8_t s8_from_u8 (uint8_t v8);
+ZLX_LOCAL int8_t cast_u8_to_s8 (uint8_t v8);
+ZLX_LOCAL int8_t cast_s8_from_u8 (uint8_t v8);
+
+ZLX_LOCAL int8_t u16_to_s8 (uint16_t v16);
+ZLX_LOCAL int8_t s8_from_u16 (uint16_t v16);
+ZLX_LOCAL int8_t cast_u16_to_s8 (uint16_t v16);
+ZLX_LOCAL int8_t cast_s8_from_u16 (uint16_t v16);
 
 #define ICT(func, expr, exp_rc, exp_val) \
     static int func (void * o) { \
