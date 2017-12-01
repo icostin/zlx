@@ -17,6 +17,16 @@ ICT(u8_from_u32_100, u8_from_u32(0x100), 1, 0);
 ICT(cast_u8_from_u32_12345678, cast_u8_from_u32(0x12345678), 0, 0x78);
 ICT(cast_u32_to_u8_23456, cast_u32_to_u8(0x23456), 0, 0x56);
 
+ICT(u64_to_u8_00, u64_to_u8(0), 0, 0);
+ICT(u64_to_u8_FF, u64_to_u8(0xFF), 0, 0xFF);
+ICT(u64_to_u8_100, u64_to_u8(0x100), 1, 0);
+ICT(u64_to_u8_2G, u64_to_u8(0x80000000), 1, 0);
+ICT(u8_from_u64_00, u8_from_u64(0), 0, 0);
+ICT(u8_from_u64_FF, u8_from_u64(0xFF), 0, 0xFF);
+ICT(u8_from_u64_100, u8_from_u64(0x100), 1, 0);
+ICT(cast_u8_from_u64_12345678, cast_u8_from_u64(UINT64_C(0xCC12345678)), 0, 0x78);
+ICT(cast_u64_to_u8_23456, cast_u64_to_u8(0x23456), 0, 0x56);
+
 ICT(u8_to_s8_00, u8_to_s8(0), 0, 0);
 ICT(u8_to_s8_11, u8_to_s8(0x11), 0, 0x11);
 ICT(u8_to_s8_80, u8_to_s8(0x80), 1, 0);

@@ -135,6 +135,11 @@ ZLX_LOCAL uint8_t u8_from_u32 (uint32_t v32) { return zlx_u8_from_u32(v32); }
 ZLX_LOCAL uint8_t cast_u32_to_u8 (uint32_t v32) { return zlx_cast_u32_to_u8(v32); }
 ZLX_LOCAL uint8_t cast_u8_from_u32 (uint32_t v32) { return zlx_cast_u8_from_u32(v32); }
 
+ZLX_LOCAL uint8_t u64_to_u8 (uint64_t v64) { return zlx_u64_to_u8(v64); }
+ZLX_LOCAL uint8_t u8_from_u64 (uint64_t v64) { return zlx_u8_from_u64(v64); }
+ZLX_LOCAL uint8_t cast_u64_to_u8 (uint64_t v64) { return zlx_cast_u64_to_u8(v64); }
+ZLX_LOCAL uint8_t cast_u8_from_u64 (uint64_t v64) { return zlx_cast_u8_from_u64(v64); }
+
 ZLX_LOCAL int8_t u8_to_s8 (uint8_t v8) { return zlx_u8_to_s8(v8); }
 ZLX_LOCAL int8_t s8_from_u8 (uint8_t v8) { return zlx_s8_from_u8(v8); }
 ZLX_LOCAL int8_t cast_u8_to_s8 (uint8_t v8) { return zlx_cast_u8_to_s8(v8); }
