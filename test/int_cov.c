@@ -125,28 +125,13 @@ ZLX_LOCAL int digit_from_char (uint32_t ch, uint_fast8_t radix)
     return zlx_digit_from_char(ch, radix);
 }
 
-ZLX_LOCAL uint8_t u16_to_u8 (uint16_t v16) { return zlx_u16_to_u8(v16); }
-ZLX_LOCAL uint8_t u8_from_u16 (uint16_t v16) { return zlx_u8_from_u16(v16); }
-ZLX_LOCAL uint8_t cast_u16_to_u8 (uint16_t v16) { return zlx_cast_u16_to_u8(v16); }
-ZLX_LOCAL uint8_t cast_u8_from_u16 (uint16_t v16) { return zlx_cast_u8_from_u16(v16); }
+#define IC(s, d) \
+ZLX_LOCAL zlx_##d##_t s##_to_##d (zlx_##s##_t v) { return zlx_##s##_to_##d(v); } \
+ZLX_LOCAL zlx_##d##_t d##_from_##s (zlx_##s##_t v) { return zlx_##d##_from_##s(v); } \
+ZLX_LOCAL zlx_##d##_t cast_##s##_to_##d (zlx_##s##_t v) { return zlx_cast_##s##_to_##d(v); } \
+ZLX_LOCAL zlx_##d##_t cast_##d##_from_##s (zlx_##s##_t v) { return zlx_cast_##d##_from_##s(v); } \
+typedef int ic_tag_##s##_##_d
 
-ZLX_LOCAL uint8_t u32_to_u8 (uint32_t v32) { return zlx_u32_to_u8(v32); }
-ZLX_LOCAL uint8_t u8_from_u32 (uint32_t v32) { return zlx_u8_from_u32(v32); }
-ZLX_LOCAL uint8_t cast_u32_to_u8 (uint32_t v32) { return zlx_cast_u32_to_u8(v32); }
-ZLX_LOCAL uint8_t cast_u8_from_u32 (uint32_t v32) { return zlx_cast_u8_from_u32(v32); }
-
-ZLX_LOCAL uint8_t u64_to_u8 (uint64_t v64) { return zlx_u64_to_u8(v64); }
-ZLX_LOCAL uint8_t u8_from_u64 (uint64_t v64) { return zlx_u8_from_u64(v64); }
-ZLX_LOCAL uint8_t cast_u64_to_u8 (uint64_t v64) { return zlx_cast_u64_to_u8(v64); }
-ZLX_LOCAL uint8_t cast_u8_from_u64 (uint64_t v64) { return zlx_cast_u8_from_u64(v64); }
-
-ZLX_LOCAL int8_t u8_to_s8 (uint8_t v8) { return zlx_u8_to_s8(v8); }
-ZLX_LOCAL int8_t s8_from_u8 (uint8_t v8) { return zlx_s8_from_u8(v8); }
-ZLX_LOCAL int8_t cast_u8_to_s8 (uint8_t v8) { return zlx_cast_u8_to_s8(v8); }
-ZLX_LOCAL int8_t cast_s8_from_u8 (uint8_t v8) { return zlx_cast_s8_from_u8(v8); }
-
-ZLX_LOCAL int8_t u16_to_s8 (uint16_t v16) { return zlx_u16_to_s8(v16); }
-ZLX_LOCAL int8_t s8_from_u16 (uint16_t v16) { return zlx_s8_from_u16(v16); }
-ZLX_LOCAL int8_t cast_u16_to_s8 (uint16_t v16) { return zlx_cast_u16_to_s8(v16); }
-ZLX_LOCAL int8_t cast_s8_from_u16 (uint16_t v16) { return zlx_cast_s8_from_u16(v16); }
+IC(u8, u8); IC(u16, u8); IC(u32, u8); IC(u64, u8);
+IC(u8, s8); IC(u16, s8);
 

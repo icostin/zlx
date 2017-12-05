@@ -564,12 +564,17 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
     uint64_t * ZLX_RESTRICT remainder
 );
 
+#define _ZLX_INT_SHRINK(src_type, dest_type) \
+    _ZLX_INT_CONV(src_type, dest_type, \
+                  ZLX_ASSERT((zlx_##src_type##_t) dest_value == src_value))
+#define _ZLX_INT_ENLARGE(src_type, dest_type) \
+    _ZLX_INT_CONV(src_type, dest_type, (void) 0)
 
-#define _ZLX_INT_CONV(src_type, dest_type) \
+#define _ZLX_INT_CONV(src_type, dest_type, stmt) \
     ZLX_INLINE zlx_##dest_type##_t zlx_##dest_type##_from_##src_type \
         (zlx_##src_type##_t src_value) { \
         zlx_##dest_type##_t dest_value = (zlx_##dest_type##_t) src_value; \
-        ZLX_ASSERT((zlx_##src_type##_t) dest_value == src_value); \
+        stmt; \
         return dest_value; \
     } \
     ZLX_INLINE zlx_##dest_type##_t zlx_##src_type##_to_##dest_type \
@@ -639,9 +644,10 @@ uint8_t zlx_cast_u16_to_u8 (uint16_t value);
 uint8_t zlx_cast_u8_from_u16 (uint16_t value);
 #endif
 
-_ZLX_INT_CONV(u16, u8);
-_ZLX_INT_CONV(u32, u8);
-_ZLX_INT_CONV(u64, u8);
+_ZLX_INT_ENLARGE(u8, u8);
+_ZLX_INT_SHRINK(u16, u8);
+_ZLX_INT_SHRINK(u32, u8);
+_ZLX_INT_SHRINK(u64, u8);
 _ZLX_INT_MIX_CONV(u8, s8);
 _ZLX_INT_MIX_CONV(u16, s8);
 
