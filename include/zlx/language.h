@@ -245,6 +245,8 @@
     } \
     typedef enum prefix##_enum type
 
+#define ZLX_STATIC_ASSERT(cond) \
+    typedef int ZLX_TP1(_zlx_static_assert_, __COUNTER__)[1 - 2 * !(cond)]
 
 /** @} */
 
