@@ -644,10 +644,23 @@ uint8_t zlx_cast_u16_to_u8 (uint16_t value);
 uint8_t zlx_cast_u8_from_u16 (uint16_t value);
 #endif
 
-_ZLX_INT_ENLARGE(u8, u8);
-_ZLX_INT_SHRINK(u16, u8);
-_ZLX_INT_SHRINK(u32, u8);
-_ZLX_INT_SHRINK(u64, u8);
+_ZLX_INT_ENLARGE(u8 , u8);
+_ZLX_INT_SHRINK (u16, u8);
+_ZLX_INT_SHRINK (u32, u8);
+_ZLX_INT_SHRINK (u64, u8);
+_ZLX_INT_ENLARGE(u8 , u16);
+_ZLX_INT_ENLARGE(u16, u16);
+_ZLX_INT_SHRINK (u32, u16);
+_ZLX_INT_SHRINK (u64, u16);
+_ZLX_INT_ENLARGE(u8 , u32);
+_ZLX_INT_ENLARGE(u16, u32);
+_ZLX_INT_ENLARGE(u32, u32);
+_ZLX_INT_SHRINK (u64, u32);
+_ZLX_INT_ENLARGE(u8 , u64);
+_ZLX_INT_ENLARGE(u16, u64);
+_ZLX_INT_ENLARGE(u32, u64);
+_ZLX_INT_ENLARGE(u64, u64);
+
 _ZLX_INT_MIX_CONV(u8, s8);
 _ZLX_INT_MIX_CONV(u16, s8);
 
