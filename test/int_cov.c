@@ -132,6 +132,12 @@ ZLX_LOCAL zlx_##d##_t cast_##s##_to_##d (zlx_##s##_t v) { return zlx_cast_##s##_
 ZLX_LOCAL zlx_##d##_t cast_##d##_from_##s (zlx_##s##_t v) { return zlx_cast_##d##_from_##s(v); } \
 typedef int ic_tag_##s##_##_d
 
-IC(u8, u8); IC(u16, u8); IC(u32, u8); IC(u64, u8);
-IC(u8, s8); IC(u16, s8);
+#define ICA(d) \
+    IC(u8, d); IC(u16, d); IC(u32, d); IC(u64, d); \
+    IC(usize, d); IC(size, d); IC(uptr, d); \
+    IC(s8, d); IC(s16, d); IC(s32, d); IC(s64, d); \
+    IC(ssize, d); IC(ptrdiff, d); IC(sptr, d)
+
+ICA(u8); ICA(u16); ICA(u32); ICA(u64); ICA(uptr); ICA(usize); ICA(size);
+ICA(s8); ICA(s16); ICA(s32); ICA(s64); ICA(sptr); ICA(ssize); ICA(ptrdiff);
 

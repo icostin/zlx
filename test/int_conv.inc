@@ -55,4 +55,8 @@ ICT(cast_u16_to_s8_80, cast_u16_to_s8(0x80), 0, -0x80);
 ICT(cast_u16_to_s8_C080, cast_u16_to_s8(0xC080), 0, -0x80);
 ICT(cast_s8_from_u16_80, cast_s8_from_u16(0x80), 0, -0x80);
 
+ICT(uptr_to_u8_FF, uptr_to_u8(0xFF), 0, 0xFF);
+ICT(uptr_to_u16_10000, uptr_to_u16(0x10000), 1, 0);
+
+
 /* vim: set ft=c: */
