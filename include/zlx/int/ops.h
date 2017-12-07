@@ -566,15 +566,15 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
 
 #define _ZLX_INT_SHRINK(src_type, dest_type) \
     _ZLX_INT_CONV(src_type, dest_type, \
-                  ZLX_ASSERT((zlx_##src_type##_t) dest_value == src_value))
+                  (zlx_##src_type##_t) dest_value == src_value)
 #define _ZLX_INT_ENLARGE(src_type, dest_type) \
-    _ZLX_INT_CONV(src_type, dest_type, (void) 0)
+    _ZLX_INT_CONV(src_type, dest_type, 1)
 
-#define _ZLX_INT_CONV(src_type, dest_type, stmt) \
+#define _ZLX_INT_CONV(src_type, dest_type, check) \
     ZLX_INLINE zlx_##dest_type##_t zlx_##dest_type##_from_##src_type \
         (zlx_##src_type##_t src_value) { \
         zlx_##dest_type##_t dest_value = (zlx_##dest_type##_t) src_value; \
-        stmt; \
+        ZLX_ASSERT(check); \
         return dest_value; \
     } \
     ZLX_INLINE zlx_##dest_type##_t zlx_##src_type##_to_##dest_type \
