@@ -569,12 +569,15 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
                   (zlx_##src_type##_t) dest_value == src_value)
 #define _ZLX_INT_ENLARGE(src_type, dest_type) \
     _ZLX_INT_CONV(src_type, dest_type, 1)
+#define _ZLX_INT_MIX_CONV(src_type, dest_type) \
+    _ZLX_INT_CONV(src_type, dest_type, \
+        (src_value >> (_ZLX_MIN_SIZEOF(src_type, dest_type) * 8 - 1)) == 0)
 
 #define _ZLX_INT_CONV(src_type, dest_type, check) \
     ZLX_INLINE zlx_##dest_type##_t zlx_##dest_type##_from_##src_type \
         (zlx_##src_type##_t src_value) { \
         zlx_##dest_type##_t dest_value = (zlx_##dest_type##_t) src_value; \
-        ZLX_ASSERT(check); \
+        ZLX_ASSERT((check)); \
         return dest_value; \
     } \
     ZLX_INLINE zlx_##dest_type##_t zlx_##src_type##_to_##dest_type \
@@ -596,28 +599,6 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
        * sizeof(zlx_##src_type##_t) \
      + (sizeof(zlx_##src_type##_t) > sizeof(zlx_##dest_type##_t)) \
        * sizeof(zlx_##dest_type##_t))
-
-#define _ZLX_INT_MIX_CONV(src_type, dest_type) \
-    ZLX_INLINE zlx_##dest_type##_t zlx_##dest_type##_from_##src_type \
-        (zlx_##src_type##_t src_value) { \
-        zlx_##dest_type##_t dest_value = (zlx_##dest_type##_t) src_value; \
-        ZLX_ASSERT((src_value >> \
-                    (_ZLX_MIN_SIZEOF(src_type, dest_type) * 8 - 1)) == 0); \
-        return dest_value; \
-    } \
-    ZLX_INLINE zlx_##dest_type##_t zlx_##src_type##_to_##dest_type \
-        (zlx_##src_type##_t src_value) { \
-        return zlx_##dest_type##_from_##src_type(src_value); \
-    } \
-    ZLX_INLINE zlx_##dest_type##_t zlx_cast_##dest_type##_from_##src_type \
-        (zlx_##src_type##_t src_value) { \
-        return  (zlx_##dest_type##_t) src_value; \
-    } \
-    ZLX_INLINE zlx_##dest_type##_t zlx_cast_##src_type##_to_##dest_type \
-        (zlx_##src_type##_t src_value) { \
-        return (zlx_##dest_type##_t) src_value; \
-    } \
-    typedef zlx_##dest_type##_t zlx_##dest_type##_from_##src_type##_ret_t
 
 
 #if ZLXOPT_DOXYGEN
