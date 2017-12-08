@@ -564,6 +564,7 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
     uint64_t * ZLX_RESTRICT remainder
 );
 
+/* Int conversion ***********************************************************/
 #define _ZLX_INT_SHRINK(src_type, dest_type) \
     _ZLX_INT_CONV(src_type, dest_type, \
                   (zlx_##src_type##_t) dest_value == src_value)
@@ -584,6 +585,19 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
         (zlx_##src_type##_t src_value) { \
         return zlx_##dest_type##_from_##src_type(src_value); \
     } \
+    ZLX_INLINE int zlx_try_##dest_type##_from_##src_type \
+        (zlx_##dest_type##_t * ZLX_RESTRICT dest_ptr, \
+         zlx_##src_type##_t src_value) { \
+        zlx_##dest_type##_t dest_value = (zlx_##dest_type##_t) src_value; \
+        if (!(check)) return 1; \
+        *dest_ptr = dest_value; \
+        return 0; \
+    } \
+    ZLX_INLINE int zlx_try_##src_type##_to_##dest_type \
+        (zlx_##src_type##_t src_value, \
+         zlx_##dest_type##_t * ZLX_RESTRICT dest_ptr) { \
+            return zlx_try_##dest_type##_from_##src_type(dest_ptr, src_value); \
+    } \
     ZLX_INLINE zlx_##dest_type##_t zlx_cast_##dest_type##_from_##src_type \
         (zlx_##src_type##_t src_value) { \
         return  (zlx_##dest_type##_t) src_value; \
@@ -599,7 +613,6 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
        * sizeof(zlx_##src_type##_t) \
      + (sizeof(zlx_##src_type##_t) > sizeof(zlx_##dest_type##_t)) \
        * sizeof(zlx_##dest_type##_t))
-
 
 #if ZLXOPT_DOXYGEN
 /** Lossless conversion from 16-bit unsigned int to 8-bit unsigned int.

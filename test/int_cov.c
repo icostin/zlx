@@ -128,6 +128,8 @@ ZLX_LOCAL int digit_from_char (uint32_t ch, uint_fast8_t radix)
 #define IC(s, d) \
 ZLX_LOCAL zlx_##d##_t s##_to_##d (zlx_##s##_t v) { return zlx_##s##_to_##d(v); } \
 ZLX_LOCAL zlx_##d##_t d##_from_##s (zlx_##s##_t v) { return zlx_##d##_from_##s(v); } \
+ZLX_LOCAL int try_##d##_from_##s (zlx_##d##_t * ZLX_RESTRICT dp, zlx_##s##_t sv) { return zlx_try_##d##_from_##s(dp, sv); } \
+ZLX_LOCAL int try_##s##_to_##d (zlx_##s##_t sv, zlx_##d##_t * ZLX_RESTRICT dp) { return zlx_try_##s##_to_##d(sv, dp); } \
 ZLX_LOCAL zlx_##d##_t cast_##s##_to_##d (zlx_##s##_t v) { return zlx_cast_##s##_to_##d(v); } \
 ZLX_LOCAL zlx_##d##_t cast_##d##_from_##s (zlx_##s##_t v) { return zlx_cast_##d##_from_##s(v); } \
 typedef int ic_tag_##s##_##_d

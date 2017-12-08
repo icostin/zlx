@@ -9,6 +9,8 @@
 #define C(s, d) \
     zlx_##d##_t s##_to_##d (zlx_##s##_t v); \
     zlx_##d##_t d##_from_##s (zlx_##s##_t v); \
+    int try_##s##_to_##d (zlx_##s##_t sv, zlx_##d##_t * dp); \
+    int try_##d##_from_##s (zlx_##d##_t * dp, zlx_##s##_t sv); \
     zlx_##d##_t cast_##s##_to_##d (zlx_##s##_t v); \
     zlx_##d##_t cast_##d##_from_##s (zlx_##s##_t v)
 
@@ -29,8 +31,11 @@ AC(s8); AC(s16); AC(s32); AC(s64); AC(sptr); AC(ssize); AC(ptrdiff);
         return 0; \
     } \
     typedef int func##_tag
+#define TIC(st, sv, dt, dv, r) typedef int tic_##st##_##dt##_tag
 #include "int_conv.inc"
 #undef ICT
+#undef TIC
+
 
 int int_conv_test (void)
 {
@@ -42,6 +47,16 @@ int int_conv_test (void)
     rc = run_catching_aborts(func, &v, 1); \
     TE(rc == exp_rc, "%s: ret %d", #func, rc); \
     TE(v == exp_val, "%s: val64 %"PRIu64" %"PRId64" %"PRIX64, #func, v, v, v)
+
+#define TIC(st, sv, dt, dv, r) { \
+    zlx_##dt##_t dr = 0; \
+    rc = try_##st##_to_##dt(sv, &dr); \
+    TE(rc == r, "try_%s_to_%s: %d", #st, #dt, rc); \
+    TE(dr == dv, "try_%s_to_%s: %"PRIu64" %"PRId64" %"PRIX64, #st, #dt, (uint64_t) dr, (uint64_t) dr, (uint64_t) dr); \
+    dr = 0; rc = try_##dt##_from_##st(&dr, sv); \
+    TE(rc == r, "try%s_to_%s: %d", #st, #dt, rc); \
+    TE(dr == dv, "try%s_to_%s: %"PRIu64" %"PRId64" %"PRIX64, #st, #dt, (uint64_t) dr, (uint64_t) dr, (uint64_t) dr); }
+
 #include "int_conv.inc"
 #undef ICT
 

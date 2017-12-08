@@ -6,6 +6,8 @@ ICT(u8_from_u16_FF, u8_from_u16(0xFF), 0, 0xFF);
 ICT(u8_from_u16_100, u8_from_u16(0x100), 1, 0);
 ICT(cast_u8_from_u16_123, cast_u8_from_u16(0x123), 0, 0x23);
 ICT(cast_u16_to_u8_234, cast_u16_to_u8(0x234), 0, 0x34);
+TIC(u16, 0x10, u8, 0x10, 0);
+TIC(u16, 0x100, u8, 0, 1);
 
 ICT(u32_to_u8_00, u32_to_u8(0), 0, 0);
 ICT(u32_to_u8_FF, u32_to_u8(0xFF), 0, 0xFF);
