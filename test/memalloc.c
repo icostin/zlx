@@ -42,6 +42,13 @@ void cov_dbg_free
     size_t size
 );
 
+int cov_dbg_ma_contains
+(
+    zlx_ma_t * ZLX_RESTRICT ma,
+    void * ptr,
+    size_t size
+);
+
 void cov_dbg_u32a_init
 (
     uint32_t * * ZLX_RESTRICT ap,
@@ -108,8 +115,11 @@ int memalloc_test (void)
 
     memset(&tma, 0, sizeof(tma));
     tma.ma.realloc = tma_realloc;
+    tma.ma.contains = zlx_ma_nop_contains;
     tma.ma.info_set = tma_info_set;
     tma.ma.check = tma_check;
+
+    T(cov_dbg_ma_contains(&tma.ma, (void *) (intptr_t) 1, 1) == 0);
 
     T((intptr_t) cov_dbg_alloc(&tma.ma, 123, "123") == 123);
     T(tma.last_size == 123);

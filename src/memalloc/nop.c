@@ -13,6 +13,20 @@ ZLX_API void * ZLX_CALL zlx_ma_nop_realloc
     return (new_size <= old_size) ? old_ptr : NULL;
 }
 
+/* zlx_ma_nop_contains ******************************************************/
+ZLX_API int ZLX_CALL zlx_ma_nop_contains
+(
+    void * ptr,
+    size_t size,
+    zlx_ma_t * ZLX_RESTRICT ma
+)
+{
+    (void) ptr;
+    (void) size;
+    (void) ma;
+    return 0;
+}
+
 /* zlx_ma_nop_info_set ******************************************************/
 ZLX_API void ZLX_CALL zlx_ma_nop_info_set
 (
@@ -55,6 +69,7 @@ ZLX_API void ZLX_CALL zlx_ma_nop_check
 ZLX_API zlx_ma_t zlx_ma_nop =
 {
     zlx_ma_nop_realloc,
+    zlx_ma_nop_contains,
     zlx_ma_nop_info_set,
     zlx_ma_nop_check
 };

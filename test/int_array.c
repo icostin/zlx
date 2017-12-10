@@ -21,6 +21,7 @@ void * ZLX_CALL u8a_ma_realloc
 zlx_ma_t u8a_ma = 
 {
     u8a_ma_realloc,
+    zlx_ma_nop_contains,
     zlx_ma_nop_info_set,
     zlx_ma_nop_check
 };

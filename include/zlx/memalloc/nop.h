@@ -24,6 +24,13 @@ ZLX_API void * ZLX_CALL zlx_ma_nop_realloc
     zlx_ma_t * ZLX_RESTRICT ma
 );
 
+ZLX_API int ZLX_CALL zlx_ma_nop_contains
+(
+    void * ptr,
+    size_t size,
+    zlx_ma_t * ZLX_RESTRICT ma
+);
+
 ZLX_API void ZLX_CALL zlx_ma_nop_info_set
 (
     zlx_ma_t * ZLX_RESTRICT ma,

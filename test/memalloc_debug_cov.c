@@ -38,6 +38,16 @@ void cov_dbg_free
     zlx_free(ma, ptr, size);
 }
 
+int cov_dbg_ma_contains
+(
+    zlx_ma_t * ZLX_RESTRICT ma,
+    void * ptr,
+    size_t size
+)
+{
+    return zlx_ma_contains(ma, ptr, size);
+}
+
 void cov_dbg_u32a_init
 (
     uint32_t * * ZLX_RESTRICT ap,

@@ -49,6 +49,26 @@ struct zlx_ma_s
     /** Function to do the reallocation. */
     zlx_realloc_func_t realloc;
 
+    /**
+     *  Function that tells if a given block belongs to the region
+     *  managed by the allocator.
+     *  This can be used to aggregate allocators.
+     *  @retval 0 
+     *      the block was not allocated by the allocator or it cannot
+     *      be determined that it was allocated
+     *  @retval 1
+     *      block allocated by the allocator
+     *  @note
+     *      allocators that do not need to be used in aggregations
+     *      can always return 0
+     */
+    int (ZLX_CALL * contains)
+        (
+            void * ptr,
+            size_t size,
+            zlx_ma_t * ZLX_RESTRICT ma
+        );
+
     /** Function to store information about an allocated block.
      *  This is intended to be used by memory tracker allocators to show
      *  some meaningful information to the programmer about memory leaks.
@@ -155,6 +175,17 @@ ZLX_INLINE void zlxi_free
              );
 #endif /* ZLXOPT_ASSERT */
     ma->realloc(ptr, size, 0, ma);
+}
+
+/* zlx_ma_contains **********************************************************/
+ZLX_INLINE int zlx_ma_contains
+(
+    zlx_ma_t * ZLX_RESTRICT ma,
+    void * ptr,
+    size_t size
+)
+{
+    return ma->contains(ptr, size, ma);
 }
 
 /* zlxi_array_alloc *********************************************************/
