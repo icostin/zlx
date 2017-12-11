@@ -1,4 +1,5 @@
 #include "../include/zlx/fmt.h"
+#include "../include/zlx/int/ops.h"
 #include "../include/zlx/int/fmt.h"
 #include "../include/zlx/int/array.h"
 #include "../include/zlx/clconv/interface.h"
@@ -61,7 +62,7 @@ ZLX_API zlx_fmt_status_t ZLX_CALL zlx_vwfmt
         uint8_t const * sfmt = f;
 
         while (*f && *f != '$') f++;
-        z = (size_t) (f - sfmt);
+        z = zlx_ptrdiff_to_size(f - sfmt);
         if (z && writer(writer_context, sfmt, z) != z)
             return ZLX_FMT_WRITE_ERROR;
         if (*f == 0) break;
