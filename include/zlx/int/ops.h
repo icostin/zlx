@@ -565,6 +565,15 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
 );
 
 /* Int conversion ***********************************************************/
+ZLX_STATIC_ASSERT(1 == sizeof(char)); // this is guaranteed by the language
+ZLX_STATIC_ASSERT(2 == sizeof(short));
+ZLX_STATIC_ASSERT(4 == sizeof(int));
+ZLX_STATIC_ASSERT(ZLX_BITS / 8 == sizeof(void *));
+ZLX_STATIC_ASSERT(ZLX_BITS / 8 == sizeof(intptr_t));
+ZLX_STATIC_ASSERT(ZLX_BITS / 8 == sizeof(uintptr_t));
+ZLX_STATIC_ASSERT(ZLX_BITS / 8 == sizeof(size_t));
+ZLX_STATIC_ASSERT(ZLX_BITS / 8 == sizeof(ptrdiff_t));
+
 #define _ZLX_INT_SHRINK(src_type, dest_type) \
     _ZLX_INT_CONV(src_type, dest_type, \
                   (zlx_##src_type##_t) dest_value == src_value)
@@ -573,6 +582,32 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
 #define _ZLX_INT_MIX_CONV(src_type, dest_type) \
     _ZLX_INT_CONV(src_type, dest_type, \
         (src_value >> (_ZLX_MIN_SIZEOF(src_type, dest_type) * 8 - 1)) == 0)
+
+#if ZLX_BITS == 32
+# define _ZLX_INT_A_TO_32 _ZLX_INT_ENLARGE
+# define _ZLX_INT_64_TO_A _ZLX_INT_SHRINK
+#elif ZLX_BITS == 64
+# define _ZLX_INT_A_TO_32 _ZLX_INT_SHRINK
+# define _ZLX_INT_64_TO_A _ZLX_INT_ENLARGE
+#else
+# error unsupported ZLX_BITS
+#endif
+
+#if LONG_MAX > INT32_MAX
+ZLX_STATIC_ASSERT(8 == sizeof(long));
+# define _ZLX_INT_L_TO_32 _ZLX_INT_SHRINK
+# define _ZLX_INT_64_TO_L _ZLX_INT_ENLARGE
+#else 
+# define _ZLX_INT_L_TO_32 _ZLX_INT_ENLARGE
+# define _ZLX_INT_64_TO_L _ZLX_INT_SHRINK
+# if ZLX_BITS > 32
+#  define _ZLX_INT_A_TO_L _ZLX_INT_SHRINK
+# else
+#  define _ZLX_INT_A_TO_L _ZLX_INT_ENLARGE
+# endif
+#endif
+
+
 
 #define _ZLX_INT_CONV(src_type, dest_type, check) \
     ZLX_INLINE zlx_##dest_type##_t zlx_##dest_type##_from_##src_type \
@@ -645,13 +680,25 @@ _ZLX_INT_SHRINK     (u64    , u8);
 _ZLX_INT_SHRINK     (uptr   , u8);
 _ZLX_INT_SHRINK     (usize  , u8);
 _ZLX_INT_SHRINK     ( size  , u8);
+_ZLX_INT_SHRINK     (ulong  , u8);
+_ZLX_INT_SHRINK     (uint   , u8);
+_ZLX_INT_SHRINK     (ushort , u8);
+_ZLX_INT_ENLARGE    (uchar  , u8);
 _ZLX_INT_MIX_CONV   (s8     , u8);
 _ZLX_INT_MIX_CONV   (s16    , u8);
 _ZLX_INT_MIX_CONV   (s32    , u8);
 _ZLX_INT_MIX_CONV   (s64    , u8);
+_ZLX_INT_MIX_CONV   (sptr   , u8);
 _ZLX_INT_MIX_CONV   (ssize  , u8);
 _ZLX_INT_MIX_CONV   (ptrdiff, u8);
-_ZLX_INT_MIX_CONV   (sptr   , u8);
+_ZLX_INT_MIX_CONV   (slong  , u8);
+_ZLX_INT_MIX_CONV   ( long  , u8);
+_ZLX_INT_MIX_CONV   (sint   , u8);
+_ZLX_INT_MIX_CONV   ( int   , u8);
+_ZLX_INT_MIX_CONV   (sshort , u8);
+_ZLX_INT_MIX_CONV   ( short , u8);
+_ZLX_INT_MIX_CONV   (schar  , u8);
+_ZLX_INT_MIX_CONV   ( char  , u8);
 
 _ZLX_INT_ENLARGE    (u8     , u16);
 _ZLX_INT_ENLARGE    (u16    , u16);
@@ -660,34 +707,52 @@ _ZLX_INT_SHRINK     (u64    , u16);
 _ZLX_INT_SHRINK     (uptr   , u16);
 _ZLX_INT_SHRINK     (usize  , u16);
 _ZLX_INT_SHRINK     ( size  , u16);
+_ZLX_INT_SHRINK     (ulong  , u16);
+_ZLX_INT_SHRINK     (uint   , u16);
+_ZLX_INT_ENLARGE    (ushort , u16);
+_ZLX_INT_ENLARGE    (uchar  , u16);
 _ZLX_INT_MIX_CONV   (s8     , u16);
 _ZLX_INT_MIX_CONV   (s16    , u16);
 _ZLX_INT_MIX_CONV   (s32    , u16);
 _ZLX_INT_MIX_CONV   (s64    , u16);
+_ZLX_INT_MIX_CONV   (sptr   , u16);
 _ZLX_INT_MIX_CONV   (ssize  , u16);
 _ZLX_INT_MIX_CONV   (ptrdiff, u16);
-_ZLX_INT_MIX_CONV   (sptr   , u16);
+_ZLX_INT_MIX_CONV   (slong  , u16);
+_ZLX_INT_MIX_CONV   ( long  , u16);
+_ZLX_INT_MIX_CONV   (sint   , u16);
+_ZLX_INT_MIX_CONV   ( int   , u16);
+_ZLX_INT_MIX_CONV   (sshort , u16);
+_ZLX_INT_MIX_CONV   ( short , u16);
+_ZLX_INT_MIX_CONV   (schar  , u16);
+_ZLX_INT_MIX_CONV   ( char  , u16);
 
 _ZLX_INT_ENLARGE    (u8     , u32);
 _ZLX_INT_ENLARGE    (u16    , u32);
 _ZLX_INT_ENLARGE    (u32    , u32);
 _ZLX_INT_SHRINK     (u64    , u32);
-#if ZLX_BITS == 32
-_ZLX_INT_ENLARGE    (uptr   , u32);
-_ZLX_INT_ENLARGE    (usize  , u32);
-_ZLX_INT_ENLARGE    ( size  , u32);
-#else
-_ZLX_INT_SHRINK     (uptr   , u32);
-_ZLX_INT_SHRINK     (usize  , u32);
-_ZLX_INT_SHRINK     ( size  , u32);
-#endif
+_ZLX_INT_A_TO_32    (uptr   , u32);
+_ZLX_INT_A_TO_32    (usize  , u32);
+_ZLX_INT_A_TO_32    ( size  , u32);
+_ZLX_INT_L_TO_32    (ulong  , u32);
+_ZLX_INT_ENLARGE    (uint   , u32);
+_ZLX_INT_ENLARGE    (ushort , u32);
+_ZLX_INT_ENLARGE    (uchar  , u32);
 _ZLX_INT_MIX_CONV   (s8     , u32);
 _ZLX_INT_MIX_CONV   (s16    , u32);
 _ZLX_INT_MIX_CONV   (s32    , u32);
 _ZLX_INT_MIX_CONV   (s64    , u32);
+_ZLX_INT_MIX_CONV   (sptr   , u32);
 _ZLX_INT_MIX_CONV   (ssize  , u32);
 _ZLX_INT_MIX_CONV   (ptrdiff, u32);
-_ZLX_INT_MIX_CONV   (sptr   , u32);
+_ZLX_INT_MIX_CONV   (slong  , u32);
+_ZLX_INT_MIX_CONV   ( long  , u32);
+_ZLX_INT_MIX_CONV   (sint   , u32);
+_ZLX_INT_MIX_CONV   ( int   , u32);
+_ZLX_INT_MIX_CONV   (sshort , u32);
+_ZLX_INT_MIX_CONV   ( short , u32);
+_ZLX_INT_MIX_CONV   (schar  , u32);
+_ZLX_INT_MIX_CONV   ( char  , u32);
 
 _ZLX_INT_ENLARGE    (u8     , u64);
 _ZLX_INT_ENLARGE    (u16    , u64);
@@ -696,22 +761,30 @@ _ZLX_INT_ENLARGE    (u64    , u64);
 _ZLX_INT_ENLARGE    (uptr   , u64);
 _ZLX_INT_ENLARGE    (usize  , u64);
 _ZLX_INT_ENLARGE    ( size  , u64);
+_ZLX_INT_ENLARGE    (ulong  , u64);
+_ZLX_INT_ENLARGE    (uint   , u64);
+_ZLX_INT_ENLARGE    (ushort , u64);
+_ZLX_INT_ENLARGE    (uchar  , u64);
 _ZLX_INT_MIX_CONV   (s8     , u64);
 _ZLX_INT_MIX_CONV   (s16    , u64);
 _ZLX_INT_MIX_CONV   (s32    , u64);
 _ZLX_INT_MIX_CONV   (s64    , u64);
+_ZLX_INT_MIX_CONV   (sptr   , u64);
 _ZLX_INT_MIX_CONV   (ssize  , u64);
 _ZLX_INT_MIX_CONV   (ptrdiff, u64);
-_ZLX_INT_MIX_CONV   (sptr   , u64);
+_ZLX_INT_MIX_CONV   (slong  , u64);
+_ZLX_INT_MIX_CONV   ( long  , u64);
+_ZLX_INT_MIX_CONV   (sint   , u64);
+_ZLX_INT_MIX_CONV   ( int   , u64);
+_ZLX_INT_MIX_CONV   (sshort , u64);
+_ZLX_INT_MIX_CONV   ( short , u64);
+_ZLX_INT_MIX_CONV   (schar  , u64);
+_ZLX_INT_MIX_CONV   ( char  , u64);
 
 _ZLX_INT_ENLARGE    (u8     , usize);
 _ZLX_INT_ENLARGE    (u16    , usize);
 _ZLX_INT_ENLARGE    (u32    , usize);
-#if ZLX_BITS == 32
-_ZLX_INT_SHRINK     (u64    , usize);
-#else
-_ZLX_INT_ENLARGE    (u64    , usize);
-#endif
+_ZLX_INT_64_TO_A    (u64    , usize);
 _ZLX_INT_ENLARGE    (uptr   , usize);
 _ZLX_INT_ENLARGE    (usize  , usize);
 _ZLX_INT_ENLARGE    ( size  , usize);
@@ -719,18 +792,14 @@ _ZLX_INT_MIX_CONV   (s8     , usize);
 _ZLX_INT_MIX_CONV   (s16    , usize);
 _ZLX_INT_MIX_CONV   (s32    , usize);
 _ZLX_INT_MIX_CONV   (s64    , usize);
+_ZLX_INT_MIX_CONV   (sptr   , usize);
 _ZLX_INT_MIX_CONV   (ssize  , usize);
 _ZLX_INT_MIX_CONV   (ptrdiff, usize);
-_ZLX_INT_MIX_CONV   (sptr   , usize);
 
 _ZLX_INT_ENLARGE    (u8     ,  size);
 _ZLX_INT_ENLARGE    (u16    ,  size);
 _ZLX_INT_ENLARGE    (u32    ,  size);
-#if ZLX_BITS == 32
-_ZLX_INT_SHRINK     (u64    ,  size);
-#else
-_ZLX_INT_ENLARGE    (u64    ,  size);
-#endif
+_ZLX_INT_64_TO_A    (u64    ,  size);
 _ZLX_INT_ENLARGE    (uptr   ,  size);
 _ZLX_INT_ENLARGE    (usize  ,  size);
 _ZLX_INT_ENLARGE    ( size  ,  size);
@@ -738,18 +807,14 @@ _ZLX_INT_MIX_CONV   (s8     ,  size);
 _ZLX_INT_MIX_CONV   (s16    ,  size);
 _ZLX_INT_MIX_CONV   (s32    ,  size);
 _ZLX_INT_MIX_CONV   (s64    ,  size);
+_ZLX_INT_MIX_CONV   (sptr   ,  size);
 _ZLX_INT_MIX_CONV   (ssize  ,  size);
 _ZLX_INT_MIX_CONV   (ptrdiff,  size);
-_ZLX_INT_MIX_CONV   (sptr   ,  size);
 
 _ZLX_INT_ENLARGE    (u8     , uptr);
 _ZLX_INT_ENLARGE    (u16    , uptr);
 _ZLX_INT_ENLARGE    (u32    , uptr);
-#if ZLX_BITS == 32
-_ZLX_INT_SHRINK     (u64    , uptr);
-#else
-_ZLX_INT_ENLARGE    (u64    , uptr);
-#endif
+_ZLX_INT_64_TO_A    (u64    , uptr);
 _ZLX_INT_ENLARGE    (uptr   , uptr);
 _ZLX_INT_ENLARGE    (usize  , uptr);
 _ZLX_INT_ENLARGE    ( size  , uptr);
@@ -757,9 +822,9 @@ _ZLX_INT_MIX_CONV   (s8     , uptr);
 _ZLX_INT_MIX_CONV   (s16    , uptr);
 _ZLX_INT_MIX_CONV   (s32    , uptr);
 _ZLX_INT_MIX_CONV   (s64    , uptr);
+_ZLX_INT_MIX_CONV   (sptr   , uptr);
 _ZLX_INT_MIX_CONV   (ssize  , uptr);
 _ZLX_INT_MIX_CONV   (ptrdiff, uptr);
-_ZLX_INT_MIX_CONV   (sptr   , uptr);
 
 
 _ZLX_INT_MIX_CONV   (u8     , s8);
@@ -773,9 +838,9 @@ _ZLX_INT_ENLARGE    (s8     , s8);
 _ZLX_INT_SHRINK     (s16    , s8);
 _ZLX_INT_SHRINK     (s32    , s8);
 _ZLX_INT_SHRINK     (s64    , s8);
+_ZLX_INT_SHRINK     (sptr   , s8);
 _ZLX_INT_SHRINK     (ssize  , s8);
 _ZLX_INT_SHRINK     (ptrdiff, s8);
-_ZLX_INT_SHRINK     (sptr   , s8);
 
 _ZLX_INT_MIX_CONV   (u8     , s16);
 _ZLX_INT_MIX_CONV   (u16    , s16);
@@ -788,9 +853,9 @@ _ZLX_INT_ENLARGE    (s8     , s16);
 _ZLX_INT_ENLARGE    (s16    , s16);
 _ZLX_INT_SHRINK     (s32    , s16);
 _ZLX_INT_SHRINK     (s64    , s16);
+_ZLX_INT_SHRINK     (sptr   , s16);
 _ZLX_INT_SHRINK     (ssize  , s16);
 _ZLX_INT_SHRINK     (ptrdiff, s16);
-_ZLX_INT_SHRINK     (sptr   , s16);
 
 _ZLX_INT_MIX_CONV   (u8     , s32);
 _ZLX_INT_MIX_CONV   (u16    , s32);
@@ -803,15 +868,9 @@ _ZLX_INT_ENLARGE    (s8     , s32);
 _ZLX_INT_ENLARGE    (s16    , s32);
 _ZLX_INT_ENLARGE    (s32    , s32);
 _ZLX_INT_SHRINK     (s64    , s32);
-#if ZLX_BITS == 32
-_ZLX_INT_ENLARGE    (ssize  , s32);
-_ZLX_INT_ENLARGE    (ptrdiff, s32);
-_ZLX_INT_ENLARGE    (sptr   , s32);
-#else
-_ZLX_INT_SHRINK     (ssize  , s32);
-_ZLX_INT_SHRINK     (ptrdiff, s32);
-_ZLX_INT_SHRINK     (sptr   , s32);
-#endif
+_ZLX_INT_A_TO_32    (sptr   , s32);
+_ZLX_INT_A_TO_32    (ssize  , s32);
+_ZLX_INT_A_TO_32    (ptrdiff, s32);
 
 _ZLX_INT_MIX_CONV   (u8     , s64);
 _ZLX_INT_MIX_CONV   (u16    , s64);
@@ -824,9 +883,9 @@ _ZLX_INT_ENLARGE    (s8     , s64);
 _ZLX_INT_ENLARGE    (s16    , s64);
 _ZLX_INT_ENLARGE    (s32    , s64);
 _ZLX_INT_ENLARGE    (s64    , s64);
+_ZLX_INT_ENLARGE    (sptr   , s64);
 _ZLX_INT_ENLARGE    (ssize  , s64);
 _ZLX_INT_ENLARGE    (ptrdiff, s64);
-_ZLX_INT_ENLARGE    (sptr   , s64);
 
 _ZLX_INT_MIX_CONV   (u8     , ssize);
 _ZLX_INT_MIX_CONV   (u16    , ssize);
@@ -838,14 +897,10 @@ _ZLX_INT_MIX_CONV   ( size  , ssize);
 _ZLX_INT_ENLARGE    (s8     , ssize);
 _ZLX_INT_ENLARGE    (s16    , ssize);
 _ZLX_INT_ENLARGE    (s32    , ssize);
-#if ZLX_BITS == 32
-_ZLX_INT_SHRINK     (s64    , ssize);
-#else
-_ZLX_INT_ENLARGE    (s64    , ssize);
-#endif
+_ZLX_INT_64_TO_A    (s64    , ssize);
+_ZLX_INT_ENLARGE    (sptr   , ssize);
 _ZLX_INT_ENLARGE    (ssize  , ssize);
 _ZLX_INT_ENLARGE    (ptrdiff, ssize);
-_ZLX_INT_ENLARGE    (sptr   , ssize);
 
 _ZLX_INT_MIX_CONV   (u8     , ptrdiff);
 _ZLX_INT_MIX_CONV   (u16    , ptrdiff);
@@ -857,14 +912,10 @@ _ZLX_INT_MIX_CONV   ( size  , ptrdiff);
 _ZLX_INT_ENLARGE    (s8     , ptrdiff);
 _ZLX_INT_ENLARGE    (s16    , ptrdiff);
 _ZLX_INT_ENLARGE    (s32    , ptrdiff);
-#if ZLX_BITS == 32
-_ZLX_INT_SHRINK     (s64    , ptrdiff);
-#else
-_ZLX_INT_ENLARGE    (s64    , ptrdiff);
-#endif
+_ZLX_INT_64_TO_A    (s64    , ptrdiff);
+_ZLX_INT_ENLARGE    (sptr   , ptrdiff);
 _ZLX_INT_ENLARGE    (ssize  , ptrdiff);
 _ZLX_INT_ENLARGE    (ptrdiff, ptrdiff);
-_ZLX_INT_ENLARGE    (sptr   , ptrdiff);
 
 _ZLX_INT_MIX_CONV   (u8     , sptr);
 _ZLX_INT_MIX_CONV   (u16    , sptr);
@@ -876,14 +927,10 @@ _ZLX_INT_MIX_CONV   ( size  , sptr);
 _ZLX_INT_ENLARGE    (s8     , sptr);
 _ZLX_INT_ENLARGE    (s16    , sptr);
 _ZLX_INT_ENLARGE    (s32    , sptr);
-#if ZLX_BITS == 32
-_ZLX_INT_ENLARGE    (s64    , sptr);
-#else
-_ZLX_INT_SHRINK     (s64    , sptr);
-#endif
+_ZLX_INT_64_TO_A    (s64    , sptr);
+_ZLX_INT_ENLARGE    (sptr   , sptr);
 _ZLX_INT_ENLARGE    (ssize  , sptr);
 _ZLX_INT_ENLARGE    (ptrdiff, sptr);
-_ZLX_INT_ENLARGE    (sptr   , sptr);
 
 
 ZLX_C_DECL_END

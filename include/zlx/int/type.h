@@ -53,6 +53,14 @@ typedef size_t zlx_size_t, zlx_usize_t;
 typedef ptrdiff_t zlx_ptrdiff_t, zlx_ssize_t;
 typedef uintptr_t zlx_uptr_t;
 typedef intptr_t zlx_sptr_t;
+typedef unsigned char zlx_uchar_t;
+typedef signed char zlx_char_t, zlx_schar_t;
+typedef unsigned short int zlx_ushort_t;
+typedef signed short int zlx_sshort_t, zlx_short_t;
+typedef unsigned int zlx_uint_t;
+typedef signed int zlx_sint_t, zlx_int_t;
+typedef unsigned long int zlx_ulong_t;
+typedef signed long int zlx_slong_t, zlx_long_t;
 
 /** @} */
 
