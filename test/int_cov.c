@@ -137,9 +137,15 @@ typedef int ic_tag_##s##_##_d
 #define ICA(d) \
     IC(u8, d); IC(u16, d); IC(u32, d); IC(u64, d); \
     IC(usize, d); IC(size, d); IC(uptr, d); \
+    IC(ulong, d); IC(uint, d); IC(ushort, d); IC(uchar, d); \
     IC(s8, d); IC(s16, d); IC(s32, d); IC(s64, d); \
-    IC(ssize, d); IC(ptrdiff, d); IC(sptr, d)
+    IC(ssize, d); IC(ptrdiff, d); IC(sptr, d); \
+    IC(slong, d); IC(sint, d); IC(sshort, d); IC(schar, d); \
+    IC(long, d); IC(int, d); IC(short, d); IC(char, d)
 
 ICA(u8); ICA(u16); ICA(u32); ICA(u64); ICA(uptr); ICA(usize); ICA(size);
+ICA(ulong); ICA(uint); ICA(ushort); ICA(uchar);
 ICA(s8); ICA(s16); ICA(s32); ICA(s64); ICA(sptr); ICA(ssize); ICA(ptrdiff);
+ICA(slong); ICA(sint); ICA(sshort); ICA(schar);
+ICA(long); ICA(int); ICA(short); ICA(char);
 
