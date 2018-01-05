@@ -14,6 +14,15 @@ ZLX_LOCAL uint8_t u16_log2_floor (uint16_t x) { return zlx_u16_log2_floor(x); }
 ZLX_LOCAL uint8_t u32_log2_floor (uint32_t x) { return zlx_u32_log2_floor(x); }
 ZLX_LOCAL uint8_t u64_log2_floor (uint64_t x) { return zlx_u64_log2_floor(x); }
 
+ZLX_LOCAL uint8_t u8_log2_floor_soft (uint8_t x) 
+{ return zlx_u8_log2_floor_soft(x); }
+ZLX_LOCAL uint8_t u16_log2_floor_soft (uint16_t x) 
+{ return zlx_u16_log2_floor_soft(x); }
+ZLX_LOCAL uint8_t u32_log2_floor_soft (uint32_t x) 
+{ return zlx_u32_log2_floor_soft(x); }
+ZLX_LOCAL uint8_t u64_log2_floor_soft (uint64_t x) 
+{ return zlx_u64_log2_floor_soft(x); }
+
 uint16_t seqbswap16 (uint16_t v) { return zlx_seqbswap16(v); }
 uint32_t seqbswap32 (uint32_t v) { return zlx_seqbswap32(v); }
 uint64_t seqbswap64 (uint64_t v) { return zlx_seqbswap64(v); }
