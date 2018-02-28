@@ -588,6 +588,27 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
     uint64_t * ZLX_RESTRICT remainder
 );
 
+/* zlx_u32_ctz **************************************************************/
+/**
+ *  Counts number of trailing zero bits.
+ *  @param n non-zero int to analyze
+ */
+ZLX_INLINE unsigned int zlx_u32_ctz (uint32_t n)
+{
+    ZLX_ASSERT(n != 0);
+#if ZLX_MSC
+    unsigned long b;
+    _BitScanForward(&b, n);
+    return (unsigned int) b;
+#elif ZLX_GCC || ZLX_CLANG
+    return (unsigned int) __builtin_ctz(n);
+#else
+    zlx_uint_t b = 0;
+    while (n) ++b, n >>= 1;
+    return b;
+#endif
+}
+
 /* Int conversion ***********************************************************/
 ZLX_STATIC_ASSERT(1 == sizeof(char)); // this is guaranteed by the language
 ZLX_STATIC_ASSERT(2 == sizeof(short));

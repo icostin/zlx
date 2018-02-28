@@ -23,13 +23,15 @@ ZLX_LOCAL uint8_t u32_log2_floor_soft (uint32_t x)
 ZLX_LOCAL uint8_t u64_log2_floor_soft (uint64_t x) 
 { return zlx_u64_log2_floor_soft(x); }
 
-uint16_t seqbswap16 (uint16_t v) { return zlx_seqbswap16(v); }
-uint32_t seqbswap32 (uint32_t v) { return zlx_seqbswap32(v); }
-uint64_t seqbswap64 (uint64_t v) { return zlx_seqbswap64(v); }
+ZLX_LOCAL uint16_t seqbswap16 (uint16_t v) { return zlx_seqbswap16(v); }
+ZLX_LOCAL uint32_t seqbswap32 (uint32_t v) { return zlx_seqbswap32(v); }
+ZLX_LOCAL uint64_t seqbswap64 (uint64_t v) { return zlx_seqbswap64(v); }
 
-uint16_t bswap16 (uint16_t v) { return ZLX_BSWAP16(v); }
-uint32_t bswap32 (uint32_t v) { return ZLX_BSWAP32(v); }
-uint64_t bswap64 (uint64_t v) { return ZLX_BSWAP64(v); }
+ZLX_LOCAL uint16_t bswap16 (uint16_t v) { return ZLX_BSWAP16(v); }
+ZLX_LOCAL uint32_t bswap32 (uint32_t v) { return ZLX_BSWAP32(v); }
+ZLX_LOCAL uint64_t bswap64 (uint64_t v) { return ZLX_BSWAP64(v); }
+
+ZLX_LOCAL unsigned int u32_ctz (uint32_t n) { return zlx_u32_ctz(n); }
 
 ZLX_LOCAL uint8_t read_u8 (uint8_t * p) { return ZLX_READ_U8(p); }
 ZLX_LOCAL uint8_t aread_u8 (uint8_t * p) { return ZLX_AREAD_U8(p); }
