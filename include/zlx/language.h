@@ -21,7 +21,7 @@
  *  Even if this macro is specified the compiler may choose to not inline the
  *  function.
  */
-#if ZLX_MSVC
+#if ZLX_MSC
 # define ZLX_INLINE __inline
 # define ZLX_FORCE_INLINE __forceinline
 #elif defined(ZLX_DOXYGEN)
@@ -125,7 +125,7 @@
 /** @def ZLX_VA_EXPAND(...)
  *  Allows preprocessor to expand arguments.
  */
-#if ZLX_MSVC
+#if ZLX_MSC
 # define ZLX_VA_EXPAND(...) ZLX_TP1(__VA_ARGS__,)
 #else
 # define ZLX_VA_EXPAND(...) __VA_ARGS__
