@@ -6,6 +6,12 @@
  *  @{
  */
 
+#include "../options.h"
+
+#if ZLX_MSC && ZLXOPT_USE_BUILTINS_FOR_FFS_FLS
+#include <intrin.h>
+#endif
+
 #include "../lib.h"
 #include "../assert.h"
 #include "type.h"
@@ -588,23 +594,46 @@ ZLX_API uint64_t ZLX_CALL zlx_u64_div_mod
     uint64_t * ZLX_RESTRICT remainder
 );
 
-/* zlx_u32_ffs **************************************************************/
+/* zlx_u32_lssb *************************************************************/
 /**
  *  Finds least significant set bit in a non-zero 32-bit int.
  *  @param n non-zero int to analyze
- */
-ZLX_INLINE unsigned int zlx_u32_ffs (uint32_t n)
+ *  @returns index of least significant set bit
+ **/
+ZLX_INLINE unsigned int zlx_u32_lssb (uint32_t n)
 {
     ZLX_ASSERT(n != 0);
-#if ZLX_MSC
+#if ZLX_MSC && !ZLXOPT_USE_BUILTINS_FOR_FFS_FLS
     unsigned long b;
     _BitScanForward(&b, n);
     return (unsigned int) b;
-#elif ZLX_GCC || ZLX_CLANG
+#elif (ZLX_GCC || ZLX_CLANG) && !(ZLXOPT_USE_BUILTINS_FOR_FFS_FLS)
     return (unsigned int) __builtin_ctz(n);
 #else
     zlx_uint_t b = 0;
-    while (n) ++b, n >>= 1;
+    while (((n >> b) & 1) == 0) ++b;
+    return b;
+#endif
+}
+
+/* zlx_u32_mssb *************************************************************/
+/** 
+ *  Finds most significant set bit in a non-zero 32-bit int.
+ *  @param n non-zero int to analyze
+ *  @returns index of most significant set bit
+ **/
+ZLX_INLINE unsigned int zlx_u32_mssb (uint32_t n)
+{
+    ZLX_ASSERT(n != 0);
+#if ZLX_MSC && !ZLXOPT_USE_BUILTINS_FOR_FFS_FLS
+    unsigned long b;
+    _BitScanReverse(&b, n);
+    return (unsigned int) b;
+#elif (ZLX_GCC || ZLX_CLANG) && !(ZLXOPT_USE_BUILTINS_FOR_FFS_FLS)
+    return (unsigned int) 31 - __builtin_clz(n);
+#else
+    zlx_uint_t b = 31;
+    while ((n >> b) == 0) --b;
     return b;
 #endif
 }
