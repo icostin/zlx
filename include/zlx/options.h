@@ -80,6 +80,10 @@
 # define ZLXOPT_EMIT_BUILTINS ZLXOPT_FREESTANDING
 #endif
 
+#ifndef ZLXOPT_USE_BUILTINS_FOR_FFS_FLS
+# define ZLXOPT_USE_BUILTINS_FOR_FFS_FLS 1
+#endif
+
 /** @} */
 
 #endif /* _ZLX_OPTIONS_H */
