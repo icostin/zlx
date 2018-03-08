@@ -65,6 +65,16 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_add_block
     size_t size
 );
 
+ZLX_API unsigned int zlx_tlsf_size_to_cell
+(
+    size_t size
+);
+
+ZLX_API size_t zlx_tlsf_cell_to_size
+(
+    unsigned int cell
+);
+
 ZLX_C_DECL_END
 
 /** @} */
