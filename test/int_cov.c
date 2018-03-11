@@ -33,6 +33,8 @@ ZLX_LOCAL uint64_t bswap64 (uint64_t v) { return ZLX_BSWAP64(v); }
 
 ZLX_LOCAL unsigned int u32_lssb (uint32_t n) { return zlx_u32_lssb(n); }
 ZLX_LOCAL unsigned int u32_mssb (uint32_t n) { return zlx_u32_mssb(n); }
+ZLX_LOCAL unsigned int u64_lssb (uint64_t n) { return zlx_u64_lssb(n); }
+ZLX_LOCAL unsigned int u64_mssb (uint64_t n) { return zlx_u64_mssb(n); }
 
 ZLX_LOCAL uint8_t read_u8 (uint8_t * p) { return ZLX_READ_U8(p); }
 ZLX_LOCAL uint8_t aread_u8 (uint8_t * p) { return ZLX_AREAD_U8(p); }
