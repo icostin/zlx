@@ -616,6 +616,24 @@ ZLX_INLINE unsigned int zlx_u32_lssb (uint32_t n)
 #endif
 }
 
+/* zlx_u64_lssb *************************************************************/
+ZLX_INLINE unsigned int zlx_u64_lssb (uint64_t n)
+{
+    ZLX_ASSERT(n != 0);
+#if ZLX_MSC && !ZLXOPT_USE_BUILTINS_FOR_FFS_FLS
+    unsigned long b;
+    _BitScanForward64(&b, n);
+    return (unsigned int) b;
+#elif (ZLX_GCC || ZLX_CLANG) && !(ZLXOPT_USE_BUILTINS_FOR_FFS_FLS)
+    ZLX_ASSERT(sizeof(uint64_t) == sizeof(unsigned long));
+    return (unsigned int) __builtin_ctzl((unsigned long) n);
+#else
+    zlx_uint_t b = 0;
+    while (((n >> b) & 1) == 0) ++b;
+    return b;
+#endif
+}
+
 /* zlx_u32_mssb *************************************************************/
 /** 
  *  Finds most significant set bit in a non-zero 32-bit int.
@@ -637,6 +655,38 @@ ZLX_INLINE unsigned int zlx_u32_mssb (uint32_t n)
     return b;
 #endif
 }
+
+/* zlx_u64_mssb *************************************************************/
+ZLX_INLINE unsigned int zlx_u64_mssb (uint64_t n)
+{
+    ZLX_ASSERT(n != 0);
+#if ZLX_MSC && !ZLXOPT_USE_BUILTINS_FOR_FFS_FLS
+    unsigned long b;
+    _BitScanReverse64(&b, n);
+    return (unsigned int) b;
+#elif (ZLX_GCC || ZLX_CLANG) && !(ZLXOPT_USE_BUILTINS_FOR_FFS_FLS)
+    return (unsigned int) 63 - __builtin_clzl(n);
+#else
+    zlx_uint_t b = 63;
+    while ((n >> b) == 0) --b;
+    return b;
+#endif
+}
+
+ZLX_INLINE unsigned int zlx_u8_lssb (uint8_t n) { return zlx_u32_lssb(n); }
+ZLX_INLINE unsigned int zlx_u8_mssb (uint8_t n) { return zlx_u32_mssb(n); }
+ZLX_INLINE unsigned int zlx_u16_lssb (uint16_t n) { return zlx_u32_lssb(n); }
+ZLX_INLINE unsigned int zlx_u16_mssb (uint16_t n) { return zlx_u32_mssb(n); }
+
+#define _ZLX_LM_SSB_STUB(t) \
+    ZLX_INLINE unsigned int zlx_##t##_lssb (zlx_##t##_t n) { \
+        return ZLX_TP1(ZLX_TP1(zlx_u, ZLX_BITS), _lssb) \
+            ((ZLX_TP1(ZLX_TP1(uint, ZLX_BITS), _t)) n); } \
+    ZLX_INLINE unsigned int zlx_##t##_mssb (zlx_##t##_t n) { \
+        return ZLX_TP1(ZLX_TP1(zlx_u, ZLX_BITS), _mssb) \
+            ((ZLX_TP1(ZLX_TP1(uint, ZLX_BITS), _t)) n); }
+_ZLX_LM_SSB_STUB(uptr)
+_ZLX_LM_SSB_STUB(size)
 
 /* Int conversion ***********************************************************/
 ZLX_STATIC_ASSERT(1 == sizeof(char)); // this is guaranteed by the language
