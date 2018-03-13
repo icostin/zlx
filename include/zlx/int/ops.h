@@ -673,6 +673,21 @@ ZLX_INLINE unsigned int zlx_u64_mssb (uint64_t n)
 #endif
 }
 
+ZLX_INLINE unsigned int zlx_u8_lssb (uint8_t n) { return zlx_u32_lssb(n); }
+ZLX_INLINE unsigned int zlx_u8_mssb (uint8_t n) { return zlx_u32_mssb(n); }
+ZLX_INLINE unsigned int zlx_u16_lssb (uint16_t n) { return zlx_u32_lssb(n); }
+ZLX_INLINE unsigned int zlx_u16_mssb (uint16_t n) { return zlx_u32_mssb(n); }
+
+#define _ZLX_LM_SSB_STUB(t) \
+    ZLX_INLINE unsigned int zlx_##t##_lssb (zlx_##t##_t n) { \
+        return ZLX_TP1(ZLX_TP1(zlx_u, ZLX_BITS), _lssb) \
+            ((ZLX_TP1(ZLX_TP1(uint, ZLX_BITS), _t)) n); } \
+    ZLX_INLINE unsigned int zlx_##t##_mssb (zlx_##t##_t n) { \
+        return ZLX_TP1(ZLX_TP1(zlx_u, ZLX_BITS), _mssb) \
+            ((ZLX_TP1(ZLX_TP1(uint, ZLX_BITS), _t)) n); }
+_ZLX_LM_SSB_STUB(uptr)
+_ZLX_LM_SSB_STUB(size)
+
 /* Int conversion ***********************************************************/
 ZLX_STATIC_ASSERT(1 == sizeof(char)); // this is guaranteed by the language
 ZLX_STATIC_ASSERT(2 == sizeof(short));

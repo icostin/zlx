@@ -31,10 +31,18 @@ ZLX_LOCAL uint16_t bswap16 (uint16_t v) { return ZLX_BSWAP16(v); }
 ZLX_LOCAL uint32_t bswap32 (uint32_t v) { return ZLX_BSWAP32(v); }
 ZLX_LOCAL uint64_t bswap64 (uint64_t v) { return ZLX_BSWAP64(v); }
 
+ZLX_LOCAL unsigned int u8_lssb (uint8_t n) { return zlx_u8_lssb(n); }
+ZLX_LOCAL unsigned int u8_mssb (uint8_t n) { return zlx_u8_mssb(n); }
+ZLX_LOCAL unsigned int u16_lssb (uint16_t n) { return zlx_u16_lssb(n); }
+ZLX_LOCAL unsigned int u16_mssb (uint16_t n) { return zlx_u16_mssb(n); }
 ZLX_LOCAL unsigned int u32_lssb (uint32_t n) { return zlx_u32_lssb(n); }
 ZLX_LOCAL unsigned int u32_mssb (uint32_t n) { return zlx_u32_mssb(n); }
 ZLX_LOCAL unsigned int u64_lssb (uint64_t n) { return zlx_u64_lssb(n); }
 ZLX_LOCAL unsigned int u64_mssb (uint64_t n) { return zlx_u64_mssb(n); }
+ZLX_LOCAL unsigned int size_lssb (size_t n) { return zlx_size_lssb(n); }
+ZLX_LOCAL unsigned int size_mssb (size_t n) { return zlx_size_mssb(n); }
+ZLX_LOCAL unsigned int uptr_lssb (uintptr_t n) { return zlx_uptr_lssb(n); }
+ZLX_LOCAL unsigned int uptr_mssb (uintptr_t n) { return zlx_uptr_mssb(n); }
 
 ZLX_LOCAL uint8_t read_u8 (uint8_t * p) { return ZLX_READ_U8(p); }
 ZLX_LOCAL uint8_t aread_u8 (uint8_t * p) { return ZLX_AREAD_U8(p); }
