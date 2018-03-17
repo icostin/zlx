@@ -25,6 +25,8 @@ ZLX_ENUM_DECL(zlx_tlsf_status_t, zlx_tlsf_status, 0,
  *      buffer to hold the allocator instance and the data for allocations
  *  @param size [in]
  *      size of buffer
+ *  @param max_alloc_size [in]
+ *      max size that can be requested in a single malloc call
  *  @retval ZLX_TLSF_OK
  *      @a ma_p initialized
  *  @retval ZLX_TLSF_BUFFER_TOO_SMALL
@@ -39,7 +41,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
     zlx_ma_t * * ZLX_RESTRICT ma_p,
     void * buffer,
     size_t size,
-    uint8_t max_alloc_size_log2
+    size_t max_alloc_size
 );
 
 /* zlx_tlsf_add_block *******************************************************/

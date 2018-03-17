@@ -1,5 +1,5 @@
 #include "../../include/zlx/memalloc/tlsf.h"
-#include <zlx/int/ops.h>
+#include "../../include/zlx/int/ops.h"
 
 typedef struct tlsf_block tlsf_block_t;
 struct tlsf_block
@@ -19,6 +19,7 @@ struct tlsf_ma
 {
     zlx_ma_t ma;
     tlsf_block_t * block_table;
+    size_t max_alloc_size;
     size_t block_count;
     uint8_t row_count;
 };
@@ -40,24 +41,24 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
     zlx_ma_t * * ZLX_RESTRICT ma_p,
     void * buffer,
     size_t size,
-    uint8_t max_alloc_size_log2
+    size_t max_alloc_size
 )
 {
+    static size_t const ALLOC_SIZE_LIMIT =
+        ((size_t) 1 << (sizeof(void *) * 8 - 1)) - 1;
+    unsigned int q;
     uint8_t row_count;
 
     (void) ma_p;
     (void) buffer;
     (void) size;
-    (void) max_alloc_size_log2;
-    (void) ATOM_SIZE_LOG2;
 
-    if (max_alloc_size_log2 > sizeof(void *) * 8)
-        max_alloc_size_log2 = sizeof(void *) * 8;
+    if (max_alloc_size > ALLOC_SIZE_LIMIT)
+        max_alloc_size = ALLOC_SIZE_LIMIT;
 
-    row_count = max_alloc_size_log2 <= ATOM_SIZE_LOG2 + COLUMN_COUNT_LOG2
-        ? 1 : max_alloc_size_log2 - (ATOM_SIZE_LOG2 + COLUMN_COUNT_LOG2);
+    q = zlx_size_mssb((max_alloc_size + ATOM_SIZE - 1) >> ATOM_SIZE_LOG2);
+    row_count = zlx_uint_to_u8((q + COLUMN_COUNT - 1) >> COLUMN_COUNT_LOG2);
     (void) row_count;
-
 
     return ZLX_TLSF_NO_SUP;
 }
@@ -90,9 +91,9 @@ ZLX_API unsigned int zlx_tlsf_size_to_cell
     // atom_count = 0x136
     if (atom_count < COLUMN_COUNT) return zlx_size_to_uint(atom_count);
 
-    q = zlx_u32_mssb((uint32_t) (atom_count >> COLUMN_COUNT_LOG2));
+    q = zlx_size_mssb((atom_count >> COLUMN_COUNT_LOG2));
     // q = 9
-    return zlx_size_to_uint((q << COLUMN_COUNT_LOG2) + (atom_count >> q));
+    return zlx_size_to_uint((zlx_uint_to_size(q) << COLUMN_COUNT_LOG2) + (atom_count >> q));
 }
 
 /* zlx_tlsf_cell_to_size ****************************************************/
@@ -102,7 +103,7 @@ ZLX_API size_t zlx_tlsf_cell_to_size
 )
 {
     unsigned int q;
-    if (cell < COLUMN_COUNT) return zlx_uint_to_size(cell << ATOM_SIZE_LOG2);
+    if (cell < COLUMN_COUNT) return zlx_uint_to_size(cell) << ATOM_SIZE_LOG2;
     q = (cell >> COLUMN_COUNT_LOG2) - 1;
     return zlx_uint_to_size(COLUMN_COUNT | (cell & COLUMN_MASK))
         << (q + ATOM_SIZE_LOG2);
