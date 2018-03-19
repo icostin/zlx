@@ -14,6 +14,7 @@ ZLX_C_DECL_BEGIN
 ZLX_ENUM_DECL(zlx_tlsf_status_t, zlx_tlsf_status, 0,
               ZLX_TLSF_OK,
               ZLX_TLSF_BUFFER_TOO_SMALL,
+              ZLX_TLSF_BAD_MAX,
               ZLX_TLSF_NO_SUP);
 
 /* zlx_tlsf_create **********************************************************/
