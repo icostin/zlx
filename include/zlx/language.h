@@ -150,6 +150,33 @@
 #define ZLX_C_DECL_BEGIN ZLX_CPP_ONLY(extern "C" {)
 #define ZLX_C_DECL_END ZLX_CPP_ONLY(})
 
+/*  ZLX_FIELD_OFFSET  */
+/**
+ *  macro returning the offset to a given field.
+ */
+#define ZLX_FIELD_OFFSET(_type, _field) \
+    ((uintptr_t) &(((_type *) 0)->_field))
+
+/*  ZLX_FIELD_END_OFFSET  */
+/**
+ *  macro returning the offset past a given field.
+ */
+#define ZLX_FIELD_END_OFFSET(_type, _field) \
+    (ZLX_FIELD_OFFSET(_type, _field) + sizeof((((_type *) 0)->_field)))
+
+/*  ZLX_STRUCT_FROM_FIELD  */
+/**
+ *  macro that takes a pointer to a structure field and gives the pointer to
+ *  the structure containing it.
+ */
+#define ZLX_STRUCT_FROM_FIELD(_type, _field, _field_ptr) \
+    ((_type *) ((uintptr_t) (_field_ptr) - ZLX_FIELD_OFFSET(_type, _field)))
+
+/*  ZLX_ITEM_COUNT  */
+/**
+ *  macro that returns the number of items in an array whose size is declared
+ *  at compile time.
+ */
 #define ZLX_ITEM_COUNT(array) (sizeof(array) / sizeof((array)[0]))
 
 
