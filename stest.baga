@@ -6,9 +6,11 @@ cflags += -std=c11 -Wpedantic -Wall -Wextra -Wconversion -Werror
 cflags[mingw] := -Wno-pedantic-ms-format
 ldflags += -static
 ldlibs += -lzlx
+
 cflags[clang-cov] += -O0
 cflags[clang-cov][test/int_cov.c] = -fprofile-instr-generate -fcoverage-mapping
 cflags[clang-cov][test/memalloc_debug_cov.c] = -fprofile-instr-generate -fcoverage-mapping
 cflags[clang-cov][test/unicode_cov.c] = -fprofile-instr-generate -fcoverage-mapping
 cflags[clang-cov][test/enum_sizerr_cov.c] = -fprofile-instr-generate -fcoverage-mapping
 ldflags[clang-cov] += -fprofile-instr-generate -fcoverage-mapping
+cflags[clang-cov][test/dlist_cov.c] = -fprofile-instr-generate -fcoverage-mapping
