@@ -40,12 +40,12 @@ int dlist_test (void)
 
     dlist_extend(&l, &k, ZLX_NEXT);
     n = int_dlist_to_array(&l, memset(a, -1, sizeof(a)), 10);
-    TE(n == 4, "n=%zu", n); 
+    TE(n == 4, "n=%u", (int) n); 
     T(a[0] == 2); T(a[1] == 5); T(a[2] == 1); T(a[3] == 4);
 
     dlist_delete(&e[0].list_entry);
     n = int_dlist_to_array(&l, memset(a, -1, sizeof(a)), 10);
-    TE(n == 3, "n=%zu", n); 
+    TE(n == 3, "n=%u", (int) n); 
     T(a[0] == 2); T(a[1] == 1); T(a[2] == 4);
 
 

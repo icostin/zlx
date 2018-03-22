@@ -1,5 +1,9 @@
 #include "../../include/zlx/memalloc/tlsf.h"
 #include "../../include/zlx/int/ops.h"
+#include "../../include/zlx/int/array.h"
+#include "../../include/zlx/dlist.h"
+
+/****************************************************************************/
 
 ZLX_STATIC_ASSERT(sizeof(void *) == 4 || sizeof(void *) == 8);
 #define ATOM_SIZE_LOG2 4
@@ -7,6 +11,16 @@ ZLX_STATIC_ASSERT(sizeof(void *) == 4 || sizeof(void *) == 8);
 #define COLUMN_COUNT_LOG2 5
 #define COLUMN_COUNT (1 << COLUMN_COUNT_LOG2)
 #define COLUMN_MASK (COLUMN_COUNT - 1)
+
+#define UPTR_ALIGN_UP(p, a) (((p) + (a) - 1) & ~(uintptr_t) ((a) - 1))
+#define UPTR_ALIGN_DOWN(p, a) ((p) & ~(uintptr_t) ((a) - 1))
+
+#define SEP_CTL_MASK 1
+#define SEP_CTL_FREE 1
+#define SEP_CTL_USED 0
+#define SEP_SIZE_MASK (~(uintptr_t) SEP_CTL_MASK)
+
+/****************************************************************************/
 
 typedef uint32_t column_mask_t;
 typedef size_t row_mask_t;
@@ -27,6 +41,7 @@ struct tlsf_sep
 ZLX_STATIC_ASSERT(sizeof(tlsf_sep_t) <= ATOM_SIZE);
 
 
+
 typedef struct tlsf_ma tlsf_ma_t;
 struct tlsf_ma
 {
@@ -34,29 +49,72 @@ struct tlsf_ma
     column_mask_t * cmask_table;
     tlsf_block_t * block_table;
     row_mask_t row_mask;
-    size_t max_alloc_size;
+    size_t max_block_size;
     size_t block_count;
     uint8_t row_count;
+    uint8_t magic[7];
+    zlx_np_t free_list_table[1]; // table of lists
 };
-
-static size_t const ALLOC_SIZE_LIMIT =
-    ((size_t) 1 << (sizeof(void *) * 8 - 1)) - 1;
 
 
 /****************************************************************************/
 
-static uint8_t compute_row_count
+/* tlsf_realloc *************************************************************/
+static void * ZLX_CALL tlsf_realloc
 (
-    size_t max_alloc_atoms
+    void * old_ptr,
+    size_t old_size,
+    size_t new_size,
+    zlx_ma_t * ZLX_RESTRICT ma
 )
 {
-    zlx_uint_t q;
+    (void) old_ptr;
+    (void) old_size;
+    (void) new_size;
+    (void) ma;
+    return NULL;
+#if 0
+    tlsf_ma_t * ZLX_RESTRICT tma = (tlsf_ma_t *) ma;
 
-    ZLX_ASSERT(max_alloc_atoms > 0);
-    ZLX_ASSERT(max_alloc_atoms <= (ALLOC_SIZE_LIMIT >> ATOM_SIZE_LOG2));
+    if (!old_size)
+    {
+        unsigned int cell;
 
-    q = zlx_size_mssb(max_alloc_atoms);
-    return q < COLUMN_COUNT_LOG2 ? 1 : zlx_uint_to_u8(q - COLUMN_COUNT_LOG2 + 2);
+        if (!new_size) return NULL;
+        /* alloc */
+
+        /* get the cell where the requested size falls into */
+        cell = zlx_tlsf_size_to_cell(new_size);
+
+        cell += (zlx_tlsf_cell_to_size(cell) != new_size);
+    }
+    else if (!new_size)
+    {
+        /* free */
+    }
+    else
+    {
+        /* realloc */
+    }
+#endif
+}
+
+
+
+/* compute_row_count ********************************************************/
+static uint8_t compute_row_count
+(
+    size_t max_block_size
+)
+{
+    zlx_uint_t cell;
+
+    max_block_size = UPTR_ALIGN_UP(max_block_size, ATOM_SIZE);
+    ZLX_ASSERT(max_block_size != 0);
+    cell = zlx_tlsf_size_to_cell(max_block_size);
+    cell += (zlx_tlsf_cell_to_size(cell) != max_block_size);
+
+    return zlx_uint_to_u8((cell >> COLUMN_COUNT_LOG2) + 1);
 }
 
 /* zlx_tlsf_create **********************************************************/
@@ -65,32 +123,104 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
     zlx_ma_t * * ZLX_RESTRICT ma_p,
     void * buffer,
     size_t size,
-    size_t max_alloc_size
+    size_t max_block_size
 )
 {
     uint8_t row_count;
-    size_t max_alloc_atoms;
-    size_t min_buffer_size;
+    size_t size_needed, free_size;
     tlsf_ma_t * tma;
+    tlsf_sep_t * btab_pre_sep;
+    tlsf_sep_t * btab_post_sep;
+    tlsf_sep_t * end_sep;
+    zlx_np_t * free_list_entry;
+    uintptr_t va, end_va;
+    unsigned int i, init_cell, init_row;
 
-    (void) ma_p;
-    (void) buffer;
-    (void) size;
-    if (max_alloc_size == 0 || max_alloc_size > ALLOC_SIZE_LIMIT)
+    if (max_block_size == 0 ||
+        max_block_size < size || 
+        max_block_size > ZLX_TLSF_BLOCK_LIMIT)
         return ZLX_TLSF_BAD_MAX;
 
-    max_alloc_atoms = (max_alloc_size + ATOM_SIZE - 1) >> ATOM_SIZE_LOG2;
-    row_count = compute_row_count(max_alloc_atoms);
-    min_buffer_size = sizeof(tlsf_ma_t) 
-        + (size_t) row_count * COLUMN_COUNT * sizeof(void *)
-        + ATOM_SIZE * 3;
+    row_count = compute_row_count(max_block_size);
 
-    if (size < min_buffer_size) 
+    va = (uintptr_t) buffer;
+    end_va = va + size;
+    if (end_va < va) return ZLX_TLSF_BAD_BUFFER;
+
+    end_va = UPTR_ALIGN_DOWN(end_va, ATOM_SIZE);
+    if (va >= end_va) return ZLX_TLSF_BUFFER_TOO_SMALL;
+
+    va = UPTR_ALIGN_UP(va, sizeof(void *));
+    size = zlx_uptr_to_size(end_va - va);
+
+    tma = (tlsf_ma_t *) va;
+    va += ZLX_FIELD_OFFSET(tlsf_ma_t, free_list_table);
+    va += (size_t) row_count * COLUMN_COUNT * sizeof(tma->free_list_table[0]);
+
+    tma->cmask_table = (column_mask_t *) va;
+    va += sizeof(column_mask_t) * row_count;
+
+    va = UPTR_ALIGN_UP(va, ATOM_SIZE);
+    btab_pre_sep = (tlsf_sep_t *) va;
+    va += sizeof(tlsf_sep_t);
+
+    tma->block_table = (tlsf_block_t *) va;
+    tma->block_count = 1;
+    va += ATOM_SIZE;
+
+    btab_post_sep = (tlsf_sep_t *) va;
+    va += ATOM_SIZE;
+
+    free_list_entry = (zlx_np_t *) va;
+    va += ATOM_SIZE;
+
+    size_needed = va - (uintptr_t) tma + ATOM_SIZE;
+    if (size_needed > size) 
+    {
+        *(uintptr_t *) ma_p = size_needed;
         return ZLX_TLSF_BUFFER_TOO_SMALL;
+    }
 
-    tma = (tlsf_ma_t *) buffer;
+    end_va -= ATOM_SIZE;
+    end_sep = (tlsf_sep_t *) end_va;
 
-    return ZLX_TLSF_NO_SUP;
+    free_size = end_va - va;
+    init_cell = zlx_tlsf_size_to_cell(free_size);
+    ZLX_ASSERT(init_cell < row_count * COLUMN_COUNT);
+    init_row = init_cell >> COLUMN_COUNT_LOG2;
+
+    *ma_p = &tma->ma;
+    tma->ma.realloc = tlsf_realloc;
+    tma->ma.contains = NULL;
+    tma->ma.info_set = NULL;
+    tma->ma.check = NULL;
+    tma->row_mask = (row_mask_t) 1 << init_row;
+    tma->max_block_size = max_block_size;
+    tma->row_count = row_count;
+
+    for (i = 0; i < row_count; ++i)
+    {
+        tma->cmask_table[i] = 0;
+    }
+    tma->cmask_table[init_row] = (column_mask_t) 1 << (init_cell & COLUMN_MASK);
+
+    for (i = 0; i < row_count * COLUMN_COUNT; ++i)
+    {
+        zlx_dlist_init(&tma->free_list_table[i]);
+    }
+    zlx_dlist_insert(&tma->free_list_table[init_cell], free_list_entry, 
+                     ZLX_PREV);
+
+    btab_pre_sep->left_size_ctl = 0 | SEP_CTL_USED;
+    btab_pre_sep->right_size_ctl = ATOM_SIZE | SEP_CTL_USED;
+    btab_post_sep->left_size_ctl = ATOM_SIZE | SEP_CTL_USED;
+    btab_post_sep->right_size_ctl = free_size | SEP_CTL_FREE;
+    end_sep->left_size_ctl = free_size | SEP_CTL_FREE;
+    end_sep->right_size_ctl = 0 | SEP_CTL_USED;
+
+    zlx_u8a_copy(tma->magic, (uint8_t const *) "[tlsf!]", 7);
+
+    return ZLX_TLSF_OK;
 }
 
 /* zlx_tlsf_add_block *******************************************************/

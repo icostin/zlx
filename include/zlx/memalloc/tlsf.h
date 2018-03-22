@@ -14,8 +14,15 @@ ZLX_C_DECL_BEGIN
 ZLX_ENUM_DECL(zlx_tlsf_status_t, zlx_tlsf_status, 0,
               ZLX_TLSF_OK,
               ZLX_TLSF_BUFFER_TOO_SMALL,
+              ZLX_TLSF_BAD_BUFFER,
               ZLX_TLSF_BAD_MAX,
               ZLX_TLSF_NO_SUP);
+
+/* ZLX_TLSF_BLOCK_LIMIT *****************************************************/
+/**
+ *  Maximum size that can be allocated in a single alloc call.
+ */
+#define ZLX_TLSF_BLOCK_LIMIT (((size_t) 1 << (sizeof(void *) * 8 - 1)) - 1)
 
 /* zlx_tlsf_create **********************************************************/
 /**
@@ -26,7 +33,7 @@ ZLX_ENUM_DECL(zlx_tlsf_status_t, zlx_tlsf_status, 0,
  *      buffer to hold the allocator instance and the data for allocations
  *  @param size [in]
  *      size of buffer
- *  @param max_alloc_size [in]
+ *  @param max_block_size [in]
  *      max size that can be requested in a single malloc call
  *  @retval ZLX_TLSF_OK
  *      @a ma_p initialized
@@ -42,7 +49,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
     zlx_ma_t * * ZLX_RESTRICT ma_p,
     void * buffer,
     size_t size,
-    size_t max_alloc_size
+    size_t max_block_size
 );
 
 /* zlx_tlsf_add_block *******************************************************/
