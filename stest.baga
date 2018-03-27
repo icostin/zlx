@@ -9,6 +9,7 @@ ldlibs += -lzlx
 
 cflags[clang-cov] += -O0
 cflags[clang-cov][test/int_cov.c] = -fprofile-instr-generate -fcoverage-mapping
+cflags[clang-cov][test/log_cov.c] = -fprofile-instr-generate -fcoverage-mapping
 cflags[clang-cov][test/memalloc_debug_cov.c] = -fprofile-instr-generate -fcoverage-mapping
 cflags[clang-cov][test/unicode_cov.c] = -fprofile-instr-generate -fcoverage-mapping
 cflags[clang-cov][test/enum_sizerr_cov.c] = -fprofile-instr-generate -fcoverage-mapping
