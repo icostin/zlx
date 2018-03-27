@@ -2,6 +2,7 @@
 #include "../../include/zlx/int/ops.h"
 #include "../../include/zlx/int/array.h"
 #include "../../include/zlx/dlist.h"
+#include "../../include/zlx/debug.h"
 
 /****************************************************************************/
 
@@ -142,9 +143,11 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
         return ZLX_TLSF_BAD_MAX;
 
     row_count = compute_row_count(max_block_size);
+    ZLX_DMSG("row_count = $i", row_count);
 
     va = (uintptr_t) buffer;
     end_va = va + size;
+    ZLX_DMSG("original buffer: $p - $p", va, end_va);
     if (end_va < va) return ZLX_TLSF_BAD_BUFFER;
 
     end_va = UPTR_ALIGN_DOWN(end_va, ATOM_SIZE);
@@ -152,6 +155,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
 
     va = UPTR_ALIGN_UP(va, sizeof(void *));
     size = zlx_uptr_to_size(end_va - va);
+    ZLX_DMSG("edge aligned buffer: $p - $p, size=$xz", va, end_va, size);
 
     tma = (tlsf_ma_t *) va;
     va += ZLX_FIELD_OFFSET(tlsf_ma_t, free_list_table);
@@ -175,7 +179,8 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
     va += ATOM_SIZE;
 
     size_needed = va - (uintptr_t) tma + ATOM_SIZE;
-    if (size_needed > size) 
+    ZLX_DMSG("size_needed=$xz size=$xz", size_needed, size);
+    if (size_needed >= size) 
     {
         *(uintptr_t *) ma_p = size_needed;
         return ZLX_TLSF_BUFFER_TOO_SMALL;
@@ -186,6 +191,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
 
     free_size = end_va - va;
     init_cell = zlx_tlsf_size_to_cell(free_size);
+    ZLX_DMSG("initial free block: size=$xz cell=$xz", free_size, init_cell);
     ZLX_ASSERT(init_cell < row_count * COLUMN_COUNT);
     init_row = init_cell >> COLUMN_COUNT_LOG2;
 
@@ -220,6 +226,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
 
     zlx_u8a_copy(tma->magic, (uint8_t const *) "[tlsf!]", 7);
 
+    ZLX_DMSG("returning successfully ma=$p", tma);
     return ZLX_TLSF_OK;
 }
 
@@ -234,6 +241,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_add_block
     (void) ma;
     (void) buffer;
     (void) size;
+    ZLX_DMSG("ma=$p, buffer=$p, size=$xz", ma, buffer, size);
     return ZLX_TLSF_NO_SUP;
 }
 
