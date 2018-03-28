@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include "../include/zlx/memalloc/tlsf.h"
 #include "../include/zlx/memalloc/interface.h"
+#include "../include/zlx/log.h"
 #include "test.h"
 
 int tlsf_test (void)
@@ -11,6 +12,7 @@ int tlsf_test (void)
     unsigned int c;
     size_t i;
     uint8_t * p;
+    zlx_log_level_t ll;
 
     for (c = 0; c < (64 - 9) * 32; ++c)
     {
@@ -46,6 +48,7 @@ int tlsf_test (void)
     ts = zlx_tlsf_create(&ma, buffer, 0, 0);
     TE(ts == ZLX_TLSF_BAD_MAX, "status %s", zlx_tlsf_status_as_str(ts));
 
+    ll = zlx_log_set_level(zlx_default_log, ZLX_LL_WARNING);
     for (i = 1; i < sizeof(buffer) - 1; ++i)
     {
         ts = zlx_tlsf_create(&ma, buffer + 1, i, i);
@@ -53,6 +56,10 @@ int tlsf_test (void)
         TE(ts == ZLX_TLSF_BUFFER_TOO_SMALL, "status %s", 
            zlx_tlsf_status_as_str(ts));
     }
+    zlx_log_set_level(zlx_default_log, ll);
+
+    ts = zlx_tlsf_create(&ma, buffer + 1, i, i);
+    T(ts == ZLX_TLSF_OK);
 
     T(zlx_alloc(ma, 0, "none") == NULL);
     p = zlx_alloc(ma, 1, "one byte");
