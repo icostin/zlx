@@ -44,13 +44,15 @@ ZLX_INLINE void zlx_log_init
     log->fmt_status = ZLX_FMT_OK;
 }
 
-ZLX_INLINE void zlx_log_set_level
+ZLX_INLINE zlx_log_level_t zlx_log_set_level
 (
     zlx_log_t * ZLX_RESTRICT log,
     zlx_log_level_t level
 )
 {
+    zlx_log_level_t prev_level = log->level;
     log->level = level;
+    return prev_level;
 }
 
 
