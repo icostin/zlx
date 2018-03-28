@@ -12,7 +12,7 @@ void log_init
     zlx_log_level_t level
 );
 
-void log_set_level
+zlx_log_level_t log_set_level
 (
     zlx_log_t * ZLX_RESTRICT log,
     zlx_log_level_t level
@@ -37,7 +37,8 @@ int log_test (void)
     zlx_log_fmt(&zl, ZLX_LL_FATAL, "ding\n");
     T(wb.offset == 0);
 
-    log_set_level(&zl, ZLX_LL_INFO);
+    T(log_set_level(&zl, ZLX_LL_INFO) == ZLX_LL_NONE);
+    T(log_set_level(&zl, ZLX_LL_INFO) == ZLX_LL_INFO);
     zlx_log_fmt(&zl, ZLX_LL_INFO, "info!\n");
     T(wb.offset == 6); T(!memcmp(buf, "info!\n", 6));
 
