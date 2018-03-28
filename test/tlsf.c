@@ -10,6 +10,7 @@ int tlsf_test (void)
     zlx_ma_t * ma;
     unsigned int c;
     size_t i;
+    uint8_t * p;
 
     for (c = 0; c < (64 - 9) * 32; ++c)
     {
@@ -53,7 +54,11 @@ int tlsf_test (void)
            zlx_tlsf_status_as_str(ts));
     }
 
-    zlx_alloc(ma, 0, "none");
+    T(zlx_alloc(ma, 0, "none") == NULL);
+    p = zlx_alloc(ma, 1, "one byte");
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", 
+       (void *) p);
+
     return 0;
 }
 
