@@ -478,6 +478,12 @@ static void ZLX_CALL insert_free_chunk
     unsigned int cell
 )
 {
+    if (cell == 0)
+    {
+        M("zero-sized free chunk at ptr=$p", ptr);
+        return;
+    }
+
     if (zlx_dlist_is_empty(&tma->free_list_table[cell]))
     {
         unsigned int row, col;
@@ -486,8 +492,11 @@ static void ZLX_CALL insert_free_chunk
         col = cell & COLUMN_MASK;
         tma->row_mask |= (row_mask_t) 1 << row;
         tma->cmask_table[row] |= (column_mask_t) 1 << col;
+        M("updating masks: rmask=$xz cmask[$i]=$xz", 
+          tma->row_mask, row, tma->cmask_table[row]);
     }
 
     zlx_dlist_insert(&tma->free_list_table[cell], ptr, ZLX_NEXT);
+    M("inserted $p into free list for cell $xi", ptr, cell);
 }
 
