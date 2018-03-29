@@ -2,6 +2,7 @@
 #include "../include/zlx/memalloc/tlsf.h"
 #include "../include/zlx/memalloc/interface.h"
 #include "../include/zlx/log.h"
+#include "../include/zlx/debug.h"
 #include "test.h"
 
 int tlsf_test (void)
@@ -10,8 +11,9 @@ int tlsf_test (void)
     zlx_tlsf_status_t ts;
     zlx_ma_t * ma;
     unsigned int c;
-    size_t i;
+    size_t i, min_ok_size, n;
     uint8_t * p;
+    uint8_t * q;
     zlx_log_level_t ll;
 
     for (c = 0; c < (64 - 9) * 32; ++c)
@@ -56,15 +58,51 @@ int tlsf_test (void)
         TE(ts == ZLX_TLSF_BUFFER_TOO_SMALL, "status %s", 
            zlx_tlsf_status_as_str(ts));
     }
+    min_ok_size = i;
     zlx_log_set_level(zlx_default_log, ll);
 
-    ts = zlx_tlsf_create(&ma, buffer + 1, i, i);
+    ZLX_DMSG("determined zlx min ok size: $z", min_ok_size);
+    //---------
+    ZLX_DMSG("test minimal size allocator =================================");
+    ts = zlx_tlsf_create(&ma, buffer + 1, min_ok_size, min_ok_size);
     T(ts == ZLX_TLSF_OK);
 
     T(zlx_alloc(ma, 0, "none") == NULL);
     p = zlx_alloc(ma, 1, "one byte");
     TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", 
        (void *) p);
+    p = zlx_alloc(ma, 1, "another byte");
+    T(p == NULL);
+
+    //---------
+    n = min_ok_size + 0x10;
+    ZLX_DMSG("test allocator with size $z ================================", n);
+
+    ts = zlx_tlsf_create(&ma, buffer + 1, n, n);
+    T(ts == ZLX_TLSF_OK);
+
+    T(zlx_alloc(ma, 0, "none") == NULL);
+    p = zlx_alloc(ma, 1, "one byte");
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", 
+       (void *) p);
+    p = zlx_alloc(ma, 1, "another byte");
+    TE(p == NULL, "p2=%p", (void *) p);
+
+    //---------
+    n = min_ok_size + 0x20;
+    ZLX_DMSG("test allocator with size $z ================================", n);
+
+    ts = zlx_tlsf_create(&ma, buffer + 1, n, n);
+    T(ts == ZLX_TLSF_OK);
+
+    T(zlx_alloc(ma, 0, "none") == NULL);
+    p = zlx_alloc(ma, 1, "one byte");
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", 
+       (void *) p);
+    q = zlx_alloc(ma, 1, "another byte");
+    TE(q >= &buffer[0] && (size_t) (q - buffer) < sizeof(buffer), "q=%p", 
+       (void *) q);
+
 
     return 0;
 }

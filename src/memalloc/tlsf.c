@@ -122,6 +122,12 @@ static void * ZLX_CALL alloc_chunk
     size_t size
 );
 
+/* ptr_delta ****************************************************************/
+ZLX_INLINE  void * ptr_delta (void * ptr, intptr_t delta)
+{
+    return (uint8_t *) ptr + delta;
+}
+
 /* zlx_tlsf_create **********************************************************/
 ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
 (
@@ -308,10 +314,8 @@ static void * ZLX_CALL tlsf_realloc
         M("alloc: ma=$p size=$z cell=$xi", tma, new_size, cell);
 
         free_cell = free_cell_lookup(tma, cell);
-        if (free_cell == 0) return NULL;
-
-        ptr = alloc_chunk(tma, free_cell, new_size);
-        M("size=$z -> ptr=$p", new_size, ptr);
+        ptr = (free_cell == 0) ? NULL : alloc_chunk(tma, free_cell, new_size);
+        M("alloc size=$z -> ptr=$p", new_size, ptr);
         return ptr;
     }
     else if (!new_size)
@@ -397,14 +401,19 @@ static void * ZLX_CALL alloc_chunk
     tlsf_sep_t * sep;
     tlsf_sep_t * rsep;
     size_t chunk_size;
+    void * chunk;
 
     ZLX_ASSERT((size & (ATOM_SIZE - 1)) == 0);
 
     sep = extract_free_chunk(tma, cell);
+    chunk = ptr_delta(sep, ATOM_SIZE);
     chunk_size = sep->right_size_ctl & SEP_SIZE_MASK;
+    M("got chunk of size $xz", chunk_size);
     ZLX_ASSERT(size <= chunk_size);
 
-    rsep = (tlsf_sep_t *) ((uint8_t *) (sep + 1) + chunk_size);
+    rsep = ptr_delta(chunk, zlx_size_to_sptr(chunk_size));
+    M("rsep=$p -> l=$xz r=$xz", 
+      rsep, rsep->left_size_ctl, rsep->right_size_ctl);
     ZLX_ASSERT((rsep->left_size_ctl & SEP_SIZE_MASK) == chunk_size);
     if (size == chunk_size)
     {
@@ -414,21 +423,25 @@ static void * ZLX_CALL alloc_chunk
     else
     {
         tlsf_sep_t * split;
-        size_t left_size;
+        zlx_np_t * list_entry;
+        size_t leftover;
+
         ZLX_ASSERT(chunk_size - size >= ATOM_SIZE);
-        left_size = size - chunk_size - ATOM_SIZE;
-        
-        split = (tlsf_sep_t *) ((uint8_t *) sep + size);
+        leftover = chunk_size - size - ATOM_SIZE;
+
+        split = ptr_delta(chunk, zlx_size_to_sptr(size));
+        M("leftover=$zx split=$p", leftover, split);
+        list_entry = ptr_delta(split, ATOM_SIZE);
 
         sep->right_size_ctl = size | SEP_CTL_USED;
         split->left_size_ctl = size | SEP_CTL_USED;
-        split->right_size_ctl = left_size | SEP_CTL_FREE;
-        rsep->left_size_ctl = left_size | SEP_CTL_FREE;
+        split->right_size_ctl = leftover | SEP_CTL_FREE;
+        rsep->left_size_ctl = leftover | SEP_CTL_FREE;
 
-        insert_free_chunk(tma, split + 1, zlx_tlsf_size_to_cell(left_size));
+        insert_free_chunk(tma, list_entry, zlx_tlsf_size_to_cell(leftover));
     }
 
-    return sep + 1;
+    return chunk;
 }
 
 /* extract_free_chunk *******************************************************/
@@ -441,6 +454,7 @@ static tlsf_sep_t * ZLX_CALL extract_free_chunk
     zlx_np_t * np;
     tlsf_sep_t * sep;
 
+    ZLX_ASSERT(cell > 0);
     ZLX_ASSERT((tma->row_mask >> (cell >> COLUMN_COUNT_LOG2)) & 1);
     np = tma->free_list_table[cell].next;
     ZLX_ASSERT(np != &tma->free_list_table[cell]);
@@ -460,12 +474,14 @@ static tlsf_sep_t * ZLX_CALL extract_free_chunk
 
         tma->cmask_table[row] &= ~(column_mask_t) 1 << col;
         M("cmask=$xi", tma->cmask_table[row]);
-        if (tma->cmask_table[row])
+        if (tma->cmask_table[row] == 0)
         {
             tma->row_mask &= ~(row_mask_t) 1 << row;
             M("row_mask=$xz", tma->row_mask);
         }
     }
+    M("extracted chunk $p: l=$p r=$p", 
+      sep, sep->left_size_ctl, sep->right_size_ctl);
 
     return sep;
 }
