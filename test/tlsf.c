@@ -102,7 +102,32 @@ int tlsf_test (void)
     q = zlx_alloc(ma, 1, "another byte");
     TE(q >= &buffer[0] && (size_t) (q - buffer) < sizeof(buffer), "q=%p", 
        (void *) q);
+    p = zlx_alloc(ma, 1, "another byte");
+    TE(p == NULL, "p2=%p", (void *) p);
 
+{
+    size_t n = min_ok_size + 0x40;
+    uint8_t * p, * q, * r;
+    ZLX_DMSG("test allocator with size $z ================================", n);
+
+    ts = zlx_tlsf_create(&ma, buffer + 1, n, n);
+    T(ts == ZLX_TLSF_OK);
+
+    T(zlx_alloc(ma, 0, "none") == NULL);
+    p = zlx_alloc(ma, 1, "one byte");
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", (void *) p);
+    q = zlx_alloc(ma, 1, "another byte");
+    TE(q >= &buffer[0] && (size_t) (q - buffer) < sizeof(buffer), "q=%p", (void *) q);
+    r = zlx_alloc(ma, 1, "yet another byte");
+    TE(r >= &buffer[0] && (size_t) (r - buffer) < sizeof(buffer), "r=%p", (void *) r);
+
+    zlx_free(ma, r, 1);
+    zlx_free(ma, p, 1);
+    zlx_free(ma, q, 1);
+    p = zlx_alloc(ma, 0x4F, "big block");
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", (void *) p);
+    q = zlx_realloc(ma, p, 0x4F, 0x4F);
+}
 
     return 0;
 }

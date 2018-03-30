@@ -10,6 +10,7 @@
 ZLX_STATIC_ASSERT(sizeof(void *) == 4 || sizeof(void *) == 8);
 #define ATOM_SIZE_LOG2 4
 #define ATOM_SIZE ((size_t) 1 << ATOM_SIZE_LOG2)
+#define ATOM_OFS_MASK (ATOM_SIZE - 1)
 #define COLUMN_COUNT_LOG2 5
 #define COLUMN_COUNT (1 << COLUMN_COUNT_LOG2)
 #define COLUMN_MASK (COLUMN_COUNT - 1)
@@ -127,6 +128,44 @@ ZLX_INLINE  void * ptr_delta (void * ptr, intptr_t delta)
 {
     return (uint8_t *) ptr + delta;
 }
+
+/* sep_size_left ************************************************************/
+ZLX_INLINE size_t sep_size_left (tlsf_sep_t * ZLX_RESTRICT sep)
+{
+    return sep->left_size_ctl & SEP_SIZE_MASK;
+}
+
+/* sep_size_right ***********************************************************/
+ZLX_INLINE size_t sep_size_right (tlsf_sep_t * ZLX_RESTRICT sep)
+{
+    return sep->right_size_ctl & SEP_SIZE_MASK;
+}
+
+/* sep_free_left ************************************************************/
+ZLX_INLINE int sep_free_left (tlsf_sep_t * ZLX_RESTRICT sep)
+{
+    return (sep->left_size_ctl & SEP_CTL_MASK) == SEP_CTL_FREE;
+}
+
+// ZLX_INLINE int sep_used_left (tlsf_sep_t * ZLX_RESTRICT sep)
+// {
+//     return (sep->left_size_ctl & SEP_CTL_MASK) == SEP_CTL_USED;
+// }
+
+/* sep_free_right ***********************************************************/
+ZLX_INLINE int sep_free_right (tlsf_sep_t * ZLX_RESTRICT sep)
+{
+    return (sep->right_size_ctl & SEP_CTL_MASK) == SEP_CTL_FREE;
+}
+
+#if ZLXOPT_ASSERT
+/* sep_used_right ***********************************************************/
+ZLX_INLINE int sep_used_right (tlsf_sep_t * ZLX_RESTRICT sep)
+{
+    return (sep->right_size_ctl & SEP_CTL_MASK) == SEP_CTL_USED;
+}
+#endif
+
 
 /* zlx_tlsf_create **********************************************************/
 ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
@@ -321,8 +360,40 @@ static void * ZLX_CALL tlsf_realloc
     else if (!new_size)
     {
         /* free */
-        tlsf_sep_t * lsep = old_ptr;
-        lsep--;
+        tlsf_sep_t * sep = ptr_delta(old_ptr, -(ptrdiff_t) ATOM_SIZE);
+        tlsf_sep_t * rsep;
+        size_t size;
+
+        M("free ptr=$p: sep.left=$xz sep.right=$xz", 
+          old_ptr, sep->left_size_ctl, sep->right_size_ctl);
+        ZLX_ASSERT(((uintptr_t) old_ptr & ATOM_OFS_MASK) == 0);
+        ZLX_ASSERT(sep_used_right(sep));
+        size = sep_size_right(sep);
+        ZLX_ASSERT(size == SIZE_ALIGN_UP(old_size, ATOM_SIZE));
+        rsep = ptr_delta(old_ptr, zlx_size_to_sptr(size));
+        ZLX_ASSERT(rsep->left_size_ctl == sep->right_size_ctl);
+        /* merge with block on the right if free */
+        if (sep_free_right(rsep))
+        {
+            size_t rsize = sep_size_right(rsep);
+            if (rsize) zlx_dlist_delete(ptr_delta(rsep, ATOM_SIZE));
+            size += ATOM_SIZE + rsize;
+            rsep = ptr_delta(old_ptr, zlx_size_to_sptr(size));
+        }
+        /* merge with block on the left if free */
+        if (sep_free_left(sep))
+        {
+            size_t lsize = sep_size_left(sep);
+            tlsf_sep_t * lsep;
+            lsep = ptr_delta(sep, -zlx_size_to_ptrdiff(ATOM_SIZE + lsize));
+            ZLX_ASSERT(lsep->right_size_ctl == sep->left_size_ctl);
+            if (lsize) zlx_dlist_delete(ptr_delta(lsep, ATOM_SIZE));
+            size += ATOM_SIZE + lsize;
+            sep = lsep;
+        }
+        rsep->left_size_ctl = sep->right_size_ctl = size | SEP_CTL_FREE;
+        insert_free_chunk(tma, ptr_delta(sep, ATOM_SIZE), 
+                          zlx_tlsf_size_to_cell(size));
     }
     else
     {
@@ -430,7 +501,7 @@ static void * ZLX_CALL alloc_chunk
         leftover = chunk_size - size - ATOM_SIZE;
 
         split = ptr_delta(chunk, zlx_size_to_sptr(size));
-        M("leftover=$zx split=$p", leftover, split);
+        M("leftover=$xz split=$p", leftover, split);
         list_entry = ptr_delta(split, ATOM_SIZE);
 
         sep->right_size_ctl = size | SEP_CTL_USED;
@@ -461,7 +532,7 @@ static tlsf_sep_t * ZLX_CALL extract_free_chunk
 
     zlx_dlist_delete(np);
 
-    sep = (tlsf_sep_t *) np - 1;
+    sep = ptr_delta(np, -(ptrdiff_t) ATOM_SIZE);
     ZLX_ASSERT((sep->right_size_ctl & SEP_CTL_MASK) == SEP_CTL_FREE);
 
     if (zlx_dlist_is_empty(&tma->free_list_table[cell]))
