@@ -398,7 +398,26 @@ static void * ZLX_CALL tlsf_realloc
     else
     {
         /* realloc */
+        tlsf_sep_t * sep = ptr_delta(old_ptr, -(ptrdiff_t) ATOM_SIZE);
+        (void) sep;
+
+        ZLX_ASSERT(((uintptr_t) old_ptr & ATOM_OFS_MASK) == 0);
+        ZLX_ASSERT(sep_used_right(sep));
+
+        old_size = SIZE_ALIGN_UP(old_size, ATOM_SIZE);
+        ZLX_ASSERT(sep_size_right(sep) == old_size);
+
+        new_size = SIZE_ALIGN_UP(new_size, ATOM_SIZE);
+        if (new_size <= old_size)
+        {
+            if (new_size == old_size)
+            {
+                M("realloc to same atom count: return same $p", old_ptr);
+                return old_ptr;
+            }
+        }
     }
+
     return NULL;
 }
 

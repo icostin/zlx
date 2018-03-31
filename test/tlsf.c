@@ -150,7 +150,8 @@ int tlsf_test (void)
     zlx_free(ma, q, 1);
     p = zlx_alloc(ma, 0x8000, "big block");
     TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", (void *) p);
-    q = zlx_realloc(ma, p, 0x4F, 0x4F);
+    q = zlx_realloc(ma, p, 0x8000, 0x7FFE);
+    T(p == q);
 }
     return 0;
 }
