@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <string.h>
 #include "../include/zlx/memalloc/tlsf.h"
 #include "../include/zlx/memalloc/interface.h"
 #include "../include/zlx/log.h"
@@ -198,12 +199,25 @@ int tlsf_test (void)
     TINBUF(p);
     q = zlx_alloc(ma, 1, "end");
     TINBUF(q);
-    r = zlx_realloc(ma, p, 0x100, 0xF0);
-    T(p == r);
-    r = zlx_realloc(ma, p, 0xF0, 0xE0);
-    T(p == r);
-    r = zlx_realloc(ma, p, 0xE0, 0x80);
-    T(p == r);
+    r = zlx_realloc(ma, p, 0x100, 0xF0); T(p == r);
+    r = zlx_realloc(ma, p, 0xF0, 0xE0); T(p == r);
+    r = zlx_realloc(ma, p, 0xE0, 0x80); T(p == r);
+
+    /* enlarge in place, shrinking free space on the right */
+    memset(p, 0xFE, 0x7F); p[0x7F] = 0xEE;
+    r = zlx_realloc(ma, p, 0x80, 0xC0);
+    T(r == p);
+    T(memchr(p, 0xEE, 0x80) == p + 0x7F);
+
+    /* enlarge in place, using all free space on the right */
+    memset(p, 0xCC, 0xBF); p[0xBF] = 0xEE;
+    r = zlx_realloc(ma, p, 0xC0, 0xFF);
+    T(r == p);
+    T(memchr(p, 0xEE, 0xFF) == p + 0xBF);
+
+    /* shrink a little */
+    r = zlx_realloc(ma, p, 0xFF, 0xF0); T(p == r);
+
 }
 
     return 0;
