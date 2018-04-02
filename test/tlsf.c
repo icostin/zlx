@@ -16,6 +16,9 @@ int tlsf_test (void)
     uint8_t * q;
     zlx_log_level_t ll;
 
+#define TINBUF(p) \
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", (void *) p)
+
     for (c = 0; c < (64 - 9) * 32; ++c)
     {
         size_t size = zlx_tlsf_cell_to_size(c);
@@ -66,6 +69,8 @@ int tlsf_test (void)
     ZLX_DMSG("test minimal size allocator =================================");
     ts = zlx_tlsf_create(&ma, buffer + 1, min_ok_size, min_ok_size);
     T(ts == ZLX_TLSF_OK);
+
+    T(zlx_alloc(ma, ZLX_TLSF_BLOCK_LIMIT, "too big") == NULL);
 
     T(zlx_alloc(ma, 0, "none") == NULL);
     p = zlx_alloc(ma, 1, "one byte");
@@ -153,6 +158,54 @@ int tlsf_test (void)
     q = zlx_realloc(ma, p, 0x8000, 0x7FFE);
     T(p == q);
 }
+
+{
+    size_t n = sizeof(buffer);
+    uint8_t * p, * q, * r;
+    ZLX_DMSG("test allocator with size $z ================================", n);
+
+    ts = zlx_tlsf_create(&ma, buffer + 1, n, n);
+    T(ts == ZLX_TLSF_OK);
+
+    T(zlx_alloc(ma, 0, "none") == NULL);
+    p = zlx_alloc(ma, 1, "one byte");
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", (void *) p);
+    q = zlx_alloc(ma, 1, "another byte");
+    TE(q >= &buffer[0] && (size_t) (q - buffer) < sizeof(buffer), "q=%p", (void *) q);
+    r = zlx_alloc(ma, 1, "yet another byte");
+    TE(r >= &buffer[0] && (size_t) (r - buffer) < sizeof(buffer), "r=%p", (void *) r);
+
+    zlx_free(ma, r, 1);
+    zlx_free(ma, p, 1);
+    zlx_free(ma, q, 1);
+    p = zlx_alloc(ma, 0x8000, "big block");
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", (void *) p);
+    q = zlx_realloc(ma, p, 0x8000, 0x7FFE);
+    T(p == q);
+}
+
+
+{
+    size_t n = sizeof(buffer);
+    uint8_t * p, * q, * r;
+    ZLX_DMSG("test allocator with size $z ================================", n);
+
+    ts = zlx_tlsf_create(&ma, buffer + 1, n, n);
+    T(ts == ZLX_TLSF_OK);
+
+    T(zlx_alloc(ma, 0, "none") == NULL);
+    p = zlx_alloc(ma, 0x100, "p");
+    TINBUF(p);
+    q = zlx_alloc(ma, 1, "end");
+    TINBUF(q);
+    r = zlx_realloc(ma, p, 0x100, 0xF0);
+    T(p == r);
+    r = zlx_realloc(ma, p, 0xF0, 0xE0);
+    T(p == r);
+    r = zlx_realloc(ma, p, 0xE0, 0x80);
+    T(p == r);
+}
+
     return 0;
 }
 

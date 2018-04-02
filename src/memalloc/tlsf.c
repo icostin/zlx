@@ -337,6 +337,13 @@ static void * ZLX_CALL tlsf_realloc
 {
     tlsf_ma_t * ZLX_RESTRICT tma = (tlsf_ma_t *) ma;
 
+    if (new_size > tma->max_block_size) 
+    {
+        M("requested $xz which is higher than max_block_size=$xz", new_size,
+          tma->max_block_size);
+        return NULL;
+    }
+
     if (!old_size)
     {
         unsigned int cell, free_cell;
@@ -398,23 +405,50 @@ static void * ZLX_CALL tlsf_realloc
     else
     {
         /* realloc */
-        tlsf_sep_t * sep = ptr_delta(old_ptr, -(ptrdiff_t) ATOM_SIZE);
-        (void) sep;
+        tlsf_sep_t * lsep = ptr_delta(old_ptr, -(ptrdiff_t) ATOM_SIZE);
+        (void) lsep;
 
         ZLX_ASSERT(((uintptr_t) old_ptr & ATOM_OFS_MASK) == 0);
-        ZLX_ASSERT(sep_used_right(sep));
+        ZLX_ASSERT(sep_used_right(lsep));
 
         old_size = SIZE_ALIGN_UP(old_size, ATOM_SIZE);
-        ZLX_ASSERT(sep_size_right(sep) == old_size);
+        ZLX_ASSERT(sep_size_right(lsep) == old_size);
 
         new_size = SIZE_ALIGN_UP(new_size, ATOM_SIZE);
         if (new_size <= old_size)
         {
+            tlsf_sep_t * rsep;
+            tlsf_sep_t * sep;
+            size_t free_size;
+
             if (new_size == old_size)
             {
                 M("realloc to same atom count: return same $p", old_ptr);
                 return old_ptr;
             }
+            /* shrink */
+            M("shrink $p from $xz to $xz", old_ptr, old_size, new_size);
+            rsep = ptr_delta(old_ptr, zlx_size_to_sptr(old_size));
+            ZLX_ASSERT(rsep->left_size_ctl == lsep->right_size_ctl);
+            if (sep_free_right(rsep))
+            {
+                zlx_np_t * np = ptr_delta(rsep, ATOM_SIZE);
+                size_t rsize = sep_size_right(rsep);
+                if (rsize) zlx_dlist_delete(np);
+                free_size = ATOM_SIZE + rsize;
+                M("take over free block on the right - $xz", free_size);
+                rsep = ptr_delta(np, zlx_size_to_sptr(rsize));
+            }
+            else free_size = 0;
+
+            free_size += old_size - new_size - ATOM_SIZE;
+            sep = ptr_delta(old_ptr, zlx_size_to_sptr(new_size));
+            sep->left_size_ctl = lsep->right_size_ctl = new_size | SEP_CTL_USED;
+            sep->right_size_ctl = 
+                rsep->left_size_ctl = free_size | SEP_CTL_FREE;
+            insert_free_chunk(tma, ptr_delta(sep, ATOM_SIZE), 
+                              zlx_tlsf_size_to_cell(free_size));
+            return old_ptr;
         }
     }
 
