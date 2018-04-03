@@ -74,6 +74,12 @@ static void * ZLX_CALL tlsf_realloc
     zlx_ma_t * ZLX_RESTRICT ma
 );
 
+static void * ZLX_CALL alloc
+(
+    tlsf_ma_t * ZLX_RESTRICT tma,
+    size_t size
+);
+
 static uint8_t ZLX_CALL compute_row_count
 (
     size_t max_block_size
@@ -346,23 +352,7 @@ static void * ZLX_CALL tlsf_realloc
 
     if (!old_size)
     {
-        unsigned int cell, free_cell;
-        void * ptr;
-
-        if (!new_size) return NULL;
-
-        /* alloc */
-
-        new_size = SIZE_ALIGN_UP(new_size, ATOM_SIZE);
-        /* get the cell where the requested size falls into */
-        cell = zlx_tlsf_size_to_cell(new_size);
-        cell += (zlx_tlsf_cell_to_size(cell) < new_size);
-        M("alloc: ma=$p size=$z cell=$xi", tma, new_size, cell);
-
-        free_cell = free_cell_lookup(tma, cell);
-        ptr = (free_cell == 0) ? NULL : alloc_chunk_from_cell(tma, free_cell, new_size);
-        M("alloc size=$z -> ptr=$p", new_size, ptr);
-        return ptr;
+        return alloc(tma, new_size);
     }
     else if (!new_size)
     {
@@ -674,5 +664,30 @@ static void ZLX_CALL insert_chunk_in_cell
 
     zlx_dlist_insert(&tma->free_list_table[cell], ptr, ZLX_NEXT);
     M("inserted $p into free list for cell $xi", ptr, cell);
+}
+
+/* alloc ********************************************************************/
+static void * ZLX_CALL alloc
+(
+    tlsf_ma_t * ZLX_RESTRICT tma,
+    size_t size
+)
+{
+    unsigned int cell, free_cell;
+    void * ptr;
+
+    if (!size) return NULL;
+
+    size = SIZE_ALIGN_UP(size, ATOM_SIZE);
+
+    /* get the cell where the requested size falls into */
+    cell = zlx_tlsf_size_to_cell(size);
+    cell += (zlx_tlsf_cell_to_size(cell) < size);
+    M("alloc: ma=$p size=$z cell=$xi", tma, size, cell);
+
+    free_cell = free_cell_lookup(tma, cell);
+    ptr = (free_cell == 0) ? NULL : alloc_chunk_from_cell(tma, free_cell, size);
+    M("alloc size=$z -> ptr=$p", size, ptr);
+    return ptr;
 }
 
