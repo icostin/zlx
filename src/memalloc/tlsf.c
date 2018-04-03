@@ -100,23 +100,23 @@ static tlsf_sep_t * ZLX_CALL extract_free_chunk
     unsigned int cell
 );
 
-/*  insert_free_chunk  */
+/*  insert_chunk_in_cell  */
 /**
  *  Inserts a free chunk.
  */
-static void ZLX_CALL insert_free_chunk
+static void ZLX_CALL insert_chunk_in_cell
 (
     tlsf_ma_t * ZLX_RESTRICT tma,
     void * ptr,
     unsigned int cell
 );
 
-/*  alloc_chunk  */
+/*  alloc_chunk_from_cell  */
 /**
  *  Extracts chunk from non-empty cell, splits into used/free and
  *  reinserts the free portion in the appropriate cell.
  */
-static void * ZLX_CALL alloc_chunk
+static void * ZLX_CALL alloc_chunk_from_cell
 (
     tlsf_ma_t * ZLX_RESTRICT tma,
     unsigned int cell,
@@ -360,7 +360,7 @@ static void * ZLX_CALL tlsf_realloc
         M("alloc: ma=$p size=$z cell=$xi", tma, new_size, cell);
 
         free_cell = free_cell_lookup(tma, cell);
-        ptr = (free_cell == 0) ? NULL : alloc_chunk(tma, free_cell, new_size);
+        ptr = (free_cell == 0) ? NULL : alloc_chunk_from_cell(tma, free_cell, new_size);
         M("alloc size=$z -> ptr=$p", new_size, ptr);
         return ptr;
     }
@@ -399,7 +399,7 @@ static void * ZLX_CALL tlsf_realloc
             sep = lsep;
         }
         rsep->left_size_ctl = sep->right_size_ctl = size | SEP_CTL_FREE;
-        insert_free_chunk(tma, ptr_delta(sep, ATOM_SIZE),
+        insert_chunk_in_cell(tma, ptr_delta(sep, ATOM_SIZE),
                           zlx_tlsf_size_to_cell(size));
     }
     else
@@ -445,7 +445,7 @@ static void * ZLX_CALL tlsf_realloc
             sep->left_size_ctl = lsep->right_size_ctl = new_size | SEP_CTL_USED;
             sep->right_size_ctl =
                 rsep->left_size_ctl = free_size | SEP_CTL_FREE;
-            insert_free_chunk(tma, ptr_delta(sep, ATOM_SIZE),
+            insert_chunk_in_cell(tma, ptr_delta(sep, ATOM_SIZE),
                               zlx_tlsf_size_to_cell(free_size));
             return old_ptr;
         }
@@ -480,7 +480,7 @@ static void * ZLX_CALL tlsf_realloc
                         lsep->right_size_ctl = new_size | SEP_CTL_USED;
                     sep->right_size_ctl =
                         rsep->left_size_ctl = size | SEP_CTL_FREE;
-                    insert_free_chunk(tma, ptr_delta(sep, ATOM_SIZE),
+                    insert_chunk_in_cell(tma, ptr_delta(sep, ATOM_SIZE),
                                       zlx_tlsf_size_to_cell(size));
                 }
                 return old_ptr;
@@ -550,8 +550,8 @@ static unsigned int ZLX_CALL free_cell_lookup
     return free_cell;
 }
 
-/* alloc_chunk **************************************************************/
-static void * ZLX_CALL alloc_chunk
+/* alloc_chunk_from_cell ****************************************************/
+static void * ZLX_CALL alloc_chunk_from_cell
 (
     tlsf_ma_t * ZLX_RESTRICT tma,
     unsigned int cell,
@@ -598,7 +598,7 @@ static void * ZLX_CALL alloc_chunk
         split->right_size_ctl = leftover | SEP_CTL_FREE;
         rsep->left_size_ctl = leftover | SEP_CTL_FREE;
 
-        insert_free_chunk(tma, list_entry, zlx_tlsf_size_to_cell(leftover));
+        insert_chunk_in_cell(tma, list_entry, zlx_tlsf_size_to_cell(leftover));
     }
 
     return chunk;
@@ -646,8 +646,8 @@ static tlsf_sep_t * ZLX_CALL extract_free_chunk
     return sep;
 }
 
-/* insert_free_chunk ********************************************************/
-static void ZLX_CALL insert_free_chunk
+/* insert_chunk_in_cell *****************************************************/
+static void ZLX_CALL insert_chunk_in_cell
 (
     tlsf_ma_t * ZLX_RESTRICT tma,
     void * ptr,
