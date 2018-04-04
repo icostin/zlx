@@ -218,6 +218,11 @@ int tlsf_test (void)
     /* shrink a little */
     r = zlx_realloc(ma, p, 0xFF, 0xF0); T(p == r);
 
+    /* enlarge, requiring to move data */
+    memset(p, 0xCC, 0xEF); p[0xEF] = 0xDD;
+    r = zlx_realloc(ma, p, 0xF0, 0x1234);
+    TINBUF(r); T(r != p);
+    T(memchr(r, 0xDD, 0x1234) == r + 0xEF);
 }
 
     return 0;
