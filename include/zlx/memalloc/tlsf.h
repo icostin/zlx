@@ -85,6 +85,7 @@ ZLX_API size_t zlx_tlsf_cell_to_size
     unsigned int cell
 );
 
+
 ZLX_C_DECL_END
 
 /** @} */

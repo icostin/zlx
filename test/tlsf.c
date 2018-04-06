@@ -6,6 +6,7 @@
 #include "../include/zlx/debug.h"
 #include "test.h"
 
+/* tlsf_test ****************************************************************/
 int tlsf_test (void)
 {
     static uint8_t buffer[0x10000];
@@ -223,7 +224,27 @@ int tlsf_test (void)
     r = zlx_realloc(ma, p, 0xF0, 0x1234);
     TINBUF(r); T(r != p);
     T(memchr(r, 0xDD, 0x1234) == r + 0xEF);
+
+    zlx_free(ma, q, 1);
+    zlx_free(ma, r, 0x1234);
 }
+
+    return 0;
+}
+
+/* tlsf_endurance_test ******************************************************/
+int tlsf_endurance_test (uint64_t ops)
+{
+    size_t buffer[0x10000];
+    zlx_ma_t * ma;
+    zlx_tlsf_status_t ts;
+
+    ts = zlx_tlsf_create(&ma, buffer, sizeof(buffer), sizeof(buffer));
+    T(ts == ZLX_TLSF_OK);
+
+    while (ops--)
+    {
+    }
 
     return 0;
 }
