@@ -1,3 +1,5 @@
+#include <stdint.h>
+#include <inttypes.h>
 #include <string.h>
 #include <stdio.h>
 #include "../include/zlx/int/ops.h"
@@ -63,7 +65,15 @@ int main (int argc, char const * const * argv)
                 return 127;
             }
 
-            return tlsf_endurance_test(n, zlx_u64_to_u32(seed));
+            if (tlsf_endurance_test(n, zlx_u64_to_u32(seed)))
+            {
+                fprintf(stderr, "tlsf endurance test FAILED: ops=%" PRIu64 
+                        " seed=%" PRIu64 "\n", n, seed);
+                return 1;
+            }
+            else printf("tlsf endurance test PASSED: ops=%" PRIu64
+                        " seed=%" PRIu64 "\n", n, seed);
+            return 0;
         }
         else
         {

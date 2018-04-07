@@ -85,6 +85,10 @@ ZLX_API size_t zlx_tlsf_cell_to_size
     unsigned int cell
 );
 
+ZLX_API int zlx_tlsf_debug_walk
+(
+    zlx_ma_t * ma
+);
 
 ZLX_C_DECL_END
 

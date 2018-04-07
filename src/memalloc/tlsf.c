@@ -592,6 +592,7 @@ static tlsf_sep_t * ZLX_CALL extract_free_chunk
 {
     tlsf_sep_t * sep;
 
+    M("np=$p cell=$xi", np, cell);
     ZLX_ASSERT(cell > 0);
     ZLX_ASSERT((tma->row_mask >> (cell >> COLUMN_COUNT_LOG2)) & 1);
     ZLX_ASSERT(np != &tma->free_list_table[cell]);
@@ -609,7 +610,7 @@ static tlsf_sep_t * ZLX_CALL extract_free_chunk
         col = cell & COLUMN_MASK;
         M("cell=$xi row=$xi col=$xi is left empty", cell, row, col);
 
-        tma->cmask_table[row] &= ~(column_mask_t) 1 << col;
+        tma->cmask_table[row] &= ~((column_mask_t) 1 << col);
         M("cmask=$xi", tma->cmask_table[row]);
         if (tma->cmask_table[row] == 0)
         {
@@ -731,5 +732,64 @@ static void ZLX_CALL free
     rsep->left_size_ctl = sep->right_size_ctl = size | SEP_CTL_FREE;
     insert_chunk_in_cell(tma, ptr_delta(sep, ATOM_SIZE),
                       zlx_tlsf_size_to_cell(size));
+}
+
+/* zlx_tlsf_debug_walk ******************************************************/
+ZLX_API int zlx_tlsf_debug_walk
+(
+    zlx_ma_t * ma
+)
+{
+    tlsf_ma_t * ZLX_RESTRICT tma = (tlsf_ma_t *) ma;
+    unsigned int row, col;
+    int bug = 0;
+    
+    ZLX_DFMT("ma = $p ----------------------------------\n", ma);
+    ZLX_DFMT("row_count         $04xb\n", tma->row_count);
+    ZLX_DFMT("row_mask          $018xz\n", tma->row_mask);
+    for (row = 0; row < tma->row_count; ++row)
+    {
+        int bad = (!!tma->cmask_table[row]) != ((tma->row_mask >> row) & 1);
+
+        if (!bad && tma->cmask_table[row] == 0) continue;
+        ZLX_DFMT("row[$04xb]          cmask=$010xd, rmask is $s\n", 
+                 row, tma->cmask_table[row], bad ? "BAD ***" : "ok");
+        bug |= bad;
+    }
+
+    for (row = 0; row < tma->row_count; ++row)
+    {
+        for (col = 0; col < COLUMN_COUNT; ++col)
+        {
+            zlx_np_t * np;
+            unsigned int cell = (row << COLUMN_COUNT_LOG2) | col;
+            if (zlx_dlist_is_empty(&tma->free_list_table[cell]) &&
+                !((tma->cmask_table[row] >> col) & 1))
+                continue;
+            ZLX_DFMT("cell=$04xd row=$02xb col=$02xb range=[$xz-$xz]\n",
+                     cell, row, col, zlx_tlsf_cell_to_size(cell),
+                     zlx_tlsf_cell_to_size(cell + 1) - 1);
+            for (np = tma->free_list_table[cell].next;
+                 np != &tma->free_list_table[cell];
+                 np = np->next)
+            {
+                tlsf_sep_t * lsep = ptr_delta(np, -zlx_size_to_ptrdiff(ATOM_SIZE));
+                tlsf_sep_t * rsep = ptr_delta(np, zlx_size_to_ptrdiff(sep_size_right(lsep)));
+                int bad = !sep_free_right(lsep);
+                bad |= (lsep->right_size_ctl != rsep->left_size_ctl);
+                bad |= !((tma->row_mask >> row) & 1);
+                ZLX_DFMT("                  <$s:$08xz $s:$08xz | ptr=$018p | $s:$08xz $s:$08xz>\n",
+                         sep_free_left(lsep) ? "f" : "u", sep_size_left(lsep),
+                         sep_free_right(lsep) ? "f" : "u", sep_size_right(lsep),
+                         np,
+                         sep_free_left(rsep) ? "f" : "u", sep_size_left(rsep),
+                         sep_free_right(rsep) ? "f" : "u", sep_size_right(rsep));
+                bug |= bad;
+            }
+        }
+    }
+    ZLX_DFMT("ma = $p - $s =================================\n", ma,
+             bug ? "CORRUPT" : "ok");
+    return bug;
 }
 

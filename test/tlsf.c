@@ -250,6 +250,7 @@ int tlsf_endurance_test (uint64_t ops, uint32_t seed)
     srand(seed);
     while (ops--)
     {
+        if (zlx_tlsf_debug_walk(ma)) return 1;
         switch (rand() % 3)
         {
         case 0:
@@ -274,8 +275,11 @@ int tlsf_endurance_test (uint64_t ops, uint32_t seed)
 
     for (i = 0; i < n; ++i)
     {
+        if (zlx_tlsf_debug_walk(ma)) return 1;
         zlx_free(ma, ptab[i], ntab[i]);
     }
+
+    if (zlx_tlsf_debug_walk(ma)) return 1;
 
     return 0;
 }
