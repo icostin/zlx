@@ -1,9 +1,11 @@
 #include <inttypes.h>
 #include <string.h>
+#include <stdlib.h>
 #include "../include/zlx/memalloc/tlsf.h"
 #include "../include/zlx/memalloc/interface.h"
 #include "../include/zlx/log.h"
 #include "../include/zlx/debug.h"
+#include "../include/zlx/int/ops.h"
 #include "test.h"
 
 /* tlsf_test ****************************************************************/
@@ -42,11 +44,11 @@ int tlsf_test (void)
     // ac=40 mssb(40 >> 5)=mssb(2)=2
 
     ts = zlx_tlsf_create(&ma, buffer, 100, sizeof(buffer));
-    TE(ts == ZLX_TLSF_BUFFER_TOO_SMALL, "status %s size_needed=%lu", 
+    TE(ts == ZLX_TLSF_BUFFER_TOO_SMALL, "status %s size_needed=%lu",
        zlx_tlsf_status_as_str(ts), (long) (intptr_t) ma);
 
     ts = zlx_tlsf_create(&ma, buffer, sizeof(buffer) / 2, sizeof(buffer));
-    TE(ts == ZLX_TLSF_OK, "status %s size_needed=%lu", 
+    TE(ts == ZLX_TLSF_OK, "status %s size_needed=%lu",
        zlx_tlsf_status_as_str(ts), (long) (intptr_t) ma);
 
     ts = zlx_tlsf_add_block(ma, buffer + sizeof(buffer) / 2,
@@ -60,7 +62,7 @@ int tlsf_test (void)
     {
         ts = zlx_tlsf_create(&ma, buffer + 1, i, i);
         if (ts == ZLX_TLSF_OK) break;
-        TE(ts == ZLX_TLSF_BUFFER_TOO_SMALL, "status %s", 
+        TE(ts == ZLX_TLSF_BUFFER_TOO_SMALL, "status %s",
            zlx_tlsf_status_as_str(ts));
     }
     min_ok_size = i;
@@ -76,7 +78,7 @@ int tlsf_test (void)
 
     T(zlx_alloc(ma, 0, "none") == NULL);
     p = zlx_alloc(ma, 1, "one byte");
-    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", 
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p",
        (void *) p);
     p = zlx_alloc(ma, 1, "another byte");
     T(p == NULL);
@@ -90,7 +92,7 @@ int tlsf_test (void)
 
     T(zlx_alloc(ma, 0, "none") == NULL);
     p = zlx_alloc(ma, 1, "one byte");
-    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", 
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p",
        (void *) p);
     p = zlx_alloc(ma, 1, "another byte");
     TE(p == NULL, "p2=%p", (void *) p);
@@ -104,10 +106,10 @@ int tlsf_test (void)
 
     T(zlx_alloc(ma, 0, "none") == NULL);
     p = zlx_alloc(ma, 1, "one byte");
-    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p", 
+    TE(p >= &buffer[0] && (size_t) (p - buffer) < sizeof(buffer), "p=%p",
        (void *) p);
     q = zlx_alloc(ma, 1, "another byte");
-    TE(q >= &buffer[0] && (size_t) (q - buffer) < sizeof(buffer), "q=%p", 
+    TE(q >= &buffer[0] && (size_t) (q - buffer) < sizeof(buffer), "q=%p",
        (void *) q);
     p = zlx_alloc(ma, 1, "another byte");
     TE(p == NULL, "p2=%p", (void *) p);
@@ -233,17 +235,46 @@ int tlsf_test (void)
 }
 
 /* tlsf_endurance_test ******************************************************/
-int tlsf_endurance_test (uint64_t ops)
+int tlsf_endurance_test (uint64_t ops, uint32_t seed)
 {
-    size_t buffer[0x10000];
+    uint8_t buffer[0x10000];
     zlx_ma_t * ma;
     zlx_tlsf_status_t ts;
+    uint8_t * ptab[0x1000];
+    size_t ntab[ZLX_ITEM_COUNT(ptab)];
+    size_t i, size, n = 0;
 
     ts = zlx_tlsf_create(&ma, buffer, sizeof(buffer), sizeof(buffer));
     T(ts == ZLX_TLSF_OK);
 
+    srand(seed);
     while (ops--)
     {
+        switch (rand() % 3)
+        {
+        case 0:
+            if (n == ZLX_ITEM_COUNT(ptab)) continue;
+            size = 1 + zlx_int_to_size(rand()) % sizeof(buffer);
+            ptab[n] = zlx_alloc(ma, size, "x");
+            ntab[n] = size;
+            if (ptab[n] == NULL) continue;
+            ++n;
+            break;
+        case 1:
+            /* free previously allocated block */
+            if (n == 0) continue;
+            i = zlx_int_to_size(rand()) % n;
+            zlx_free(ma, ptab[i], ntab[i]);
+            --n;
+            ptab[i] = ptab[n];
+            ntab[i] = ntab[n];
+            break;
+        }
+    }
+
+    for (i = 0; i < n; ++i)
+    {
+        zlx_free(ma, ptab[i], ntab[i]);
     }
 
     return 0;

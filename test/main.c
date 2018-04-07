@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include "../include/zlx/int/ops.h"
 #include "../include/zlx/int/fmt.h"
 #include "../include/zlx/log.h"
 #include "../include/zlx/debug.h"
@@ -19,7 +20,7 @@ size_t ZLX_CALL log_writer
     return fwrite(data, 1, size, ctx);
 }
 
-int tlsf_endurance_test (uint64_t ops);
+int tlsf_endurance_test (uint64_t ops, uint32_t seed);
 
 /* main *********************************************************************/
 int main (int argc, char const * const * argv)
@@ -43,7 +44,7 @@ int main (int argc, char const * const * argv)
         if (!strcmp(argv[1], "std") || !strcmp(argv[1], "standard")) {}
         else if (!strcmp(argv[1], "tlsf-endurance"))
         {
-            uint64_t n;
+            uint64_t n, seed;
             size_t l;
 
             if (argc < 3) n = 0x100000;
@@ -53,7 +54,16 @@ int main (int argc, char const * const * argv)
                 fprintf(stderr, "bad iteration count: %s\n", argv[2]);
                 return 127;
             }
-            return tlsf_endurance_test(n);
+
+            if (argc < 4) seed = 0;
+            else if (zlx_u64_from_str((uint8_t const *) argv[3],
+                                      strlen(argv[3]), 0, &seed, &l))
+            {
+                fprintf(stderr, "bad seed: %s\n", argv[3]);
+                return 127;
+            }
+
+            return tlsf_endurance_test(n, zlx_u64_to_u32(seed));
         }
         else
         {
