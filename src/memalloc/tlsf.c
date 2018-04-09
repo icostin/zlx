@@ -734,8 +734,8 @@ static void ZLX_CALL free
                       zlx_tlsf_size_to_cell(size));
 }
 
-/* zlx_tlsf_debug_walk ******************************************************/
-ZLX_API int zlx_tlsf_debug_walk
+/* zlx_tlsf_walk ************************************************************/
+ZLX_API int zlx_tlsf_walk
 (
     zlx_ma_t * ma
 )

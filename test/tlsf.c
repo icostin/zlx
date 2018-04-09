@@ -50,6 +50,7 @@ int tlsf_test (void)
     ts = zlx_tlsf_create(&ma, buffer, sizeof(buffer) / 2, sizeof(buffer));
     TE(ts == ZLX_TLSF_OK, "status %s size_needed=%lu",
        zlx_tlsf_status_as_str(ts), (long) (intptr_t) ma);
+    T(!zlx_tlsf_walk(ma));
 
     ts = zlx_tlsf_add_block(ma, buffer + sizeof(buffer) / 2,
                             sizeof(buffer) / 2);
@@ -250,7 +251,7 @@ int tlsf_endurance_test (uint64_t ops, uint32_t seed)
     srand(seed);
     while (ops--)
     {
-        if (zlx_tlsf_debug_walk(ma)) return 1;
+        if (zlx_tlsf_walk(ma)) return 1;
         switch (rand() % 3)
         {
         case 0:
@@ -275,11 +276,11 @@ int tlsf_endurance_test (uint64_t ops, uint32_t seed)
 
     for (i = 0; i < n; ++i)
     {
-        if (zlx_tlsf_debug_walk(ma)) return 1;
+        if (zlx_tlsf_walk(ma)) return 1;
         zlx_free(ma, ptab[i], ntab[i]);
     }
 
-    if (zlx_tlsf_debug_walk(ma)) return 1;
+    if (zlx_tlsf_walk(ma)) return 1;
 
     return 0;
 }
