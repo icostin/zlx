@@ -147,20 +147,20 @@ ZLX_INLINE  void * ptr_delta (void * ptr, intptr_t delta)
     return (uint8_t *) ptr + delta;
 }
 
-/* sep_size_left ************************************************************/
-ZLX_INLINE size_t sep_size_left (tlsf_sep_t * ZLX_RESTRICT sep)
+/* left_chunk_size **********************************************************/
+ZLX_INLINE size_t left_chunk_size (tlsf_sep_t * ZLX_RESTRICT sep)
 {
     return sep->left_size_ctl & SEP_SIZE_MASK;
 }
 
-/* sep_size_right ***********************************************************/
-ZLX_INLINE size_t sep_size_right (tlsf_sep_t * ZLX_RESTRICT sep)
+/* right_chunk_size *********************************************************/
+ZLX_INLINE size_t right_chunk_size (tlsf_sep_t * ZLX_RESTRICT sep)
 {
     return sep->right_size_ctl & SEP_SIZE_MASK;
 }
 
-/* sep_free_left ************************************************************/
-ZLX_INLINE int sep_free_left (tlsf_sep_t * ZLX_RESTRICT sep)
+/* left_chunk_is_free *******************************************************/
+ZLX_INLINE int left_chunk_is_free (tlsf_sep_t * ZLX_RESTRICT sep)
 {
     return (sep->left_size_ctl & SEP_CTL_MASK) == SEP_CTL_FREE;
 }
@@ -170,17 +170,17 @@ ZLX_INLINE int sep_free_left (tlsf_sep_t * ZLX_RESTRICT sep)
 //     return (sep->left_size_ctl & SEP_CTL_MASK) == SEP_CTL_USED;
 // }
 
-/* sep_free_right ***********************************************************/
-ZLX_INLINE int sep_free_right (tlsf_sep_t * ZLX_RESTRICT sep)
+/* right_chunk_is_free ******************************************************/
+ZLX_INLINE int right_chunk_is_free (tlsf_sep_t * ZLX_RESTRICT sep)
 {
     return (sep->right_size_ctl & SEP_CTL_MASK) == SEP_CTL_FREE;
 }
 
 #if ZLXOPT_ASSERT
-/* sep_used_right ***********************************************************/
-ZLX_INLINE int sep_used_right (tlsf_sep_t * ZLX_RESTRICT sep)
+/* right_chunk_is_used ******************************************************/
+ZLX_INLINE int right_chunk_is_used (tlsf_sep_t * ZLX_RESTRICT sep)
 {
-    return (sep->right_size_ctl & SEP_CTL_MASK) == SEP_CTL_USED;
+    return !right_chunk_is_free(sep);
 }
 #endif
 
@@ -374,10 +374,10 @@ static void * ZLX_CALL tlsf_realloc
     lsep = ptr_delta(old_ptr, -(ptrdiff_t) ATOM_SIZE);
 
     ZLX_ASSERT(((uintptr_t) old_ptr & ATOM_OFS_MASK) == 0);
-    ZLX_ASSERT(sep_used_right(lsep));
+    ZLX_ASSERT(right_chunk_is_used(lsep));
 
     old_size = SIZE_ALIGN_UP(old_size, ATOM_SIZE);
-    ZLX_ASSERT(sep_size_right(lsep) == old_size);
+    ZLX_ASSERT(right_chunk_size(lsep) == old_size);
 
     new_size = SIZE_ALIGN_UP(new_size, ATOM_SIZE);
     if (new_size <= old_size)
@@ -395,10 +395,10 @@ static void * ZLX_CALL tlsf_realloc
         M("shrink $p from $xz to $xz", old_ptr, old_size, new_size);
         rsep = ptr_delta(old_ptr, zlx_size_to_sptr(old_size));
         ZLX_ASSERT(rsep->left_size_ctl == lsep->right_size_ctl);
-        if (sep_free_right(rsep))
+        if (right_chunk_is_free(rsep))
         {
             zlx_np_t * np = ptr_delta(rsep, ATOM_SIZE);
-            size_t rsize = sep_size_right(rsep);
+            size_t rsize = right_chunk_size(rsep);
             if (rsize)
                 extract_free_chunk(tma, np, zlx_tlsf_size_to_cell(rsize));
             free_size = ATOM_SIZE + rsize;
@@ -420,9 +420,9 @@ static void * ZLX_CALL tlsf_realloc
     {
         /* realloc - enlarge allocation */
         tlsf_sep_t * sep = ptr_delta(old_ptr, zlx_size_to_sptr(old_size));
-        size_t size = sep_size_right(sep);
+        size_t size = right_chunk_size(sep);
         ZLX_ASSERT(sep->left_size_ctl == lsep->right_size_ctl);
-        if (sep_free_right(sep)
+        if (right_chunk_is_free(sep)
             && new_size - old_size <= size + ATOM_SIZE)
         {
             /* can enlarge in-place */
@@ -693,16 +693,16 @@ static void ZLX_CALL free
     M("free ptr=$p size=$xz: sep.left=$xz sep.right=$xz",
       ptr, size, sep->left_size_ctl, sep->right_size_ctl);
     ZLX_ASSERT(((uintptr_t) ptr & ATOM_OFS_MASK) == 0);
-    ZLX_ASSERT(sep_used_right(sep));
+    ZLX_ASSERT(right_chunk_is_used(sep));
     size = SIZE_ALIGN_UP(size, ATOM_SIZE);
-    ZLX_ASSERT(sep_size_right(sep) == size);
+    ZLX_ASSERT(right_chunk_size(sep) == size);
     ZLX_ASSERT(size == SIZE_ALIGN_UP(size, ATOM_SIZE));
     rsep = ptr_delta(ptr, zlx_size_to_sptr(size));
     ZLX_ASSERT(rsep->left_size_ctl == sep->right_size_ctl);
     /* merge with block on the right if free */
-    if (sep_free_right(rsep))
+    if (right_chunk_is_free(rsep))
     {
-        size_t rsize = sep_size_right(rsep);
+        size_t rsize = right_chunk_size(rsep);
         M("merging with free block on the right rsize=$xz, size=$xz",
           rsize, size);
         if (rsize)
@@ -714,9 +714,9 @@ static void ZLX_CALL free
         rsep = ptr_delta(ptr, zlx_size_to_sptr(size));
     }
     /* merge with block on the left if free */
-    if (sep_free_left(sep))
+    if (left_chunk_is_free(sep))
     {
-        size_t lsize = sep_size_left(sep);
+        size_t lsize = left_chunk_size(sep);
         tlsf_sep_t * lsep;
         lsep = ptr_delta(sep, -zlx_size_to_ptrdiff(ATOM_SIZE + lsize));
         ZLX_ASSERT(lsep->right_size_ctl == sep->left_size_ctl);
@@ -774,16 +774,16 @@ ZLX_API int zlx_tlsf_debug_walk
                  np = np->next)
             {
                 tlsf_sep_t * lsep = ptr_delta(np, -zlx_size_to_ptrdiff(ATOM_SIZE));
-                tlsf_sep_t * rsep = ptr_delta(np, zlx_size_to_ptrdiff(sep_size_right(lsep)));
-                int bad = !sep_free_right(lsep);
+                tlsf_sep_t * rsep = ptr_delta(np, zlx_size_to_ptrdiff(right_chunk_size(lsep)));
+                int bad = !right_chunk_is_free(lsep);
                 bad |= (lsep->right_size_ctl != rsep->left_size_ctl);
                 bad |= !((tma->row_mask >> row) & 1);
                 ZLX_DFMT("                  <$s:$08xz $s:$08xz | ptr=$018p | $s:$08xz $s:$08xz>\n",
-                         sep_free_left(lsep) ? "f" : "u", sep_size_left(lsep),
-                         sep_free_right(lsep) ? "f" : "u", sep_size_right(lsep),
+                         left_chunk_is_free(lsep) ? "f" : "u", left_chunk_size(lsep),
+                         right_chunk_is_free(lsep) ? "f" : "u", right_chunk_size(lsep),
                          np,
-                         sep_free_left(rsep) ? "f" : "u", sep_size_left(rsep),
-                         sep_free_right(rsep) ? "f" : "u", sep_size_right(rsep));
+                         left_chunk_is_free(rsep) ? "f" : "u", left_chunk_size(rsep),
+                         right_chunk_is_free(rsep) ? "f" : "u", right_chunk_size(rsep));
                 bug |= bad;
             }
         }
