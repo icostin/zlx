@@ -141,11 +141,20 @@ static void * ZLX_CALL alloc_chunk_from_cell
     size_t size
 );
 
-/* ptr_delta ****************************************************************/
-ZLX_INLINE  void * ptr_delta (void * ptr, intptr_t delta)
+/* ptr_add ******************************************************************/
+ZLX_INLINE void * ptr_add (void * ptr, size_t delta)
 {
+    ZLX_ASSERT((uintptr_t) ptr + delta >= (uintptr_t) ptr);
     return (uint8_t *) ptr + delta;
 }
+
+/* ptr_sub ******************************************************************/
+ZLX_INLINE void * ptr_sub (void * ptr, size_t delta)
+{
+    ZLX_ASSERT((uintptr_t) ptr - delta <= (uintptr_t) ptr);
+    return (uint8_t *) ptr - delta;
+}
+
 
 /* left_chunk_size **********************************************************/
 ZLX_INLINE size_t left_chunk_size (tlsf_sep_t * ZLX_RESTRICT sep)
@@ -371,7 +380,7 @@ static void * ZLX_CALL tlsf_realloc
     }
 
     /* realloc */
-    lsep = ptr_delta(old_ptr, -(ptrdiff_t) ATOM_SIZE);
+    lsep = ptr_sub(old_ptr, ATOM_SIZE);
 
     ZLX_ASSERT(((uintptr_t) old_ptr & ATOM_OFS_MASK) == 0);
     ZLX_ASSERT(right_chunk_is_used(lsep));
@@ -393,33 +402,33 @@ static void * ZLX_CALL tlsf_realloc
         }
         /* shrink */
         M("shrink $p from $xz to $xz", old_ptr, old_size, new_size);
-        rsep = ptr_delta(old_ptr, zlx_size_to_sptr(old_size));
+        rsep = ptr_add(old_ptr, old_size);
         ZLX_ASSERT(rsep->left_size_ctl == lsep->right_size_ctl);
         if (right_chunk_is_free(rsep))
         {
-            zlx_np_t * np = ptr_delta(rsep, ATOM_SIZE);
+            zlx_np_t * np = ptr_add(rsep, ATOM_SIZE);
             size_t rsize = right_chunk_size(rsep);
             if (rsize)
                 extract_free_chunk(tma, np, zlx_tlsf_size_to_cell(rsize));
             free_size = ATOM_SIZE + rsize;
             M("take over free block on the right - $xz", free_size);
-            rsep = ptr_delta(np, zlx_size_to_sptr(rsize));
+            rsep = ptr_add(np, rsize);
         }
         else free_size = 0;
 
         free_size += old_size - new_size - ATOM_SIZE;
-        sep = ptr_delta(old_ptr, zlx_size_to_sptr(new_size));
+        sep = ptr_add(old_ptr, new_size);
         sep->left_size_ctl = lsep->right_size_ctl = new_size | SEP_CTL_USED;
         sep->right_size_ctl =
             rsep->left_size_ctl = free_size | SEP_CTL_FREE;
-        insert_chunk_in_cell(tma, ptr_delta(sep, ATOM_SIZE),
+        insert_chunk_in_cell(tma, ptr_add(sep, ATOM_SIZE),
                           zlx_tlsf_size_to_cell(free_size));
         return old_ptr;
     }
     else
     {
         /* realloc - enlarge allocation */
-        tlsf_sep_t * sep = ptr_delta(old_ptr, zlx_size_to_sptr(old_size));
+        tlsf_sep_t * sep = ptr_add(old_ptr, old_size);
         size_t size = right_chunk_size(sep);
         ZLX_ASSERT(sep->left_size_ctl == lsep->right_size_ctl);
         if (right_chunk_is_free(sep)
@@ -427,11 +436,11 @@ static void * ZLX_CALL tlsf_realloc
         {
             /* can enlarge in-place */
             tlsf_sep_t * rsep;
-            rsep = ptr_delta(sep, zlx_size_to_sptr(size + ATOM_SIZE));
+            rsep = ptr_add(sep, size + ATOM_SIZE);
             ZLX_ASSERT(sep->right_size_ctl == rsep->left_size_ctl);
 
             if (size)
-                extract_free_chunk(tma, ptr_delta(sep, ATOM_SIZE),
+                extract_free_chunk(tma, ptr_add(sep, ATOM_SIZE),
                                    zlx_tlsf_size_to_cell(size));
 
             if (new_size - old_size == size + ATOM_SIZE)
@@ -443,13 +452,13 @@ static void * ZLX_CALL tlsf_realloc
             else
             {
                 /* shrink the free block on the right */
-                sep = ptr_delta(old_ptr, zlx_size_to_sptr(new_size));
+                sep = ptr_add(old_ptr, new_size);
                 size -= new_size - old_size;
                 sep->left_size_ctl =
                     lsep->right_size_ctl = new_size | SEP_CTL_USED;
                 sep->right_size_ctl =
                     rsep->left_size_ctl = size | SEP_CTL_FREE;
-                insert_chunk_in_cell(tma, ptr_delta(sep, ATOM_SIZE),
+                insert_chunk_in_cell(tma, ptr_add(sep, ATOM_SIZE),
                                      zlx_tlsf_size_to_cell(size));
             }
             return old_ptr;
@@ -544,12 +553,12 @@ static void * ZLX_CALL alloc_chunk_from_cell
     ZLX_ASSERT((size & (ATOM_SIZE - 1)) == 0);
 
     sep = extract_free_chunk(tma, tma->free_list_table[cell].next, cell);
-    chunk = ptr_delta(sep, ATOM_SIZE);
+    chunk = ptr_add(sep, ATOM_SIZE);
     chunk_size = sep->right_size_ctl & SEP_SIZE_MASK;
     M("got chunk of size $xz", chunk_size);
     ZLX_ASSERT(size <= chunk_size);
 
-    rsep = ptr_delta(chunk, zlx_size_to_sptr(chunk_size));
+    rsep = ptr_add(chunk, chunk_size);
     M("rsep=$p -> l=$xz r=$xz",
       rsep, rsep->left_size_ctl, rsep->right_size_ctl);
     ZLX_ASSERT((rsep->left_size_ctl & SEP_SIZE_MASK) == chunk_size);
@@ -567,9 +576,9 @@ static void * ZLX_CALL alloc_chunk_from_cell
         ZLX_ASSERT(chunk_size - size >= ATOM_SIZE);
         leftover = chunk_size - size - ATOM_SIZE;
 
-        split = ptr_delta(chunk, zlx_size_to_sptr(size));
+        split = ptr_add(chunk, size);
         M("leftover=$xz split=$p", leftover, split);
-        list_entry = ptr_delta(split, ATOM_SIZE);
+        list_entry = ptr_add(split, ATOM_SIZE);
 
         sep->right_size_ctl = size | SEP_CTL_USED;
         split->left_size_ctl = size | SEP_CTL_USED;
@@ -599,7 +608,7 @@ static tlsf_sep_t * ZLX_CALL extract_free_chunk
 
     zlx_dlist_delete(np);
 
-    sep = ptr_delta(np, -(ptrdiff_t) ATOM_SIZE);
+    sep = ptr_sub(np, ATOM_SIZE);
     ZLX_ASSERT((sep->right_size_ctl & SEP_CTL_MASK) == SEP_CTL_FREE);
 
     if (zlx_dlist_is_empty(&tma->free_list_table[cell]))
@@ -687,7 +696,7 @@ static void ZLX_CALL free
     size_t size
 )
 {
-    tlsf_sep_t * sep = ptr_delta(ptr, -(ptrdiff_t) ATOM_SIZE);
+    tlsf_sep_t * sep = ptr_sub(ptr, ATOM_SIZE);
     tlsf_sep_t * rsep;
 
     M("free ptr=$p size=$xz: sep.left=$xz sep.right=$xz",
@@ -697,7 +706,7 @@ static void ZLX_CALL free
     size = SIZE_ALIGN_UP(size, ATOM_SIZE);
     ZLX_ASSERT(right_chunk_size(sep) == size);
     ZLX_ASSERT(size == SIZE_ALIGN_UP(size, ATOM_SIZE));
-    rsep = ptr_delta(ptr, zlx_size_to_sptr(size));
+    rsep = ptr_add(ptr, size);
     ZLX_ASSERT(rsep->left_size_ctl == sep->right_size_ctl);
     /* merge with block on the right if free */
     if (right_chunk_is_free(rsep))
@@ -706,31 +715,31 @@ static void ZLX_CALL free
         M("merging with free block on the right rsize=$xz, size=$xz",
           rsize, size);
         if (rsize)
-            extract_free_chunk(tma, ptr_delta(rsep, ATOM_SIZE),
+            extract_free_chunk(tma, ptr_add(rsep, ATOM_SIZE),
                                zlx_tlsf_size_to_cell(rsize));
         size += ATOM_SIZE + rsize;
         M("merged with free block on the right rsize=$xz, new size=$xz",
           rsize, size);
-        rsep = ptr_delta(ptr, zlx_size_to_sptr(size));
+        rsep = ptr_add(ptr, size);
     }
     /* merge with block on the left if free */
     if (left_chunk_is_free(sep))
     {
         size_t lsize = left_chunk_size(sep);
         tlsf_sep_t * lsep;
-        lsep = ptr_delta(sep, -zlx_size_to_ptrdiff(ATOM_SIZE + lsize));
+        lsep = ptr_sub(sep, ATOM_SIZE + lsize);
         ZLX_ASSERT(lsep->right_size_ctl == sep->left_size_ctl);
         M("merging with free block on the left lsize=$xz size=$xz", 
           lsize, size);
         if (lsize)
-            extract_free_chunk(tma, ptr_delta(lsep, ATOM_SIZE),
+            extract_free_chunk(tma, ptr_add(lsep, ATOM_SIZE),
                                zlx_tlsf_size_to_cell(lsize));
         size += ATOM_SIZE + lsize;
         sep = lsep;
         M("merge with free block on the left lsize=$xz size=$xz", lsize, size);
     }
     rsep->left_size_ctl = sep->right_size_ctl = size | SEP_CTL_FREE;
-    insert_chunk_in_cell(tma, ptr_delta(sep, ATOM_SIZE),
+    insert_chunk_in_cell(tma, ptr_add(sep, ATOM_SIZE),
                       zlx_tlsf_size_to_cell(size));
 }
 
@@ -773,8 +782,8 @@ ZLX_API int zlx_tlsf_walk
                  np != &tma->free_list_table[cell];
                  np = np->next)
             {
-                tlsf_sep_t * lsep = ptr_delta(np, -zlx_size_to_ptrdiff(ATOM_SIZE));
-                tlsf_sep_t * rsep = ptr_delta(np, zlx_size_to_ptrdiff(right_chunk_size(lsep)));
+                tlsf_sep_t * lsep = ptr_sub(np, ATOM_SIZE);
+                tlsf_sep_t * rsep = ptr_add(np, right_chunk_size(lsep));
                 int bad = !right_chunk_is_free(lsep);
                 bad |= (lsep->right_size_ctl != rsep->left_size_ctl);
                 bad |= !((tma->row_mask >> row) & 1);
