@@ -302,6 +302,9 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
 
     zlx_u8a_copy(tma->magic, (uint8_t const *) "[tlsf!]", 7);
 
+    tma->block_table[0].data = buffer;
+    tma->block_table[0].size = size;
+
     M("returning successfully ma=$p", tma);
     return ZLX_TLSF_OK;
 }
@@ -314,11 +317,82 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_add_block
     size_t size
 )
 {
-    (void) ma;
-    (void) buffer;
-    (void) size;
-    M("ma=$p, buffer=$p, size=$xz", ma, buffer, size);
-    return ZLX_TLSF_NO_SUP;
+    tlsf_ma_t * ZLX_RESTRICT tma = (tlsf_ma_t *) ma;
+    uintptr_t begin, end;
+    size_t chunk_size;
+    void * chunk_ptr;
+    unsigned int cell;
+
+    begin = (uintptr_t) buffer;
+    end = begin + size;
+    begin = UPTR_ALIGN_UP(begin, ATOM_SIZE);
+    end = UPTR_ALIGN_DOWN(end, ATOM_SIZE);
+    M("ma=$p (block_count=$z), buffer=$p, size=$xz: begin=$p end=$p",
+      ma, tma->block_count, buffer, size, begin, end);
+    if (begin > end || end - begin < 3 * ATOM_SIZE)
+        return ZLX_TLSF_BUFFER_TOO_SMALL;
+
+    chunk_size = end - begin - 2 * ATOM_SIZE;
+    if (chunk_size > tma->max_block_size)
+    {
+        M("buffer too large: chunk_size=$xz max=$xz",
+          chunk_size, tma->max_block_size);
+        return ZLX_TLSF_BUFFER_TOO_LARGE;
+    }
+    chunk_ptr = (void *) (begin + ATOM_SIZE);
+
+    {
+        tlsf_sep_t * lsep = (tlsf_sep_t *) begin;
+        lsep->left_size_ctl = 0 | SEP_CTL_USED;
+        lsep->right_size_ctl = chunk_size | SEP_CTL_FREE;
+    }
+
+    {
+        tlsf_sep_t * rsep = (tlsf_sep_t *) (end - ATOM_SIZE);
+        rsep->left_size_ctl = chunk_size | SEP_CTL_FREE;
+        rsep->right_size_ctl = 0 | SEP_CTL_USED;
+    }
+
+    cell = zlx_tlsf_size_to_cell(chunk_size);
+    M("add free chunk of $xz bytes at cell $d", chunk_size, cell);
+    insert_chunk_in_cell(tma, chunk_ptr, cell);
+
+    {
+        tlsf_sep_t * btab_lsep = ptr_sub(tma->block_table, ATOM_SIZE);
+        size_t btab_size = right_chunk_size(btab_lsep);
+        size_t btab_cap = btab_size / sizeof(tlsf_block_t);
+        M("btab_size=$xz btab_cap=$z btab_len=$z", btab_size, btab_cap,
+          tma->block_count);
+        ZLX_ASSERT(right_chunk_is_used(btab_lsep));
+        ZLX_ASSERT(tma->block_count <= btab_cap);
+        if (tma->block_count == btab_cap)
+        {
+            /* need to resize block table. try to double it */
+            void * new_btab_ptr = tlsf_realloc(tma->block_table, btab_size,
+                                               btab_size << 1, ma);
+            M("doubling btab: $p", new_btab_ptr);
+            if (new_btab_ptr == NULL)
+            {
+                new_btab_ptr = tlsf_realloc(tma->block_table,
+                                            btab_size,
+                                            btab_size + ATOM_SIZE,
+                                            ma);
+                M("adding one atom to btab: $p", new_btab_ptr);
+                if (new_btab_ptr == NULL)
+                {
+                    M("cannot realloc the block table");
+                    extract_free_chunk(tma, chunk_ptr, cell);
+                    return ZLX_TLSF_BUFFER_TOO_SMALL;
+                }
+            }
+            tma->block_table = new_btab_ptr;
+        }
+        tma->block_table[tma->block_count].data = buffer;
+        tma->block_table[tma->block_count].size = size;
+        tma->block_count += 1;
+    }
+
+    return ZLX_TLSF_OK;
 }
 
 /* zlx_tlsf_size_to_cell ****************************************************/
@@ -512,7 +586,7 @@ static unsigned int ZLX_CALL free_cell_lookup
       "shifted_column_mask=$xi",
       cell, start_row, start_column, tma->cmask_table[start_row],
       shifted_column_mask);
-    ZLX_ASSERT(((tma->row_mask >> start_row) & 1) 
+    ZLX_ASSERT(((tma->row_mask >> start_row) & 1)
                == !!tma->cmask_table[start_row]);
     if (shifted_column_mask)
     {
@@ -729,7 +803,7 @@ static void ZLX_CALL free
         tlsf_sep_t * lsep;
         lsep = ptr_sub(sep, ATOM_SIZE + lsize);
         ZLX_ASSERT(lsep->right_size_ctl == sep->left_size_ctl);
-        M("merging with free block on the left lsize=$xz size=$xz", 
+        M("merging with free block on the left lsize=$xz size=$xz",
           lsize, size);
         if (lsize)
             extract_free_chunk(tma, ptr_add(lsep, ATOM_SIZE),
@@ -752,7 +826,7 @@ ZLX_API int zlx_tlsf_walk
     tlsf_ma_t * ZLX_RESTRICT tma = (tlsf_ma_t *) ma;
     unsigned int row, col;
     int bug = 0;
-    
+
     ZLX_DFMT("ma = $p ----------------------------------\n", ma);
     ZLX_DFMT("row_count         $04xb\n", tma->row_count);
     ZLX_DFMT("row_mask          $018xz\n", tma->row_mask);
@@ -761,7 +835,7 @@ ZLX_API int zlx_tlsf_walk
         int bad = (!!tma->cmask_table[row]) != ((tma->row_mask >> row) & 1);
 
         if (!bad && tma->cmask_table[row] == 0) continue;
-        ZLX_DFMT("row[$04xb]          cmask=$010xd, rmask is $s\n", 
+        ZLX_DFMT("row[$04xb]          cmask=$010xd, rmask is $s\n",
                  row, tma->cmask_table[row], bad ? "BAD ***" : "ok");
         bug |= bad;
     }

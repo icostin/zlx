@@ -232,6 +232,37 @@ int tlsf_test (void)
     zlx_free(ma, r, 0x1234);
 }
 
+{
+    zlx_tlsf_status_t ts;
+    zlx_ma_t * ma;
+    size_t n = 0x1000;
+    size_t b = 0x60;
+    size_t o = 1;
+    size_t bo;
+
+    ZLX_DMSG("creating tlsf heap over $xz bytes with max block of $xz...",
+             n, n);
+    ts = zlx_tlsf_create(&ma, buffer + o, n, n);
+    T(ts == ZLX_TLSF_OK);
+    o += n;
+
+    while (zlx_alloc(ma, n, "gobble") == NULL) n -= 0x10;
+    ZLX_DMSG("largest successful allocation: $xz bytes", n);
+
+    T(zlx_tlsf_add_block(ma, buffer + o, sizeof(void *) * 4)
+      == ZLX_TLSF_BUFFER_TOO_SMALL);
+
+    T(zlx_tlsf_add_block(ma, buffer + o, 0x2000) == ZLX_TLSF_BUFFER_TOO_LARGE);
+
+    bo = o;
+    while (o < sizeof(buffer)
+           && (ts = zlx_tlsf_add_block(ma, buffer + o, b)) == ZLX_TLSF_OK)
+        o += b;
+    T(o > bo);
+    T(o < sizeof(buffer));
+    T(ts == ZLX_TLSF_BUFFER_TOO_SMALL);
+}
+
     return 0;
 }
 
