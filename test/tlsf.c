@@ -234,10 +234,13 @@ int tlsf_test (void)
 
 {
     zlx_tlsf_status_t ts;
+    zlx_tlsf_block_t * block_table;
+    size_t block_count;
     zlx_ma_t * ma;
     size_t n = 0x1000;
     size_t b = 0x60;
     size_t o = 1;
+    size_t i;
     size_t bo;
 
     ZLX_DMSG("creating tlsf heap over $xz bytes with max block of $xz...",
@@ -261,6 +264,21 @@ int tlsf_test (void)
     T(o > bo);
     T(o < sizeof(buffer));
     T(ts == ZLX_TLSF_BUFFER_TOO_SMALL);
+
+    block_count = zlx_tlsf_get_blocks(ma, &block_table);
+    ZLX_DMSG("test blocks: $z", block_count);
+
+    bo = 1;
+    for (i = 0; i < block_count; ++i)
+    {
+        ZLX_DMSG("block #$z: ptr=$xp size=$xz", i,
+                 block_table[i].data, block_table[i].size);
+        T(block_table[i].data == &buffer[bo]);
+        T(block_table[i].size <= sizeof(buffer) - bo);
+        bo += block_table[i].size;
+    }
+    T(block_count >= 3);
+    T(bo == o);
 }
 
     return 0;

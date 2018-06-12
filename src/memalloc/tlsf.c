@@ -26,6 +26,10 @@ ZLX_STATIC_ASSERT(sizeof(void *) == 4 || sizeof(void *) == 8);
 
 #define M ZLX_DMSG
 
+#define TLSF_MAGIC_LIT "[tlsf!]"
+#define TLSF_MAGIC_PTR ((uint8_t const *) TLSF_MAGIC_LIT)
+#define TLSF_MAGIC_LEN (sizeof(TLSF_MAGIC_LIT) - 1)
+
 /****************************************************************************/
 
 typedef uint32_t column_mask_t;
@@ -33,13 +37,6 @@ typedef uint32_t column_mask_t;
 
 typedef size_t row_mask_t;
 #define rmask_lssb zlx_size_lssb
-
-typedef struct tlsf_block tlsf_block_t;
-struct tlsf_block
-{
-    uint8_t * data;
-    size_t size;
-};
 
 typedef struct tlsf_sep tlsf_sep_t;
 struct tlsf_sep
@@ -54,12 +51,12 @@ struct tlsf_ma
 {
     zlx_ma_t ma;
     column_mask_t * cmask_table;
-    tlsf_block_t * block_table;
+    zlx_tlsf_block_t * block_table;
     row_mask_t row_mask;
     size_t max_block_size;
     size_t block_count;
     uint8_t row_count;
-    uint8_t magic[7];
+    uint8_t magic[TLSF_MAGIC_LEN];
     zlx_np_t free_list_table[1]; // table of lists
 };
 
@@ -199,12 +196,12 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
 (
     zlx_ma_t * * ZLX_RESTRICT ma_p,
     void * buffer,
-    size_t size,
+    size_t buffer_size,
     size_t max_block_size
 )
 {
     uint8_t row_count;
-    size_t size_needed, free_size;
+    size_t size_needed, free_size, size;
     tlsf_ma_t * tma;
     tlsf_sep_t * btab_pre_sep;
     tlsf_sep_t * btab_post_sep;
@@ -214,7 +211,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
     unsigned int i, init_cell, init_row;
 
     if (max_block_size == 0 ||
-        max_block_size < size ||
+        max_block_size < buffer_size ||
         max_block_size > ZLX_TLSF_BLOCK_LIMIT)
         return ZLX_TLSF_BAD_MAX;
 
@@ -222,7 +219,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
     M("row_count = $i", row_count);
 
     va = (uintptr_t) buffer;
-    end_va = va + size;
+    end_va = va + buffer_size;
     M("original buffer: $p - $p", va, end_va);
     if (end_va < va) return ZLX_TLSF_BAD_BUFFER;
 
@@ -244,7 +241,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
     btab_pre_sep = (tlsf_sep_t *) va;
     va += ATOM_SIZE;
 
-    tma->block_table = (tlsf_block_t *) va;
+    tma->block_table = (zlx_tlsf_block_t *) va;
     tma->block_count = 1;
     va += ATOM_SIZE;
 
@@ -300,10 +297,10 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_create
     end_sep->left_size_ctl = free_size | SEP_CTL_FREE;
     end_sep->right_size_ctl = 0 | SEP_CTL_USED;
 
-    zlx_u8a_copy(tma->magic, (uint8_t const *) "[tlsf!]", 7);
+    zlx_u8a_copy(tma->magic, TLSF_MAGIC_PTR, TLSF_MAGIC_LEN);
 
     tma->block_table[0].data = buffer;
-    tma->block_table[0].size = size;
+    tma->block_table[0].size = buffer_size;
 
     M("returning successfully ma=$p", tma);
     return ZLX_TLSF_OK;
@@ -360,7 +357,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_add_block
     {
         tlsf_sep_t * btab_lsep = ptr_sub(tma->block_table, ATOM_SIZE);
         size_t btab_size = right_chunk_size(btab_lsep);
-        size_t btab_cap = btab_size / sizeof(tlsf_block_t);
+        size_t btab_cap = btab_size / sizeof(zlx_tlsf_block_t);
         M("btab_size=$xz btab_cap=$z btab_len=$z", btab_size, btab_cap,
           tma->block_count);
         ZLX_ASSERT(right_chunk_is_used(btab_lsep));
@@ -396,7 +393,7 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_add_block
 }
 
 /* zlx_tlsf_size_to_cell ****************************************************/
-ZLX_API unsigned int zlx_tlsf_size_to_cell
+ZLX_API unsigned int ZLX_CALL zlx_tlsf_size_to_cell
 (
     size_t size
 )
@@ -415,7 +412,7 @@ ZLX_API unsigned int zlx_tlsf_size_to_cell
 }
 
 /* zlx_tlsf_cell_to_size ****************************************************/
-ZLX_API size_t zlx_tlsf_cell_to_size
+ZLX_API size_t ZLX_CALL zlx_tlsf_cell_to_size
 (
     unsigned int cell
 )
@@ -818,7 +815,7 @@ static void ZLX_CALL free
 }
 
 /* zlx_tlsf_walk ************************************************************/
-ZLX_API int zlx_tlsf_walk
+ZLX_API int ZLX_CALL zlx_tlsf_walk
 (
     zlx_ma_t * ma
 )
@@ -874,5 +871,18 @@ ZLX_API int zlx_tlsf_walk
     ZLX_DFMT("ma = $p - $s =================================\n", ma,
              bug ? "CORRUPT" : "ok");
     return bug;
+}
+
+/* zlx_tlsf_get_blocks ******************************************************/
+ZLX_API size_t ZLX_CALL zlx_tlsf_get_blocks
+(
+    zlx_ma_t const * ma,
+    zlx_tlsf_block_t * * blocks
+)
+{
+    tlsf_ma_t * ZLX_RESTRICT tma = (tlsf_ma_t *) ma;
+    ZLX_ASSERT(zlx_u8a_cmp(tma->magic, TLSF_MAGIC_PTR, TLSF_MAGIC_LEN) == 0);
+    *blocks = tma->block_table;
+    return tma->block_count;
 }
 

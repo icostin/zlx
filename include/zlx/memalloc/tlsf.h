@@ -25,6 +25,18 @@ ZLX_ENUM_DECL(zlx_tlsf_status_t, zlx_tlsf_status, 0,
  */
 #define ZLX_TLSF_BLOCK_LIMIT (((size_t) 1 << (sizeof(void *) * 8 - 1)) - 1)
 
+/* zlx_tlsf_block_t *********************************************************/
+/**
+ *  Represents a block of memory used by a TLSF heap.
+ *  See zlx_tlsf_get_blocks().
+ */
+typedef struct zlx_tlsf_block zlx_tlsf_block_t;
+struct zlx_tlsf_block
+{
+    uint8_t * data;
+    size_t size;
+};
+
 /* zlx_tlsf_create **********************************************************/
 /**
  *  Creates a TLSF heap.
@@ -76,19 +88,57 @@ ZLX_API zlx_tlsf_status_t ZLX_CALL zlx_tlsf_add_block
     size_t size
 );
 
-ZLX_API unsigned int zlx_tlsf_size_to_cell
+/* zlx_tlsf_size_to_cell ****************************************************/
+/**
+ *  Computes which TLSF cell contains blocks of the given size.
+ */
+ZLX_API unsigned int ZLX_CALL zlx_tlsf_size_to_cell
 (
     size_t size
 );
 
-ZLX_API size_t zlx_tlsf_cell_to_size
+/* zlx_tlsf_cell_to_size ****************************************************/
+/**
+ *  Returns the lowest size belonging to the given TLSF cell.
+ */
+ZLX_API size_t ZLX_CALL zlx_tlsf_cell_to_size
 (
     unsigned int cell
 );
 
-ZLX_API int zlx_tlsf_walk
+/* zlx_tlsf_walk ************************************************************/
+/**
+ *  Traverses the heap attempting to detect corruptions.
+ *  @retval 0 no corruptions detected
+ *  @retval 1 heap corrupted
+ */
+ZLX_API int ZLX_CALL zlx_tlsf_walk
 (
     zlx_ma_t * ma
+);
+
+/* zlx_tlsf_get_blocks ******************************************************/
+/**
+ *  Retrieves the list of blocks in use by the given TLSF heap.
+ *
+ *  This list contains the pairs pointer and size exactly as they were passed 
+ *  to zlx_tlsf_create() and each successful call to zlx_tlsf_add_block().
+ *
+ *  The returned array is guaranteed valid until zlx_tlsf_add_block() or one 
+ *  of current blocks is freed. Normal heap allocations/deallocations do not
+ *  affect this array.
+ *
+ *  @param ma [in]
+ *      TLSF heap; undefined behavior if this is not a TLSF heap (obtained
+ *      from zlx_tlsf_create())
+ *  @param blocks [out]
+ *      receives a pointer to an array of block structures
+ *  @returns the number of blocks in the heap
+ */
+ZLX_API size_t ZLX_CALL zlx_tlsf_get_blocks
+(
+    zlx_ma_t const * ma,
+    zlx_tlsf_block_t * * blocks
 );
 
 ZLX_C_DECL_END
